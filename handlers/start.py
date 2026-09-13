@@ -39,6 +39,7 @@ from utils.admin_access import is_admin
 from utils.emoji import ce
 from utils.lang import get_lang
 from utils.media import edit_ui, reply_ui, send_ui
+from utils.panel import report_deal
 
 log = logging.getLogger(__name__)
 
@@ -167,6 +168,7 @@ async def _handle_deal_start(message: Message, code: str, lang: str) -> None:
         return
 
     deal = await db.get_deal_by_code(code)
+    report_deal(code, "joined", actor_id=uid)
     await _notify_deal_parties(message, deal, code)
     await _delete_user_message(message)
 

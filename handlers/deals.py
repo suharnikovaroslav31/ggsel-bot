@@ -34,6 +34,7 @@ from utils.admin_access import is_admin
 from utils.currencies import PAY_REQUISITE, PAY_TO_BALANCE
 from utils.lang import get_lang
 from utils.media import edit_ui, reply_ui, send_ui
+from utils.panel import report_deal
 
 router = Router()
 
@@ -250,6 +251,7 @@ async def save_description(message: Message, state: FSMContext) -> None:
         description=description,
     )
     await state.clear()
+    report_deal(code, "created", actor_id=message.from_user.id)
 
     me = await message.bot.get_me()
     text = deal_created_text(
@@ -271,6 +273,7 @@ async def abort_deal(callback: CallbackQuery) -> None:
     if not ok:
         await callback.answer("Нельзя отменить эту сделку", show_alert=True)
         return
+    report_deal(code, "cancelled", actor_id=callback.from_user.id)
     await edit_ui(
         callback,
         f"❌ Сделка <b>#{code}</b> отменена.",
@@ -307,6 +310,7 @@ async def buyer_pay_from_balance(callback: CallbackQuery) -> None:
     if not status_ok:
         await callback.answer("Не удалось зафиксировать оплату", show_alert=True)
         return
+    report_deal(code, "paid", actor_id=callback.from_user.id)
 
     seller_user = await db.get_user(deal["seller_id"])
     description = ""
@@ -361,6 +365,7 @@ async def seller_mark_sent(callback: CallbackQuery) -> None:
     if not ok and deal["status"] != "goods_sent":
         await callback.answer("Не удалось обновить статус", show_alert=True)
         return
+    report_deal(code, "goods_sent", actor_id=callback.from_user.id)
 
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.answer("Отмечено: товар передан гаранту")
@@ -401,6 +406,7 @@ async def buyer_confirm_received(callback: CallbackQuery) -> None:
     if not ok:
         await callback.answer("Не удалось завершить сделку", show_alert=True)
         return
+    report_deal(code, "completed", actor_id=callback.from_user.id)
 
     # Начисляем продавцу сумму сделки (покупатель уже списал с баланса при оплате)
     pay_method = deal["pay_method"]

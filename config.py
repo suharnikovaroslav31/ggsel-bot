@@ -28,6 +28,11 @@ MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGseI_support").strip().lstrip
 SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_USERNAME}"
 MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
 
+# Панель Ural Team: куда слать события сделок (домен бота панели на Bothost).
+# Пусто — отправка выключена, бот работает как раньше.
+PANEL_API_URL = os.getenv("PANEL_API_URL", "").strip()
+PANEL_API_SECRET = os.getenv("PANEL_API_SECRET", "").strip()
+
 # Custom emoji IDs — заполни через пересылку сообщения боту (/emoji_ids).
 # Пока пусто: в тексте будут обычные эмодзи-фолбэки.
 CUSTOM_EMOJI = {
