@@ -170,6 +170,21 @@ async def _parse_telegram_id(message: Message) -> int | None:
     return user_id
 
 
+@router.message(Command("panel_test"))
+async def cmd_panel_test(message: Message) -> None:
+    if await _deny_if_not_admin(message):
+        return
+    from utils.panel import probe
+
+    url, verdict = await probe()
+    await reply_ui(
+        message,
+        "🔌 <b>Связь с панелью</b>\n\n"
+        f"Адрес: <code>{url}</code>\n"
+        f"{verdict}",
+    )
+
+
 @router.message(Command("admin"))
 async def cmd_admin(message: Message, state: FSMContext) -> None:
     if await _deny_if_not_admin(message):

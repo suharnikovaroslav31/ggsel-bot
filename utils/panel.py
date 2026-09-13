@@ -109,6 +109,29 @@ async def _send(payload: dict) -> None:
             delay *= 2
 
 
+async def probe() -> tuple[str, str]:
+    """Проверка связи с панелью: (адрес, человеческий вердикт)."""
+    url = _endpoint()
+    if not url:
+        return "—", "PANEL_API_URL не задан. Впиши домен панели в переменные бота."
+    if not PANEL_API_SECRET:
+        return url, "PANEL_API_SECRET не задан. Впиши тот же пароль, что в панели."
+    try:
+        async with aiohttp.ClientSession(timeout=_TIMEOUT) as session:
+            async with session.post(url, json={}, headers={"X-Api-Secret": PANEL_API_SECRET}) as resp:
+                status = resp.status
+                body = (await resp.text())[:200]
+    except Exception as exc:
+        return url, f"Панель недоступна: {exc}"
+    if status == 400:
+        return url, "Связь есть, пароль верный. Сделки будут доходить."
+    if status == 403:
+        return url, "Панель не приняла пароль: PANEL_API_SECRET не совпал с MARKETPLACE_SECRET."
+    if status == 404:
+        return url, "Адрес отвечает, но приёмника нет. Проверь домен и что панель обновлена из Git."
+    return url, f"Панель ответила {status}: {body}"
+
+
 async def _pump(queue: asyncio.Queue) -> None:
     """Отправляем события по одному, чтобы панель видела их в нужном порядке."""
     while True:
