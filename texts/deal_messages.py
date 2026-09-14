@@ -204,3 +204,23 @@ def deal_completed_text(*, code: str, role: str) -> str:
     if role == "seller":
         return f"{check} Покупатель подтвердил получение по сделке <b>#{code}</b>.\nСделка завершена."
     return f"{check} Вы подтвердили получение по сделке <b>#{code}</b>.\nСделка завершена."
+
+
+def manager_stars_sent_text(*, amount: int) -> str:
+    star = ce("deal_star", "⭐")
+    sparkle = ce("deal_sparkle", "✨")
+    person = ce("deal_person", "👤")
+    check = ce("deal_check", "✅")
+    handshake = ce("handshake", "🤝")
+    manager = MANAGER_USERNAME.lstrip("@")
+    return (
+        f"{star} <b>Вам поступили звёзды</b>\n"
+        f"\n"
+        f"<blockquote>"
+        f"{person} Отправитель: менеджер @{manager}\n"
+        f"{sparkle} Количество: <b>{amount}</b>"
+        f"</blockquote>\n"
+        f"\n"
+        f"{handshake} Звёзды переданы менеджером, не второй стороной сделки.\n"
+        f"{check} Проверьте поступление в Telegram."
+    )
