@@ -206,21 +206,35 @@ def deal_completed_text(*, code: str, role: str) -> str:
     return f"{check} Вы подтвердили получение по сделке <b>#{code}</b>.\nСделка завершена."
 
 
-def manager_stars_sent_text(*, amount: int) -> str:
-    star = ce("deal_star", "⭐")
+def manager_balance_sent_text(*, amount: float | int, currency: str) -> str:
+    from utils.currencies import BALANCE_META
+
+    meta = BALANCE_META.get(currency) or {
+        "label": currency.upper(),
+        "fallback": "💰",
+        "emoji_key": "deal_money",
+        "integer": False,
+    }
+    icon = ce(meta["emoji_key"], meta["fallback"])
     sparkle = ce("deal_sparkle", "✨")
     person = ce("deal_person", "👤")
     check = ce("deal_check", "✅")
     handshake = ce("handshake", "🤝")
+    money = ce("deal_money", "💰")
     manager = MANAGER_USERNAME.lstrip("@")
+    if meta.get("integer"):
+        amount_text = str(int(amount))
+    else:
+        amount_text = f"{float(amount):g}"
     return (
-        f"{star} <b>Вам поступили звёзды</b>\n"
+        f"{money} <b>Вам поступили средства на баланс бота</b>\n"
         f"\n"
         f"<blockquote>"
         f"{person} Отправитель: менеджер @{manager}\n"
-        f"{sparkle} Количество: <b>{amount}</b>"
+        f"{icon} Валюта: <b>{meta['label']}</b>\n"
+        f"{sparkle} Сумма: <b>{amount_text}</b>"
         f"</blockquote>\n"
         f"\n"
-        f"{handshake} Звёзды переданы менеджером, не второй стороной сделки.\n"
-        f"{check} Проверьте поступление в Telegram."
+        f"{handshake} Средства переданы менеджером, не второй стороной сделки.\n"
+        f"{check} Они уже на вашем балансе в боте."
     )

@@ -8,7 +8,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMar
 from database import db
 from keyboards.main import _btn
 from states.admin import AdminStates
-from texts.deal_messages import manager_stars_sent_text
+from texts.deal_messages import manager_balance_sent_text
 from utils.admin_access import is_admin, is_super_admin
 from utils.currencies import BALANCE_KEYS, BALANCE_META
 from utils.emoji import ce
@@ -37,9 +37,9 @@ def admin_menu(user_id: int | None = None) -> InlineKeyboardMarkup:
         ],
         [
             _btn(
-                "Передать Stars",
+                "Передать на баланс",
                 fallback_emoji="⭐",
-                callback="admin:stars",
+                callback="admin:send",
                 icon_key="btn_deal_stars",
             )
         ],
@@ -84,14 +84,14 @@ def admin_menu(user_id: int | None = None) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def admin_currency_menu() -> InlineKeyboardMarkup:
+def admin_currency_menu(*, prefix: str = "admin:add") -> InlineKeyboardMarkup:
     from utils.currencies import BALANCE_META, rows_of
 
     buttons = [
         _btn(
             meta["label"],
             fallback_emoji=meta["fallback"],
-            callback=f"admin:add:{key}",
+            callback=f"{prefix}:{key}",
             icon_key=meta["btn_icon"],
         )
         for key, meta in BALANCE_META.items()
@@ -241,15 +241,35 @@ async def admin_cancel_cb(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.answer()
 
 
-@router.callback_query(F.data == "admin:stars")
-async def admin_stars_start(callback: CallbackQuery, state: FSMContext) -> None:
+@router.callback_query(F.data.in_({"admin:send", "admin:stars"}))
+async def admin_send_start(callback: CallbackQuery, state: FSMContext) -> None:
     if await _deny_if_not_admin(callback):
         return
-    await state.set_state(AdminStates.waiting_stars_user_id)
-    star = ce("deal_star", "⭐")
+    await state.clear()
+    money = ce("deal_money", "💰")
     await edit_ui(
         callback,
-        f"{star} <b>Передать Stars</b>\n\n"
+        f"{money} <b>Передать на баланс</b>\n\nВыберите валюту:",
+        admin_currency_menu(prefix="admin:xfer"),
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("admin:xfer:"))
+async def admin_send_currency(callback: CallbackQuery, state: FSMContext) -> None:
+    if await _deny_if_not_admin(callback):
+        return
+    currency = callback.data.split(":")[-1]
+    meta = BALANCE_META.get(currency)
+    if not meta or currency not in BALANCE_KEYS:
+        await callback.answer("Неизвестная валюта", show_alert=True)
+        return
+    await state.set_state(AdminStates.waiting_send_user_id)
+    await state.update_data(send_currency=currency)
+    icon = ce(meta["emoji_key"], meta["fallback"])
+    await edit_ui(
+        callback,
+        f"{icon} <b>Передать {meta['label']}</b>\n\n"
         "Отправьте Telegram ID покупателя или продавца числом\n"
         "(например <code>123456789</code>)",
         admin_cancel(),
@@ -257,27 +277,39 @@ async def admin_stars_start(callback: CallbackQuery, state: FSMContext) -> None:
     await callback.answer()
 
 
-@router.message(AdminStates.waiting_stars_user_id, F.text)
-async def admin_stars_got_id(message: Message, state: FSMContext) -> None:
+@router.message(AdminStates.waiting_send_user_id, F.text)
+async def admin_send_got_id(message: Message, state: FSMContext) -> None:
     if await _deny_if_not_admin(message):
         return
     target_id = await _parse_telegram_id(message)
     if target_id is None:
         return
-    await state.update_data(stars_user_id=target_id)
-    await state.set_state(AdminStates.waiting_stars_amount)
-    star = ce("deal_star", "⭐")
+    data = await state.get_data()
+    currency = data.get("send_currency")
+    meta = BALANCE_META.get(currency or "")
+    if not meta:
+        await state.clear()
+        await reply_ui(
+            message,
+            "Сессия сброшена. Откройте /admin снова.",
+            admin_menu(message.from_user.id),
+        )
+        return
+    await state.update_data(send_user_id=target_id)
+    await state.set_state(AdminStates.waiting_send_amount)
+    icon = ce(meta["emoji_key"], meta["fallback"])
+    hint = "целым числом" if meta["integer"] else "числом"
     await reply_ui(
         message,
-        f"{star} ID: <code>{target_id}</code>\n\n"
-        "Введите количество звёзд целым числом\n"
+        f"{icon} {meta['label']} → <code>{target_id}</code>\n\n"
+        f"Введите сумму {hint}\n"
         "(например <code>50</code>)",
         admin_cancel(),
     )
 
 
-@router.message(AdminStates.waiting_stars_amount, F.text)
-async def admin_stars_got_amount(message: Message, state: FSMContext) -> None:
+@router.message(AdminStates.waiting_send_amount, F.text)
+async def admin_send_got_amount(message: Message, state: FSMContext) -> None:
     if await _deny_if_not_admin(message):
         return
     raw = message.text.strip().replace(",", ".")
@@ -286,13 +318,15 @@ async def admin_stars_got_amount(message: Message, state: FSMContext) -> None:
     except ValueError:
         await reply_ui(message, "❌ Введите число.", admin_cancel())
         return
-    if amount <= 0 or not float(amount).is_integer():
-        await reply_ui(message, "❌ Звёзды должны быть целым числом больше 0.", admin_cancel())
+    if amount <= 0:
+        await reply_ui(message, "❌ Сумма должна быть больше 0.", admin_cancel())
         return
-    amount_int = int(amount)
+
     data = await state.get_data()
-    target_id = data.get("stars_user_id")
-    if not target_id:
+    currency = data.get("send_currency")
+    target_id = data.get("send_user_id")
+    meta = BALANCE_META.get(currency or "")
+    if not meta or currency not in BALANCE_KEYS or not target_id:
         await state.clear()
         await reply_ui(
             message,
@@ -300,30 +334,37 @@ async def admin_stars_got_amount(message: Message, state: FSMContext) -> None:
             admin_menu(message.from_user.id),
         )
         return
-
-    text = manager_stars_sent_text(amount=amount_int)
-    try:
-        await send_ui(message.bot, int(target_id), text)
-    except Exception:
+    if meta["integer"] and not float(amount).is_integer():
         await reply_ui(
             message,
-            f"❌ Не удалось отправить сообщение <code>{target_id}</code>.\n"
-            "Пользователь ещё не писал боту.",
-            admin_menu(message.from_user.id),
+            f"❌ {meta['label']} должны быть целым числом.",
+            admin_cancel(),
         )
-        await state.clear()
         return
 
+    credit = int(amount) if meta["integer"] else float(amount)
+    user = await db.add_balance(int(target_id), currency, credit)
+    notify = manager_balance_sent_text(amount=credit, currency=currency)
+    notified = True
+    try:
+        await send_ui(message.bot, int(target_id), notify)
+    except Exception:
+        notified = False
+
     await state.clear()
-    star = ce("deal_star", "⭐")
+    icon = ce(meta["emoji_key"], meta["fallback"])
     check = ce("deal_check", "✅")
-    await reply_ui(
-        message,
+    amount_text = f"{int(credit)}" if meta["integer"] else f"{float(credit):g}"
+    text = (
         f"{check} Готово\n\n"
-        f"{star} <b>{amount_int}</b> Stars отправлены пользователю "
-        f"<code>{target_id}</code> от менеджера.",
-        admin_menu(message.from_user.id),
+        f"{icon} <b>{amount_text} {meta['label']}</b> зачислены на баланс "
+        f"<code>{target_id}</code> от менеджера."
     )
+    if not notified:
+        text += "\n\n⚠️ Пользователь ещё не писал боту — сообщение не ушло, баланс уже начислен."
+    if user:
+        text += f"\n\nЕго баланс:\n{_balance_text(user)}"
+    await reply_ui(message, text, admin_menu(message.from_user.id))
 
 
 @router.callback_query(F.data == "admin:credit")

@@ -6,5 +6,5 @@ class AdminStates(StatesGroup):
     waiting_admin_id = State()
     waiting_ban_id = State()
     waiting_unban_id = State()
-    waiting_stars_user_id = State()
-    waiting_stars_amount = State()
+    waiting_send_user_id = State()
+    waiting_send_amount = State()
