@@ -12,6 +12,7 @@ CURRENCY_NAMES = {
     "eur": "EUR",
     "byn": "BYN",
     "kzt": "KZT",
+    "uah": "UAH",
 }
 
 CURRENCY_EMOJI_KEYS = {
@@ -23,6 +24,7 @@ CURRENCY_EMOJI_KEYS = {
     "eur": ("balance_eur", "💰"),
     "byn": ("balance_byn", "🇧🇾"),
     "kzt": ("balance_kzt", "🇰🇿"),
+    "uah": ("balance_uah", "🇺🇦"),
 }
 
 

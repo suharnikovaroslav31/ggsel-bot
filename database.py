@@ -48,6 +48,7 @@ class Database:
         await self._ensure_column("balance_eur", "REAL DEFAULT 0")
         await self._ensure_column("balance_byn", "REAL DEFAULT 0")
         await self._ensure_column("balance_kzt", "REAL DEFAULT 0")
+        await self._ensure_column("balance_uah", "REAL DEFAULT 0")
         await self._ensure_column("last_welcome_msg_id", "INTEGER")
         await self.conn.executescript(
             """
@@ -240,6 +241,7 @@ class Database:
             "eur": "balance_eur",
             "byn": "balance_byn",
             "kzt": "balance_kzt",
+            "uah": "balance_uah",
         }
         column = columns.get(currency)
         if not column:
@@ -322,6 +324,7 @@ class Database:
             "eur": "balance_eur",
             "byn": "balance_byn",
             "kzt": "balance_kzt",
+            "uah": "balance_uah",
         }
         column = columns.get(currency)
         if not column:

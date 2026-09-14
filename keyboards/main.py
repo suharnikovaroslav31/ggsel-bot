@@ -163,6 +163,7 @@ def balance_menu(lang: str | None = "ru") -> InlineKeyboardMarkup:
         "card": ("btn_withdraw_card", "💳", "btn_pay_card"),
         "byn": ("btn_withdraw_byn", "🇧🇾", "btn_pay_byn"),
         "kzt": ("btn_withdraw_kzt", "🇰🇿", "btn_pay_kzt"),
+        "uah": ("btn_withdraw_uah", "🇺🇦", "btn_pay_uah"),
         "stars": ("btn_withdraw_stars", "⭐", "btn_pay_stars"),
         "usdt": ("btn_withdraw_usdt", "🪙", "btn_pay_usdt"),
         "usd": ("btn_withdraw_usd", "💸", "btn_pay_usd"),

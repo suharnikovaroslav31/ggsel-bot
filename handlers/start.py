@@ -305,6 +305,7 @@ async def menu_balance(callback: CallbackQuery, state: FSMContext) -> None:
             eur=_num("balance_eur"),
             byn=_num("balance_byn"),
             kzt=_num("balance_kzt"),
+            uah=_num("balance_uah"),
         ),
         markup=balance_menu(lang),
         lang=lang,

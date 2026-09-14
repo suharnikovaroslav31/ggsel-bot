@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 # Колонки баланса в БД
-BALANCE_KEYS = ("ton", "rub", "byn", "kzt", "stars", "usdt", "usd", "eur")
+BALANCE_KEYS = ("ton", "rub", "byn", "kzt", "uah", "stars", "usdt", "usd", "eur")
 
 # Группы для красивого отображения баланса
 BALANCE_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Crypto", ("ton", "usdt", "stars")),
-    ("Fiat", ("rub", "byn", "kzt", "usd", "eur")),
+    ("Fiat", ("rub", "byn", "kzt", "uah", "usd", "eur")),
 )
 
 # pay_method сделки → ключ баланса
@@ -21,6 +21,7 @@ PAY_TO_BALANCE = {
     "eur": "eur",
     "byn": "byn",
     "kzt": "kzt",
+    "uah": "uah",
 }
 
 # Метаданные валют баланса
@@ -51,6 +52,13 @@ BALANCE_META: dict[str, dict] = {
         "fallback": "🇰🇿",
         "emoji_key": "balance_kzt",
         "btn_icon": "btn_pay_kzt",
+        "integer": False,
+    },
+    "uah": {
+        "label": "UAH",
+        "fallback": "🇺🇦",
+        "emoji_key": "balance_uah",
+        "btn_icon": "btn_pay_uah",
         "integer": False,
     },
     "stars": {
@@ -93,6 +101,7 @@ PAY_METHODS: tuple[tuple[str, str, str, str], ...] = (
     ("eur", "btn_pay_eur", "💰", "btn_pay_eur"),
     ("byn", "btn_pay_byn", "🇧🇾", "btn_pay_byn"),
     ("kzt", "btn_pay_kzt", "🇰🇿", "btn_pay_kzt"),
+    ("uah", "btn_pay_uah", "🇺🇦", "btn_pay_uah"),
 )
 
 # Вывод: withdraw_callback → (balance_key, label, requisite: ton|card|username)
@@ -101,6 +110,7 @@ WITHDRAW_METHODS = {
     "card": ("rub", "RUB", "card"),
     "byn": ("byn", "BYN", "card"),
     "kzt": ("kzt", "KZT", "card"),
+    "uah": ("uah", "UAH", "card"),
     "stars": ("stars", "STARS", "username"),
     "usdt": ("usdt", "USDT", "ton"),
     "usd": ("usd", "USD", "card"),
@@ -116,6 +126,7 @@ PAY_REQUISITE = {
     "eur": "card",
     "byn": "card",
     "kzt": "card",
+    "uah": "card",
 }
 
 

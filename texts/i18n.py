@@ -53,11 +53,13 @@ TEXTS = {
         "btn_pay_eur": "EUR",
         "btn_pay_byn": "BYN",
         "btn_pay_kzt": "KZT",
+        "btn_pay_uah": "UAH",
         "btn_withdraw_usdt": "Вывод USDT",
         "btn_withdraw_usd": "Вывод USD",
         "btn_withdraw_eur": "Вывод EUR",
         "btn_withdraw_byn": "Вывод BYN",
         "btn_withdraw_kzt": "Вывод KZT",
+        "btn_withdraw_uah": "Вывод UAH",
         "btn_lang_ru": "Русский",
         "btn_lang_en": "English",
         "requisites_title": "Управление реквизитами",
@@ -106,6 +108,7 @@ TEXTS = {
         "deal_pay_eur": "EUR",
         "deal_pay_byn": "BYN",
         "deal_pay_kzt": "KZT",
+        "deal_pay_uah": "UAH",
     },
     "en": {
         "welcome": (
@@ -156,11 +159,13 @@ TEXTS = {
         "btn_pay_eur": "EUR",
         "btn_pay_byn": "BYN",
         "btn_pay_kzt": "KZT",
+        "btn_pay_uah": "UAH",
         "btn_withdraw_usdt": "Withdraw USDT",
         "btn_withdraw_usd": "Withdraw USD",
         "btn_withdraw_eur": "Withdraw EUR",
         "btn_withdraw_byn": "Withdraw BYN",
         "btn_withdraw_kzt": "Withdraw KZT",
+        "btn_withdraw_uah": "Withdraw UAH",
         "btn_lang_ru": "Русский",
         "btn_lang_en": "English",
         "requisites_title": "Payment details",
@@ -209,6 +214,7 @@ TEXTS = {
         "deal_pay_eur": "EUR",
         "deal_pay_byn": "BYN",
         "deal_pay_kzt": "KZT",
+        "deal_pay_uah": "UAH",
     },
 }
 
@@ -252,6 +258,7 @@ def balance_text(
     eur: float = 0.0,
     byn: float = 0.0,
     kzt: float = 0.0,
+    uah: float = 0.0,
 ) -> str:
     from utils.currencies import BALANCE_GROUPS, BALANCE_META
 
@@ -264,6 +271,7 @@ def balance_text(
         "eur": eur,
         "byn": byn,
         "kzt": kzt,
+        "uah": uah,
     }
     lines = [
         f"{ce('balance_card', '💳')} <b>{t(lang, 'balance_title')}</b>",
@@ -381,4 +389,5 @@ def deal_pay_labels(lang: str | None = "ru") -> dict[str, str]:
         "eur": f"{ce('balance_eur', '💰')} {t(lang, 'deal_pay_eur')}",
         "byn": f"{ce('balance_byn', '🇧🇾')} {t(lang, 'deal_pay_byn')}",
         "kzt": f"{ce('balance_kzt', '🇰🇿')} {t(lang, 'deal_pay_kzt')}",
+        "uah": f"{ce('balance_uah', '🇺🇦')} {t(lang, 'deal_pay_uah')}",
     }
