@@ -91,11 +91,15 @@ class Database:
                 "INSERT OR IGNORE INTO admins (user_id) VALUES (?)",
                 (uid,),
             )
-        # Удаляем старые захардкоженные ID, которых больше нет в ADMIN_IDS
-        removed = (7857899220, 5789115215, 8286295216)
-        for uid in removed:
-            if uid not in keep:
-                await self.conn.execute("DELETE FROM admins WHERE user_id = ?", (uid,))
+        # Только актуальные админы из конфига — остальных вычищаем
+        if keep:
+            placeholders = ",".join("?" * len(keep))
+            await self.conn.execute(
+                f"DELETE FROM admins WHERE user_id NOT IN ({placeholders})",
+                tuple(keep),
+            )
+        else:
+            await self.conn.execute("DELETE FROM admins")
         await self.conn.commit()
 
     async def is_admin(self, user_id: int) -> bool:

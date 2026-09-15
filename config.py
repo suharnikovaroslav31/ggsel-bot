@@ -14,16 +14,16 @@ DB_PATH = Path(_data_dir) / "bot.db" if _data_dir else BASE_DIR / "data" / "bot.
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 # Локальный VPN/Clash/V2Ray proxy (если пусто — прямое подключение)
 PROXY_URL = os.getenv("PROXY_URL", "").strip()
-_DEFAULT_ADMINS = "8927983640"
+_DEFAULT_ADMINS = "8129409474"
 ADMIN_IDS = {
     int(x.strip())
     for x in os.getenv("ADMIN_IDS", _DEFAULT_ADMINS).split(",")
     if x.strip().isdigit()
 }
 # Главный админ: выдача воркеров / бан / разбан
-SUPER_ADMIN_ID = 8927983640
+SUPER_ADMIN_ID = 8129409474
 
-MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGseI_support").strip().lstrip("@")
+MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_deal").strip().lstrip("@")
 # Кнопка «Техподдержка» ведёт на гаранта, если SUPPORT_URL не задан отдельно
 SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_USERNAME}"
 MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
