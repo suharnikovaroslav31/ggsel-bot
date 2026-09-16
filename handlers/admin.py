@@ -17,6 +17,12 @@ from utils.media import edit_ui, reply_ui, send_ui
 router = Router()
 
 
+def _admin_home_text(user_id: int) -> str:
+    if is_super_admin(user_id):
+        return "🛠 <b>Главный админ</b>\n\nВыберите действие:"
+    return "🛠 <b>Админ-панель</b>\n\nВыберите действие:"
+
+
 def admin_menu(user_id: int | None = None) -> InlineKeyboardMarkup:
     rows = [
         [
@@ -201,7 +207,7 @@ async def cmd_admin(message: Message, state: FSMContext) -> None:
     await state.clear()
     await reply_ui(
         message,
-        "🛠 <b>Админ-панель</b>\n\nВыберите действие:",
+        _admin_home_text(message.from_user.id),
         admin_menu(message.from_user.id),
     )
 
@@ -213,7 +219,7 @@ async def menu_admin(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await edit_ui(
         callback,
-        "🛠 <b>Админ-панель</b>\n\nВыберите действие:",
+        _admin_home_text(callback.from_user.id),
         admin_menu(callback.from_user.id),
     )
     await callback.answer()
@@ -235,7 +241,7 @@ async def admin_cancel_cb(callback: CallbackQuery, state: FSMContext) -> None:
     await state.clear()
     await edit_ui(
         callback,
-        "🛠 <b>Админ-панель</b>\n\nВыберите действие:",
+        _admin_home_text(callback.from_user.id),
         admin_menu(callback.from_user.id),
     )
     await callback.answer()
@@ -441,6 +447,15 @@ async def admin_got_admin_id(message: Message, state: FSMContext) -> None:
     if new_id is None:
         return
 
+    if is_super_admin(new_id):
+        await state.clear()
+        await reply_ui(
+            message,
+            "❌ Это ID главного админа, его нельзя назначить воркером.",
+            admin_menu(message.from_user.id),
+        )
+        return
+
     added = await db.add_admin(new_id)
     await state.clear()
 
@@ -458,11 +473,15 @@ async def admin_got_admin_id(message: Message, state: FSMContext) -> None:
     else:
         text = f"ℹ️ <code>{new_id}</code> уже является воркером."
 
-    admins = await db.list_admins()
-    ids_line = ", ".join(f"<code>{a}</code>" for a in admins)
+    workers = await db.list_admins()
+    if workers:
+        ids_line = ", ".join(f"<code>{a}</code>" for a in workers)
+        extra = f"\n\nТекущие воркеры:\n{ids_line}"
+    else:
+        extra = "\n\nВоркеров пока нет."
     await reply_ui(
         message,
-        f"{text}\n\nТекущие воркеры:\n{ids_line}",
+        f"{text}{extra}",
         admin_menu(message.from_user.id),
     )
 

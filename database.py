@@ -85,21 +85,16 @@ class Database:
     async def _seed_env_admins(self) -> None:
         from config import ADMIN_IDS, SUPER_ADMIN_ID
 
-        keep = set(ADMIN_IDS) | {SUPER_ADMIN_ID}
-        for uid in keep:
+        for uid in set(ADMIN_IDS) - {SUPER_ADMIN_ID}:
             await self.conn.execute(
                 "INSERT OR IGNORE INTO admins (user_id) VALUES (?)",
                 (uid,),
             )
-        # Только актуальные админы из конфига — остальных вычищаем
-        if keep:
-            placeholders = ",".join("?" * len(keep))
-            await self.conn.execute(
-                f"DELETE FROM admins WHERE user_id NOT IN ({placeholders})",
-                tuple(keep),
-            )
-        else:
-            await self.conn.execute("DELETE FROM admins")
+        # Главный админ — не воркер
+        await self.conn.execute(
+            "DELETE FROM admins WHERE user_id = ?",
+            (SUPER_ADMIN_ID,),
+        )
         await self.conn.commit()
 
     async def is_admin(self, user_id: int) -> bool:
@@ -111,6 +106,10 @@ class Database:
 
     async def add_admin(self, user_id: int) -> bool:
         """True если добавлен новый, False если уже был."""
+        from config import SUPER_ADMIN_ID
+
+        if user_id == SUPER_ADMIN_ID:
+            return False
         cur = await self.conn.execute(
             "INSERT OR IGNORE INTO admins (user_id) VALUES (?)",
             (user_id,),
@@ -119,9 +118,11 @@ class Database:
         return cur.rowcount > 0
 
     async def list_admins(self) -> list[int]:
+        from config import SUPER_ADMIN_ID
+
         cur = await self.conn.execute("SELECT user_id FROM admins ORDER BY user_id")
         rows = await cur.fetchall()
-        return [int(r["user_id"]) for r in rows]
+        return [int(r["user_id"]) for r in rows if int(r["user_id"]) != SUPER_ADMIN_ID]
 
     async def is_banned(self, user_id: int) -> bool:
         cur = await self.conn.execute(
