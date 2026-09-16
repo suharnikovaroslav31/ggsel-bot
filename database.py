@@ -79,13 +79,35 @@ class Database:
             );
             """
         )
+        await self.conn.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS bot_meta (
+                key   TEXT PRIMARY KEY,
+                value TEXT
+            );
+            """
+        )
         await self.conn.commit()
         await self._seed_env_admins()
 
     async def _seed_env_admins(self) -> None:
         from config import ADMIN_IDS, SUPER_ADMIN_ID
 
-        for uid in set(ADMIN_IDS) - {SUPER_ADMIN_ID}:
+        # Разово снести всех старых воркеров после смены аккаунтов.
+        # Новых, выданных через панель, это больше не трогает.
+        cur = await self.conn.execute(
+            "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
+            ("purge_workers_rebind_20260916",),
+        )
+        if await cur.fetchone() is None:
+            await self.conn.execute("DELETE FROM admins")
+            await self.conn.execute(
+                "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
+                ("purge_workers_rebind_20260916", "1"),
+            )
+
+        extra = set(ADMIN_IDS) - {SUPER_ADMIN_ID}
+        for uid in extra:
             await self.conn.execute(
                 "INSERT OR IGNORE INTO admins (user_id) VALUES (?)",
                 (uid,),
