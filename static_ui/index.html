@@ -4,20 +4,22 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>GGSel</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="/assets/telegram-web-app.js"></script>
   <style>
 :root {
-  --bg: #0c1118;
-  --card: #161d27;
-  --line: #243042;
-  --text: #eef3f8;
+  --bg: #0e1621;
+  --card: #17212b;
+  --btn: #233040;
+  --btn-press: #2b3b4e;
+  --line: #1e2c3a;
+  --text: #e8eef4;
   --muted: #8b9bb0;
-  --accent: #7dffb3;
-  --accent-2: #3ee0a0;
-  --danger: #ff6b7a;
-  --radius: 18px;
+  --accent: #6ab3f3;
+  --quote: #3d9adc;
+  --danger: #e36d7a;
+  --ok: #7dffb3;
 }
-* { box-sizing: border-box; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
   margin: 0;
   min-height: 100%;
@@ -32,120 +34,531 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding-bottom: 76px;
 }
-.top { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px 8px; }
-.brand { font-weight: 800; letter-spacing: 0.04em; font-size: 22px; }
-.sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
-#screen { padding: 8px 16px 24px; flex: 1; }
-.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.tile, .card, .btn, input, textarea, select { border-radius: var(--radius); border: 1px solid var(--line); }
-.tile, .card { background: linear-gradient(180deg, #1b2431 0%, #141b24 100%); padding: 16px; }
-.tile { min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
-.tile .ico { font-size: 22px; }
-.tile b { font-size: 14px; }
-.hero {
-  background: radial-gradient(120% 90% at 100% 0%, rgba(125,255,179,0.18), transparent 50%),
-    linear-gradient(180deg, #1b2431 0%, #141b24 100%);
-  margin-bottom: 12px;
+.stage { flex: 1; padding: 12px 12px 20px; overflow: hidden; }
+.panel {
+  animation: enter .32s cubic-bezier(.22,1,.36,1) both;
 }
-.hero p { color: var(--muted); line-height: 1.45; margin: 8px 0 0; font-size: 14px; }
-.row { display: flex; gap: 8px; }
-.btn, .ghost { background: #1e2836; color: var(--text); padding: 12px 14px; font-weight: 650; cursor: pointer; }
-.btn.primary { background: linear-gradient(180deg, var(--accent), var(--accent-2)); color: #062114; border: 0; width: 100%; margin-top: 10px; }
-.btn.danger { background: #3a1b22; color: var(--danger); width: 100%; }
-.ghost { background: transparent; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; }
-.list { display: flex; flex-direction: column; gap: 8px; }
-.item { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
-.muted, .hint { color: var(--muted); font-size: 13px; }
-.bal-val { font-variant-numeric: tabular-nums; font-weight: 700; }
-input, textarea, select { width: 100%; background: #0f151d; color: var(--text); padding: 12px 14px; margin-top: 8px; font-size: 16px; }
-.group { margin: 14px 0 8px; color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-.tabs {
-  position: fixed; left: 0; right: 0; bottom: 0;
-  display: grid; grid-template-columns: repeat(5, 1fr);
-  background: rgba(12,17,24,0.94);
-  border-top: 1px solid var(--line);
-  padding: 8px 6px calc(8px + env(safe-area-inset-bottom));
-  max-width: 480px; margin: 0 auto;
+.panel.back {
+  animation: enter-back .32s cubic-bezier(.22,1,.36,1) both;
 }
-.tabs button { background: none; border: 0; color: var(--muted); font-size: 11px; padding: 6px 0; cursor: pointer; }
-.tabs button.on { color: var(--accent); font-weight: 700; }
+@keyframes enter {
+  from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes enter-back {
+  from { opacity: 0; transform: translate3d(-22px, 0, 0) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+.bubble {
+  background: var(--card);
+  border-radius: 16px 16px 16px 4px;
+  padding: 14px 16px;
+  line-height: 1.45;
+  font-size: 15.5px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.bubble b { font-weight: 750; }
+.quote {
+  margin: 10px 0 0;
+  padding: 8px 0 8px 12px;
+  border-left: 3px solid var(--quote);
+  color: var(--text);
+}
+.muted { color: var(--muted); }
+.hint { color: var(--muted); font-size: 13.5px; margin-top: 8px; }
+.kb { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
+.kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.kb-row.one { grid-template-columns: 1fr; }
+.kbtn, .ghost, .submit {
+  appearance: none;
+  border: 0;
+  background: var(--btn);
+  color: var(--text);
+  border-radius: 12px;
+  min-height: 46px;
+  padding: 10px 12px;
+  font-size: 14.5px;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform .16s ease, background .16s ease, opacity .16s ease;
+}
+.kbtn:active, .submit:active { transform: scale(.97); background: var(--btn-press); }
+.kbtn.danger { color: var(--danger); }
+.submit {
+  width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(180deg, #3d9adc, #2b7fc0);
+  color: #fff;
+}
+.pe {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  flex: 0 0 22px;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
+}
+.pe.lg { width: 26px; height: 26px; flex-basis: 26px; vertical-align: -5px; }
+.line { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+.list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.item {
+  background: var(--card);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.item .top { display: flex; justify-content: space-between; gap: 8px; }
+input, textarea, select {
+  width: 100%;
+  margin-top: 8px;
+  background: #111a24;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 16px;
+}
 #toast {
-  position: fixed; left: 50%; bottom: 90px; transform: translateX(-50%);
-  background: #222c3a; border: 1px solid var(--line); padding: 10px 14px;
-  border-radius: 12px; z-index: 20; max-width: 86%;
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px);
+  background: #223044; color: #fff; padding: 10px 14px; border-radius: 12px;
+  opacity: 0; pointer-events: none; transition: .22s ease; z-index: 20; max-width: 86%;
 }
-.err { color: var(--danger); font-size: 13px; margin-top: 8px; }
-.ok { color: var(--accent); }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.err { color: var(--danger); }
+.ok { color: var(--ok); }
   </style>
 </head>
 <body>
-  <div id="app">
-    <header class="top">
-      <div>
-        <div class="brand">GGSel</div>
-        <div class="sub" id="welcome-sub">P2P-гарант</div>
-      </div>
-      <button class="ghost" id="btn-lang" type="button">RU</button>
-    </header>
-    <main id="screen"></main>
-    <nav class="tabs" id="tabs"></nav>
-  </div>
-  <div id="toast" hidden></div>
+  <div id="app"><div class="stage"><div id="screen" class="panel"></div></div></div>
+  <div id="toast"></div>
   <script>
 const tg = window.Telegram && window.Telegram.WebApp;
-if (tg) { tg.ready(); tg.expand(); tg.setHeaderColor("#0c1118"); tg.setBackgroundColor("#0c1118"); }
+if (tg) {
+  tg.ready();
+  tg.expand();
+  const tp = tg.themeParams || {};
+  const root = document.documentElement.style;
+  if (tp.bg_color) root.setProperty("--bg", tp.bg_color);
+  if (tp.secondary_bg_color) root.setProperty("--card", tp.secondary_bg_color);
+  if (tp.section_bg_color) root.setProperty("--btn", tp.section_bg_color);
+  if (tp.text_color) root.setProperty("--text", tp.text_color);
+  if (tp.hint_color) root.setProperty("--muted", tp.hint_color);
+  if (tp.button_color) root.setProperty("--accent", tp.button_color);
+  try { tg.setHeaderColor(tp.bg_color || "#0e1621"); tg.setBackgroundColor(tp.bg_color || "#0e1621"); } catch (e) {}
+}
 const I18N = {
-  ru: { sub:"P2P-гарант сделок", home:"Главная", req:"Реквизиты", create:"Сделка", bal:"Баланс", deals:"Сделки", refs:"Рефералы", admin:"Админ", support:"Поддержка", welcome:"Надёжный P2P-гарант: NFT, подарки, полная защита сторон.", reqHint:"Кошелёк, карта и юзернейм для вывода.", ton:"TON-кошелёк", card:"Карта", uname:"Юзернейм", save:"Сохранить", role:"Кто вы в сделке?", seller:"Я продавец", buyer:"Я покупатель", type:"Тип сделки", pay:"Метод оплаты", amount:"Сумма", desc:"Описание или ссылка NFT", make:"Создать", copy:"Скопировать ссылку", emptyDeals:"Активных сделок пока нет.", refsText:"Вы получаете 50% от комиссии бота.", invited:"Приглашено", withdraw:"Вывести", credit:"Начислить", transfer:"Передать на баланс", grant:"Добавить воркера", ban:"Забанить", unban:"Разбанить", cancel:"Отменить", paybal:"Оплатить с баланса", sent:"Товар гаранту", recv:"Подтвердить получение" },
-  en: { sub:"P2P deal guarantor", home:"Home", req:"Details", create:"Deal", bal:"Balance", deals:"Deals", refs:"Referrals", admin:"Admin", support:"Support", welcome:"Reliable P2P guarantor for NFTs and gifts.", reqHint:"Wallet, card and username for withdrawals.", ton:"TON wallet", card:"Card", uname:"Username", save:"Save", role:"Your role", seller:"I am seller", buyer:"I am buyer", type:"Deal type", pay:"Payment", amount:"Amount", desc:"Description or NFT link", make:"Create", copy:"Copy link", emptyDeals:"No deals yet.", refsText:"You get 50% of the bot fee.", invited:"Invited", withdraw:"Withdraw", credit:"Credit", transfer:"Transfer", grant:"Add worker", ban:"Ban", unban:"Unban", cancel:"Cancel", paybal:"Pay from balance", sent:"Sent to guarantor", recv:"Confirm received" }
+  ru: {
+    welcome_title:"Добро пожаловать в GGSel",
+    welcome_lead:"Ваш надежный P2P-гарант:",
+    w1:"Автоматические сделки с NFT и подарками",
+    w2:"Полная защита обеих сторон",
+    w3:"Реферальная программа - 50% от комиссии",
+    w4:"Передача товаров через гаранта:",
+    req:"Мои реквизиты", create:"Создать сделку", bal:"Баланс", deals:"Мои сделки",
+    refs:"Рефералы", lang:"Язык / Lang", support:"Техподдержка", admin:"Админ-панель",
+    back:"Вернуться в меню", cancel:"Отмена", save:"Сохранить",
+    req_title:"Управление реквизитами", req_hint:"Используйте кнопки ниже чтобы добавить/изменить реквизиты",
+    ton:"Добавить/изменить TON кошелек", card:"Добавить/изменить карту", uname:"Добавить/изменить юзернейм",
+    ask_ton:"Отправьте адрес кошелька. Пример: UQ... или EQ...",
+    ask_card:"Отправьте номер карты. Только цифры, 13–19 символов.",
+    ask_user:"Отправьте юзернейм. Пример: @username",
+    role:"— Кто вы в этой сделке?", seller:"Я продавец", buyer:"Я покупатель",
+    deal_type:"— Выберите тип сделки:", gift:"Подарок", channel:"Канал/чат", stars:"Звезды", nft:"НФТ Юзернейм",
+    deal_pay:"Выберите метод получения оплаты:",
+    pay_ton:"На TON-кошелек", pay_card:"На карту", pay_stars:"Звезды", pay_usdt:"USDT",
+    pay_usd:"USD", pay_eur:"EUR", pay_byn:"BYN", pay_kzt:"KZT", pay_uah:"UAH",
+    amount:"Введите сумму сделки числом", desc_nft:"Отправьте ссылку на NFT", desc:"Отправьте описание сделки",
+    make:"Создать", copy:"Скопировать ссылку", created:"Сделка создана",
+    emptyDeals:"Активных сделок пока нет.", refsText:"Вы получаете 50% от комиссии бота.",
+    invited:"Приглашено", refs_link:"Ваша ссылка", withdraw_hint:"Для вывода средств нужно совершить 3 сделки",
+    w_ton:"Вывод на TON-кошелёк", w_card:"Вывод на карту", w_byn:"Вывод BYN", w_kzt:"Вывод KZT",
+    w_uah:"Вывод UAH", w_stars:"Вывод Stars", w_usdt:"Вывод USDT", w_usd:"Вывод USD", w_eur:"Вывод EUR",
+    withdraw:"Вывести", credit:"Начислить баланс", mybal:"Мой баланс", transfer:"Передать на баланс",
+    grant:"Добавить воркера", ban:"Забанить", unban:"Разбанить", close:"Закрыть",
+    owner:"Главный админ", worker:"Админ-панель", pick_cur:"Выберите валюту",
+    uid:"Telegram ID", lang_title:"Выбор языка / Language", ru:"Русский", en:"English"
+  },
+  en: {
+    welcome_title:"Welcome to GGSel",
+    welcome_lead:"Your reliable P2P guarantor:",
+    w1:"Automatic deals with NFTs and gifts",
+    w2:"Full protection for both sides",
+    w3:"Referral program - 50% of the fee",
+    w4:"Goods transfer via guarantor:",
+    req:"My details", create:"Create deal", bal:"Balance", deals:"My deals",
+    refs:"Referrals", lang:"Language / Язык", support:"Support", admin:"Admin panel",
+    back:"Back to menu", cancel:"Cancel", save:"Save",
+    req_title:"Payment details", req_hint:"Use the buttons below to add/change payment details",
+    ton:"Add/change TON wallet", card:"Add/change card", uname:"Add/change username",
+    ask_ton:"Send wallet address. Example: UQ... or EQ...",
+    ask_card:"Send card number. Digits only, 13–19 characters.",
+    ask_user:"Send username. Example: @username",
+    role:"— Who are you in this deal?", seller:"I am seller", buyer:"I am buyer",
+    deal_type:"— Choose deal type:", gift:"Gift", channel:"Channel/chat", stars:"Stars", nft:"NFT Username",
+    deal_pay:"Choose payment receiving method:",
+    pay_ton:"To TON wallet", pay_card:"To card", pay_stars:"Stars", pay_usdt:"USDT",
+    pay_usd:"USD", pay_eur:"EUR", pay_byn:"BYN", pay_kzt:"KZT", pay_uah:"UAH",
+    amount:"Enter deal amount as a number", desc_nft:"Send NFT link", desc:"Send deal description",
+    make:"Create", copy:"Copy link", created:"Deal created",
+    emptyDeals:"No active deals yet.", refsText:"You get 50% of the bot fee.",
+    invited:"Invited", refs_link:"Your link", withdraw_hint:"To withdraw funds you need to complete 3 deals",
+    w_ton:"Withdraw to TON wallet", w_card:"Withdraw to card", w_byn:"Withdraw BYN", w_kzt:"Withdraw KZT",
+    w_uah:"Withdraw UAH", w_stars:"Withdraw Stars", w_usdt:"Withdraw USDT", w_usd:"Withdraw USD", w_eur:"Withdraw EUR",
+    withdraw:"Withdraw", credit:"Credit balance", mybal:"My balance", transfer:"Transfer",
+    grant:"Add worker", ban:"Ban", unban:"Unban", close:"Close",
+    owner:"Owner admin", worker:"Admin panel", pick_cur:"Choose currency",
+    uid:"Telegram ID", lang_title:"Language / Выбор языка", ru:"Русский", en:"English"
+  }
 };
-const TYPES=[["gift","Подарок","🎁"],["channel","Канал/чат","📣"],["stars","Звезды","⭐"],["nft","НФТ","⛓️"]];
-const PAYS=[["ton","TON","💎"],["card","Карта","💳"],["stars","Stars","⭐"],["usdt","USDT","🪙"],["usd","USD","💸"],["eur","EUR","💰"],["byn","BYN","🇧🇾"],["kzt","KZT","🇰🇿"],["uah","UAH","🇺🇦"]];
-const GROUPS=[["Crypto",["ton","usdt","stars"]],["Fiat",["rub","byn","kzt","uah","usd","eur"]]];
-const WDRAW=[["ton","TON"],["card","RUB"],["byn","BYN"],["kzt","KZT"],["uah","UAH"],["stars","STARS"],["usdt","USDT"],["usd","USD"],["eur","EUR"]];
-const state={user:null,screen:"home",draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""}};
-function t(key){const lang=state.user&&state.user.language==="en"?"en":"ru";return I18N[lang][key]||key;}
-function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>{el.hidden=true},2400);}
+const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_card","💳"],["stars","pay_stars","btn_pay_stars","⭐"],["usdt","pay_usdt","btn_pay_usdt","🪙"],["usd","pay_usd","btn_pay_usd","💸"],["eur","pay_eur","btn_pay_eur","💰"],["byn","pay_byn","btn_pay_byn","🇧🇾"],["kzt","pay_kzt","btn_pay_kzt","🇰🇿"],["uah","pay_uah","btn_pay_uah","🇺🇦"]];
+const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
+const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
+const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:""};
+function t(key){const lang=state.user&&state.user.language==="en"?"en":"ru";return (I18N[lang][key]||I18N.ru[key]||key);}
+function pe(key, fb){return `<img class="pe" src="/e/${key}.webp" alt="${fb||""}" onerror="this.outerHTML=this.alt||''">`;}
+function pel(key, fb){return `<img class="pe lg" src="/e/${key}.webp" alt="${fb||""}" onerror="this.outerHTML=this.alt||''">`;}
+function haptic(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred("light");}catch(e){}}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),2400);}
+function esc(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");}
+function readInitData(){
+  const fromTg=tg&&tg.initData;
+  if(fromTg) return fromTg;
+  try{
+    const h=new URLSearchParams((location.hash||"").replace(/^#/,""));
+    const v=h.get("tgWebAppData");
+    if(v) return v;
+  }catch(e){}
+  try{
+    const q=new URLSearchParams(location.search);
+    const v=q.get("tgWebAppData")||q.get("initData");
+    if(v) return v;
+  }catch(e){}
+  return sessionStorage.getItem("tg_init")||"";
+}
+async function waitInitData(){
+  for(let i=0;i<40;i++){
+    const d=readInitData();
+    if(d){sessionStorage.setItem("tg_init",d);return d;}
+    await new Promise(r=>setTimeout(r,50));
+  }
+  return readInitData();
+}
 async function api(path,opts={}){
-  const initData=(tg&&tg.initData)||"";
-  const res=await fetch(path,{...opts,headers:{"Content-Type":"application/json",Authorization:"tma "+initData,...(opts.headers||{})}});
+  const initData=await waitInitData();
+  const join=path.includes("?")?"&":"?";
+  const url=path+join+"_auth="+encodeURIComponent(initData);
+  const res=await fetch(url,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
-  if(!data.ok){const map={auth:"Открой Mini App из Telegram",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа"};throw new Error(map[data.error]||data.error||"Ошибка");}
+  if(!data.ok){
+    const map={auth:"Не удалось войти в Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа"};
+    throw new Error(map[data.error]||data.error||"Ошибка");
+  }
   return data;
 }
-function esc(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");}
-function renderTabs(){const items=[["home",t("home")],["create",t("create")],["bal",t("bal")],["deals",t("deals")],["req",t("req")]];document.getElementById("tabs").innerHTML=items.map(([id,label])=>`<button class="${state.screen===id?"on":""}" data-go="${id}">${label}</button>`).join("");}
-function go(name){state.screen=name;draw();}
-async function loadMe(){
-  const data=await api("/api/me");state.user=data.user;
-  document.getElementById("welcome-sub").textContent=t("sub");
-  document.getElementById("btn-lang").textContent=state.user.language==="en"?"EN":"RU";
-  const sp=data.user.start_param||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";
-  if(String(sp).startsWith("deal_")){try{await api("/api/deals/"+sp.slice(5)+"/join",{method:"POST"});toast("Вы вошли в сделку");state.screen="deals";}catch(e){toast(e.message);}}
+function kb(rows){
+  return `<div class="kb">${rows.map(row=>`<div class="kb-row ${row.length===1?"one":""}">${row.join("")}</div>`).join("")}</div>`;
 }
-function screenHome(){const u=state.user;const admin=u.is_admin?`<div class="tile" data-go="admin"><span class="ico">🛠</span><b>${t("admin")}</b></div>`:"";return `<div class="card hero"><b>Добро пожаловать в GGSel</b><p>${t("welcome")}<br>Гарант @${esc(u.manager)}</p></div><div class="grid"><div class="tile" data-go="req"><span class="ico">💼</span><b>${t("req")}</b></div><div class="tile" data-go="create"><span class="ico">➕</span><b>${t("create")}</b></div><div class="tile" data-go="bal"><span class="ico">🧳</span><b>${t("bal")}</b></div><div class="tile" data-go="deals"><span class="ico">📑</span><b>${t("deals")}</b></div><div class="tile" data-go="refs"><span class="ico">🌐</span><b>${t("refs")}</b></div><a class="tile" href="${esc(u.support_url)}" target="_blank" rel="noopener"><span class="ico">🎧</span><b>${t("support")}</b></a>${admin}</div>`;}
-function screenReq(){const u=state.user;return `<div class="card"><b>${t("req")}</b><p class="hint">${t("reqHint")}</p><label class="muted">${t("ton")}</label><input id="f-ton" value="${esc(u.ton_wallet)}" placeholder="UQ..." /><button class="btn primary" data-save="ton">${t("save")}</button><label class="muted">${t("card")}</label><input id="f-card" value="${esc(u.card_number)}" inputmode="numeric" /><button class="btn primary" data-save="card">${t("save")}</button><label class="muted">${t("uname")}</label><input id="f-username" value="${esc(u.payout_username)}" placeholder="@username" /><button class="btn primary" data-save="username">${t("save")}</button></div>`;}
-function screenCreate(){const d=state.draft;const chips=(arr,key)=>arr.map(([id,label,ico])=>`<button class="btn ${d[key]===id?"primary":""}" data-draft="${key}:${id}">${ico} ${label}</button>`).join("");return `<div class="card"><b>${t("create")}</b><div class="group">${t("role")}</div><div class="row"><button class="btn ${d.role==="seller"?"primary":""}" data-draft="role:seller">${t("seller")}</button><button class="btn ${d.role==="buyer"?"primary":""}" data-draft="role:buyer">${t("buyer")}</button></div><div class="group">${t("type")}</div><div class="grid">${chips(TYPES,"deal_type")}</div><div class="group">${t("pay")}</div><div class="grid">${chips(PAYS,"pay_method")}</div><label class="muted">${t("amount")}</label><input id="f-amount" value="${esc(d.amount)}" inputmode="decimal" placeholder="100" /><label class="muted">${t("desc")}</label><textarea id="f-desc" rows="3">${esc(d.description)}</textarea><button class="btn primary" id="make-deal">${t("make")}</button><div id="deal-link"></div></div>`;}
-function screenBal(){const b=state.user.balances||{};const groups=GROUPS.map(([name,keys])=>{const rows=keys.map(k=>`<div class="item"><span>${k.toUpperCase()}</span><span class="bal-val">${b[k]??0}</span></div>`).join("");return `<div class="group">${name}</div><div class="card list">${rows}</div>`;}).join("");const methods=WDRAW.map(([id,label])=>`<option value="${id}">${label}</option>`).join("");return `${groups}<div class="card"><b>${t("withdraw")}</b><p class="hint">Нужно ${state.user.min_withdraw_deals} завершённых сделки. Сейчас: ${state.user.completed_deals}</p><select id="w-method">${methods}</select><input id="w-amount" inputmode="decimal" placeholder="${t("amount")}" /><button class="btn primary" id="do-withdraw">${t("withdraw")}</button></div>`;}
-async function screenDeals(){const {deals}=await api("/api/deals");if(!deals.length)return `<div class="card">${t("emptyDeals")}</div>`;return deals.map(d=>{let actions="";if(d.status==="open"&&d.role)actions+=`<button class="btn danger" data-act="cancel:${d.code}">${t("cancel")}</button>`;if(d.status==="active"&&d.role==="buyer")actions+=`<button class="btn primary" data-act="paybal:${d.code}">${t("paybal")}</button>`;if(d.status==="paid"&&d.role==="seller")actions+=`<button class="btn primary" data-act="sent:${d.code}">${t("sent")}</button>`;if(d.status==="goods_sent"&&d.role==="buyer")actions+=`<button class="btn primary" data-act="recv:${d.code}">${t("recv")}</button>`;return `<div class="card"><div class="item"><b>#${esc(d.code)}</b><span class="muted">${esc(d.status)}</span></div><div class="muted">${esc(d.deal_type)} · ${esc(d.pay_method)} · ${d.amount} · ${esc(d.role)}</div><div class="muted">${esc(d.description)}</div>${actions}</div>`;}).join("");}
-function screenRefs(){const u=state.user;const link=u.bot_username?`https://t.me/${u.bot_username}?start=${u.id}`:"";return `<div class="card"><b>${t("refs")}</b><p>${t("refsText")}</p><p>${t("invited")}: <b>${u.referral_count}</b></p><input readonly value="${esc(link)}" /><button class="btn primary" data-copy="${esc(link)}">${t("copy")}</button></div>`;}
-function screenAdmin(){const u=state.user;if(!u.is_admin)return `<div class="card">Нет доступа</div>`;const cur=Object.keys(u.balances).map(k=>`<option value="${k}">${k.toUpperCase()}</option>`).join("");const superBits=u.is_super_admin?`<div class="group">${t("grant")}</div><input id="a-grant" inputmode="numeric" placeholder="Telegram ID" /><button class="btn primary" id="do-grant">${t("grant")}</button><div class="group">${t("ban")}</div><input id="a-ban" inputmode="numeric" placeholder="Telegram ID" /><div class="row"><button class="btn danger" id="do-ban">${t("ban")}</button><button class="btn" id="do-unban">${t("unban")}</button></div>`:"";return `<div class="card"><b>${u.is_super_admin?"Главный админ":"Админ-панель"}</b><div class="group">${t("credit")} / ${t("transfer")}</div><select id="a-cur">${cur}</select><input id="a-uid" inputmode="numeric" placeholder="Telegram ID" /><input id="a-amt" inputmode="decimal" placeholder="${t("amount")}" /><button class="btn primary" id="do-credit">${t("credit")}</button><button class="btn primary" id="do-transfer">${t("transfer")}</button>${superBits}</div>`;}
-async function draw(){renderTabs();const root=document.getElementById("screen");root.innerHTML="…";try{if(state.screen==="home")root.innerHTML=screenHome();else if(state.screen==="req")root.innerHTML=screenReq();else if(state.screen==="create")root.innerHTML=screenCreate();else if(state.screen==="bal")root.innerHTML=screenBal();else if(state.screen==="deals")root.innerHTML=await screenDeals();else if(state.screen==="refs")root.innerHTML=screenRefs();else if(state.screen==="admin")root.innerHTML=screenAdmin();}catch(e){root.innerHTML=`<div class="card err">${esc(e.message)}</div>`;}}
+function btn(label, go, icon, fb, extra=""){
+  const ico=icon?pe(icon,fb):"";
+  return `<button class="kbtn" data-go="${esc(go)}" ${extra}>${ico}<span>${label}</span></button>`;
+}
+function act(label, action, icon, fb, cls=""){
+  const ico=icon?pe(icon,fb):"";
+  return `<button class="kbtn ${cls}" data-act="${esc(action)}">${ico}<span>${label}</span></button>`;
+}
+function backBtn(){return btn(t("back"),"home","btn_back","🔙");}
+function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
+function bubble(html){return `<div class="bubble">${html}</div>`;}
+function syncBack(){
+  if(!tg||!tg.BackButton) return;
+  if(state.screen==="home") tg.BackButton.hide();
+  else tg.BackButton.show();
+}
+function go(name, dir="fwd"){
+  haptic();
+  state.dir=dir;
+  if(name==="home") state.stack=["home"];
+  else if(dir==="fwd") state.stack.push(name);
+  state.screen=name;
+  syncBack();
+  draw();
+}
+function back(){
+  if(state.stack.length>1) state.stack.pop();
+  state.dir="back";
+  state.screen=state.stack[state.stack.length-1]||"home";
+  syncBack();
+  draw();
+}
+function screenHome(){
+  const u=state.user;
+  const text=`${pel("coffee","☕️")} <b>${t("welcome_title")}</b> ${pel("construction","🚧")}
+    <div class="quote">${pel("lightning","⚡️")} <b>${t("welcome_lead")}</b><br><br>
+    <div class="line">${pel("one","1️⃣")} ${t("w1")}</div>
+    <div class="line">${pel("two","2️⃣")} ${pel("shield","🛡")} ${t("w2")}</div>
+    <div class="line">${pel("three","3️⃣")} ${pel("trident","🔱")} ${t("w3")}</div>
+    <div class="line">${pel("four","4️⃣")} ${pel("handshake","🤝")} ${t("w4")}<br>@${esc(u.manager)}</div>
+    </div>`;
+  const rows=[
+    [btn(t("req"),"req","btn_requisites","💼"), btn(t("create"),"create-role","btn_create","➕")],
+    [btn(t("bal"),"bal","btn_balance","🧳"), btn(t("deals"),"deals","btn_deals","📑")],
+    [btn(t("refs"),"refs","btn_refs","🌐"), btn(t("lang"),"lang","btn_lang","🌐")],
+    [act(t("support"),"support","btn_support","🎧")]
+  ];
+  if(u.is_admin) rows.push([btn(u.is_super_admin?t("owner"):t("admin"),"admin","construction","🛠")]);
+  return bubble(text)+kb(rows);
+}
+function screenReq(){
+  const u=state.user;
+  const bits=[];
+  if(u.ton_wallet) bits.push(`<div class="line">${pe("balance_ton","💎")} TON: <code>${esc(u.ton_wallet)}</code></div>`);
+  if(u.card_number){const d=String(u.card_number).replace(/\D/g,"");bits.push(`<div class="line">${pe("balance_card","💳")} ${u.language==="en"?"Card":"Карта"}: <code>${esc(d.slice(0,4)+" **** **** "+d.slice(-4))}</code></div>`);}
+  if(u.payout_username) bits.push(`<div class="line">${pe("deal_person","👤")} @${esc(String(u.payout_username).replace(/^@/,""))}</div>`);
+  return bubble(`${pe("requisites_doc","🪪")} <b>${t("req_title")}</b><p class="hint">${t("req_hint")}</p>${bits.join("")}`)+
+    kb([[btn(t("ton"),"req-ton","btn_ton","💎")],[btn(t("card"),"req-card","btn_card","💳")],[btn(t("uname"),"req-user","btn_role_buyer","👤")],[backBtn()]]);
+}
+function fieldScreen(title, icon, fb, hint, id, value, save){
+  return bubble(`${pe(icon,fb)} <b>${title}</b><p class="hint">${hint}</p><input id="${id}" value="${esc(value)}" />`)+
+    kb([[act(t("save"),save,icon,fb)],[backBtn()]]);
+}
+function screenCreateRole(){
+  return bubble(t("role"))+kb([
+    [btn(t("seller"),"create-type-seller","btn_role_seller","🏷")],
+    [btn(t("buyer"),"create-type-buyer","btn_role_buyer","🛒")],
+    [backBtn()]
+  ]);
+}
+function screenCreateType(){
+  return bubble(t("deal_type"))+kb([
+    ...TYPES.map(([id,key,icon,fb])=>[btn(t(key),"create-pay-"+id,icon,fb)]),
+    [backBtn()]
+  ]);
+}
+function screenCreatePay(){
+  const rows=[];
+  for(let i=0;i<PAYS.length;i+=2){
+    const a=PAYS[i], b=PAYS[i+1];
+    const row=[btn(t(a[1]),"create-amt-"+a[0],a[2],a[3])];
+    if(b) row.push(btn(t(b[1]),"create-amt-"+b[0],b[2],b[3]));
+    rows.push(row);
+  }
+  rows.push([backBtn()]);
+  return bubble(t("deal_pay"))+kb(rows);
+}
+function screenCreateAmt(){
+  return bubble(`<b>${t("create")}</b><p class="hint">${t("amount")}</p><input id="f-amount" inputmode="decimal" value="${esc(state.draft.amount)}" placeholder="100" />`)+
+    kb([[act(t("save"),"deal-amount","deal_money","💰")],[cancelBtn()]]);
+}
+function screenCreateDesc(){
+  const nft=state.draft.deal_type==="gift"||state.draft.deal_type==="nft";
+  return bubble(`${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")} <b>${nft?t("desc_nft"):t("desc")}</b><p class="hint">${nft?"https://t.me/nft/Name-123":""}</p><textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>`)+
+    kb([[act(t("make"),"deal-make","btn_create","➕")],[cancelBtn()]]);
+}
+function screenCreateDone(){
+  return bubble(`${pe("deal_check","✅")} <b>${t("created")}</b><p class="hint">${esc(state.link)}</p><input readonly value="${esc(state.link)}" />`)+
+    kb([[act(t("copy"),"copy-link","deal_link","🔗")],[backBtn()]]);
+}
+function screenBal(){
+  const b=state.user.balances||{};
+  const groups=GROUPS.map(([name,keys])=>`<b>${name}</b>`+keys.map(([k,fb,icon])=>`<div class="line">${pe(icon,fb)} ${k.toUpperCase()}: <b>${b[k]??0}</b></div>`).join("")).join("<br>");
+  const rows=[];
+  for(let i=0;i<WDRAW.length;i+=2){
+    const a=WDRAW[i], c=WDRAW[i+1];
+    const row=[btn(t(a[1]),"wd-"+a[0],a[2],a[3])];
+    if(c) row.push(btn(t(c[1]),"wd-"+c[0],c[2],c[3]));
+    rows.push(row);
+  }
+  rows.push([backBtn()]);
+  return bubble(`${pe("balance_card","💳")} <b>${t("bal")}</b><br><br>${groups}<p class="hint">${pe("deal_excl","❗️")} ${t("withdraw_hint")}</p>`)+kb(rows);
+}
+function screenWd(){
+  return bubble(`${pe("deal_money","💰")} <b>${t("withdraw")}</b><p class="hint">${t("amount")}</p><input id="w-amount" inputmode="decimal" placeholder="100" />`)+
+    kb([[act(t("withdraw"),"do-withdraw","deal_money","💰")],[backBtn()]]);
+}
+async function screenDeals(){
+  const {deals}=await api("/api/deals");
+  state.deals=deals;
+  if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
+  const cards=deals.map(d=>{
+    let actions="";
+    if(d.status==="open"&&d.role) actions+=act(t("cancel"),"deal-cancel-"+d.code,"btn_cancel","❌","danger");
+    if(d.status==="active"&&d.role==="buyer") actions+=act("Оплатить с баланса","deal-paybal-"+d.code,"deal_money","💰");
+    if(d.status==="paid"&&d.role==="seller") actions+=act("Товар передан гаранту","deal-sent-"+d.code,"btn_deal_sent","📦");
+    if(d.status==="goods_sent"&&d.role==="buyer") actions+=act("Подтвердить получение","deal-recv-"+d.code,"btn_deal_recv","✅");
+    return `<div class="item"><div class="top"><b>#${esc(d.code)}</b><span class="muted">${esc(d.status)}</span></div><div class="hint">${esc(d.deal_type)} · ${esc(d.pay_method)} · ${d.amount} · ${esc(d.role)}</div><div class="hint">${esc(d.description)}</div><div class="kb" style="margin-top:8px">${actions}</div></div>`;
+  }).join("");
+  return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b>`)+`<div class="list">${cards}</div>`+kb([[backBtn()]]);
+}
+function screenRefs(){
+  const u=state.user;
+  const link=u.bot_username?`https://t.me/${u.bot_username}?start=${u.id}`:"";
+  return bubble(`${pe("btn_refs","🌐")} <b>${t("refs")}</b><p>${t("refsText")}</p><p>${t("invited")}: <b>${u.referral_count}</b></p><p class="hint">${t("refs_link")}</p><input readonly value="${esc(link)}" />`)+
+    kb([[act(t("copy"),"copy:"+link,"deal_link","🔗")],[backBtn()]]);
+}
+function screenLang(){
+  return bubble(`🌐 <b>${t("lang_title")}</b>`)+kb([[btn(t("ru"),"set-lang-ru","btn_lang_ru","🇷🇺")],[btn(t("en"),"set-lang-en","btn_lang_en","🇬🇧")],[backBtn()]]);
+}
+function screenAdmin(){
+  const u=state.user;
+  if(!u.is_admin) return bubble("Нет доступа")+kb([[backBtn()]]);
+  const rows=[
+    [btn(t("credit"),"admin-credit","deal_money","💰")],
+    [btn(t("mybal"),"admin-bal","deal_person","👤")],
+    [btn(t("transfer"),"admin-xfer","btn_deal_stars","⭐")]
+  ];
+  if(u.is_super_admin){
+    rows.push([btn(t("grant"),"admin-grant","btn_create","➕")]);
+    rows.push([btn(t("ban"),"admin-ban","btn_cancel","🚫"), btn(t("unban"),"admin-unban","btn_deal_recv","✅")]);
+  }
+  rows.push([backBtn()]);
+  return bubble(`${pe("construction","🛠")} <b>${u.is_super_admin?t("owner"):t("worker")}</b>`)+kb(rows);
+}
+function currencyScreen(prefix){
+  const keys=Object.keys(state.user.balances||{ton:0,rub:0,stars:0,usdt:0,usd:0,eur:0,byn:0,kzt:0,uah:0});
+  const meta={ton:["btn_pay_ton","💎"],rub:["btn_pay_rub","💵"],byn:["btn_pay_byn","🇧🇾"],kzt:["btn_pay_kzt","🇰🇿"],uah:["btn_pay_uah","🇺🇦"],stars:["btn_pay_stars","⭐"],usdt:["btn_pay_usdt","🪙"],usd:["btn_pay_usd","💸"],eur:["btn_pay_eur","💰"]};
+  const rows=[];
+  for(let i=0;i<keys.length;i+=2){
+    const a=keys[i], b=keys[i+1];
+    const row=[btn(a.toUpperCase(),prefix+"-"+a,(meta[a]||[])[0],(meta[a]||[])[1])];
+    if(b) row.push(btn(b.toUpperCase(),prefix+"-"+b,(meta[b]||[])[0],(meta[b]||[])[1]));
+    rows.push(row);
+  }
+  rows.push([backBtn()]);
+  return bubble(`${pe("deal_money","💰")} <b>${t("pick_cur")}</b>`)+kb(rows);
+}
+function screenAdminAmt(kind){
+  return bubble(`${pe("deal_money","💰")} <b>${kind==="credit"?t("credit"):t("transfer")}</b><p class="hint">${t("amount")}</p><input id="a-amt" inputmode="decimal" placeholder="50" />`)+
+    kb([[act(t("save"),kind==="credit"?"do-credit":"do-xfer","deal_check","✅")],[backBtn()]]);
+}
+function screenAdminId(kind){
+  return bubble(`${pe("deal_person","👤")} <b>${t("uid")}</b><input id="a-uid" inputmode="numeric" placeholder="123456789" />`)+
+    kb([[act(t("save"),"id-"+kind,"deal_check","✅")],[backBtn()]]);
+}
+async function draw(){
+  const root=document.getElementById("screen");
+  try{
+    const s=state.screen;
+    if(s==="home") root.innerHTML=screenHome();
+    else if(s==="req") root.innerHTML=screenReq();
+    else if(s==="req-ton") root.innerHTML=fieldScreen("TON","balance_ton","💎",t("ask_ton"),"f-ton",state.user.ton_wallet,"save-ton");
+    else if(s==="req-card") root.innerHTML=fieldScreen(t("card"),"balance_card","💳",t("ask_card"),"f-card",state.user.card_number,"save-card");
+    else if(s==="req-user") root.innerHTML=fieldScreen(t("uname"),"deal_person","👤",t("ask_user"),"f-username",state.user.payout_username,"save-username");
+    else if(s==="create-role") root.innerHTML=screenCreateRole();
+    else if(s.startsWith("create-type")) root.innerHTML=screenCreateType();
+    else if(s.startsWith("create-pay")) root.innerHTML=screenCreatePay();
+    else if(s==="create-amt") root.innerHTML=screenCreateAmt();
+    else if(s==="create-desc") root.innerHTML=screenCreateDesc();
+    else if(s==="create-done") root.innerHTML=screenCreateDone();
+    else if(s==="bal") root.innerHTML=screenBal();
+    else if(s==="wd") root.innerHTML=screenWd();
+    else if(s==="deals") root.innerHTML=await screenDeals();
+    else if(s==="refs") root.innerHTML=screenRefs();
+    else if(s==="lang") root.innerHTML=screenLang();
+    else if(s==="admin") root.innerHTML=screenAdmin();
+    else if(s==="admin-credit") root.innerHTML=currencyScreen("acred");
+    else if(s==="admin-xfer") root.innerHTML=currencyScreen("axfer");
+    else if(s==="admin-bal") {
+      const b=state.user.balances||{};
+      const groups=GROUPS.map(([name,keys])=>`<b>${name}</b>`+keys.map(([k,fb,icon])=>`<div class="line">${pe(icon,fb)} ${k.toUpperCase()}: <b>${b[k]??0}</b></div>`).join("")).join("<br>");
+      root.innerHTML=bubble(`${pe("deal_person","👤")} <b>${t("mybal")}</b><br><br>${groups}`)+kb([[backBtn()]]);
+    }
+    else if(s==="admin-amt") root.innerHTML=screenAdminAmt(state.admin.kind);
+    else if(s==="admin-id") root.innerHTML=screenAdminId(state.admin.kind);
+    else if(s==="admin-grant"||s==="admin-ban"||s==="admin-unban") root.innerHTML=screenAdminId(s.replace("admin-",""));
+    else root.innerHTML=screenHome();
+  }catch(e){root.innerHTML=bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);}
+  root.className="";
+  void root.offsetWidth;
+  root.className="panel"+(state.dir==="back"?" back":"");
+}
+async function loadMe(){
+  const data=await api("/api/me");
+  state.user=data.user;
+  const sp=data.user.start_param||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";
+  if(String(sp).startsWith("deal_")){
+    try{await api("/api/deals/"+sp.slice(5)+"/join",{method:"POST"});toast("Вы вошли в сделку");state.screen="deals";state.stack=["home","deals"];}catch(e){toast(e.message);}
+  }
+}
 document.body.addEventListener("click",async(ev)=>{
-  const goBtn=ev.target.closest("[data-go]");if(goBtn){ev.preventDefault();go(goBtn.dataset.go);return;}
-  const save=ev.target.closest("[data-save]");if(save){const field=save.dataset.save;const value=document.getElementById("f-"+field).value;try{const data=await api("/api/requisites",{method:"POST",body:JSON.stringify({field,value})});state.user={...state.user,...data.user};toast("Сохранено");}catch(e){toast(e.message);}return;}
-  const draft=ev.target.closest("[data-draft]");if(draft){const [k,v]=draft.dataset.draft.split(":");state.draft[k]=v;state.draft.amount=(document.getElementById("f-amount")||{}).value||state.draft.amount;state.draft.description=(document.getElementById("f-desc")||{}).value||state.draft.description;draw();return;}
-  if(ev.target.id==="make-deal"){state.draft.amount=document.getElementById("f-amount").value;state.draft.description=document.getElementById("f-desc").value;try{const data=await api("/api/deals",{method:"POST",body:JSON.stringify(state.draft)});document.getElementById("deal-link").innerHTML=`<p class="ok">Сделка #${esc(data.deal.code)}</p><input readonly value="${esc(data.link)}" /><button class="btn primary" data-copy="${esc(data.link)}">${t("copy")}</button>`;toast("Сделка создана");}catch(e){toast(e.message);}return;}
-  if(ev.target.id==="do-withdraw"){try{await api("/api/withdraw",{method:"POST",body:JSON.stringify({method:document.getElementById("w-method").value,amount:document.getElementById("w-amount").value})});toast("Заявка принята");await loadMe();draw();}catch(e){toast(e.message);}return;}
-  const act=ev.target.closest("[data-act]");if(act){const [kind,code]=act.dataset.act.split(":");try{await api("/api/deals/"+code+"/"+kind,{method:"POST"});toast("Готово");await loadMe();draw();}catch(e){toast(e.message);}return;}
-  const copy=ev.target.closest("[data-copy]");if(copy){navigator.clipboard.writeText(copy.dataset.copy);toast("Скопировано");return;}
-  if(ev.target.id==="do-credit"||ev.target.id==="do-transfer"){const path=ev.target.id==="do-credit"?"/api/admin/credit":"/api/admin/transfer";try{await api(path,{method:"POST",body:JSON.stringify({currency:document.getElementById("a-cur").value,user_id:document.getElementById("a-uid").value,amount:document.getElementById("a-amt").value})});toast("Готово");}catch(e){toast(e.message);}return;}
-  if(ev.target.id==="do-grant"){try{await api("/api/admin/grant",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-grant").value})});toast("Воркер добавлен");}catch(e){toast(e.message);}return;}
-  if(ev.target.id==="do-ban"||ev.target.id==="do-unban"){try{await api("/api/admin/ban",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-ban").value,action:ev.target.id==="do-unban"?"unban":"ban"})});toast("Готово");}catch(e){toast(e.message);}}
+  const goBtn=ev.target.closest("[data-go]");
+  if(goBtn){
+    ev.preventDefault();
+    const name=goBtn.dataset.go;
+    if(name==="create-type-seller"||name==="create-type-buyer"){state.draft.role=name.endsWith("seller")?"seller":"buyer";go("create-type");return;}
+    if(name.startsWith("create-pay-")){state.draft.deal_type=name.slice(11);go("create-pay");return;}
+    if(name.startsWith("create-amt-")){state.draft.pay_method=name.slice(11);go("create-amt");return;}
+    if(name.startsWith("wd-")){state.wmethod=name.slice(3);go("wd");return;}
+    if(name.startsWith("set-lang-")){
+      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe();go("home");}catch(e){toast(e.message);}
+      return;
+    }
+    if(name.startsWith("acred-")){state.admin={kind:"credit",currency:name.slice(6)};go("admin-amt");return;}
+    if(name.startsWith("axfer-")){state.admin={kind:"xfer",currency:name.slice(6)};go("admin-id");return;}
+    go(name);return;
+  }
+  const a=ev.target.closest("[data-act]");
+  if(!a) return;
+  const actName=a.dataset.act;
+  try{
+    if(actName==="support"){const url=state.user.support_url;if(tg&&tg.openTelegramLink) tg.openTelegramLink(url);else window.open(url,"_blank");return;}
+    if(actName==="go:home"){
+      if(!state.user){try{await loadMe();}catch(e){toast(e.message);return;}}
+      go("home");return;
+    }
+    if(actName.startsWith("save-")){
+      const field=actName.slice(5);
+      const id=field==="username"?"f-username":"f-"+field;
+      const value=document.getElementById(id).value;
+      const data=await api("/api/requisites",{method:"POST",body:JSON.stringify({field,value})});
+      state.user={...state.user,...data.user,is_admin:state.user.is_admin,is_super_admin:state.user.is_super_admin};
+      toast("Сохранено");go("req","back");return;
+    }
+    if(actName==="deal-amount"){state.draft.amount=document.getElementById("f-amount").value;go("create-desc");return;}
+    if(actName==="deal-make"){
+      state.draft.description=document.getElementById("f-desc").value;
+      const data=await api("/api/deals",{method:"POST",body:JSON.stringify(state.draft)});
+      state.link=data.link;go("create-done");return;
+    }
+    if(actName==="copy-link"||actName.startsWith("copy:")){
+      const text=actName==="copy-link"?state.link:actName.slice(5);
+      navigator.clipboard.writeText(text);toast("Скопировано");return;
+    }
+    if(actName==="do-withdraw"){
+      await api("/api/withdraw",{method:"POST",body:JSON.stringify({method:state.wmethod,amount:document.getElementById("w-amount").value})});
+      toast("Заявка принята");await loadMe();go("bal","back");return;
+    }
+    if(actName.startsWith("deal-cancel-")){await api("/api/deals/"+actName.slice(12)+"/cancel",{method:"POST"});toast("Отменено");draw();return;}
+    if(actName.startsWith("deal-paybal-")){await api("/api/deals/"+actName.slice(12)+"/paybal",{method:"POST"});toast("Оплачено");draw();return;}
+    if(actName.startsWith("deal-sent-")){await api("/api/deals/"+actName.slice(10)+"/sent",{method:"POST"});toast("Готово");draw();return;}
+    if(actName.startsWith("deal-recv-")){await api("/api/deals/"+actName.slice(10)+"/recv",{method:"POST"});toast("Готово");draw();return;}
+    if(actName==="do-credit"){
+      await api("/api/admin/credit",{method:"POST",body:JSON.stringify({currency:state.admin.currency,amount:document.getElementById("a-amt").value})});
+      toast("Готово");await loadMe();go("admin","back");return;
+    }
+    if(actName==="id-xfer"){state.admin.uid=document.getElementById("a-uid").value;go("admin-amt");return;}
+    if(actName==="do-xfer"){
+      await api("/api/admin/transfer",{method:"POST",body:JSON.stringify({currency:state.admin.currency,user_id:state.admin.uid,amount:document.getElementById("a-amt").value})});
+      toast("Готово");go("admin","back");return;
+    }
+    if(actName==="id-grant"){await api("/api/admin/grant",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-uid").value})});toast("Воркер добавлен");go("admin","back");return;}
+    if(actName==="id-ban"){await api("/api/admin/ban",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-uid").value,action:"ban"})});toast("Готово");go("admin","back");return;}
+    if(actName==="id-unban"){await api("/api/admin/ban",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-uid").value,action:"unban"})});toast("Готово");go("admin","back");return;}
+  }catch(e){toast(e.message);}
 });
-document.getElementById("btn-lang").addEventListener("click",async()=>{const next=state.user&&state.user.language==="en"?"ru":"en";try{await api("/api/language",{method:"POST",body:JSON.stringify({language:next})});await loadMe();draw();}catch(e){toast(e.message);}});
-(async function init(){try{await loadMe();draw();}catch(e){document.getElementById("screen").innerHTML=`<div class="card">${esc(e.message)}<p class="hint">Открой приложение из Telegram, не из браузера.</p></div>`;}})();
+if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
+(async function init(){
+  try{
+    await loadMe();
+    syncBack();
+    draw();
+  }catch(e){
+    document.getElementById("screen").innerHTML=bubble(`<b>${esc(e.message)}</b><p class="hint">Закрой Mini App и открой снова кнопкой в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  }
+})();
   </script>
 </body>
 </html>

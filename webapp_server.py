@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -20,6 +21,8 @@ from aiogram.types import MenuButtonWebApp, WebAppInfo
 from config import (
     BASE_DIR,
     BOT_TOKEN,
+    CUSTOM_EMOJI,
+    DB_PATH,
     MANAGER_USERNAME,
     MIN_COMPLETED_DEALS_WITHDRAW,
     SUPER_ADMIN_ID,
@@ -35,6 +38,7 @@ from utils.panel import report_deal
 log = logging.getLogger("webapp")
 NFT_RE = re.compile(r"^https://t\.me/nft/[A-Za-z0-9_\-]+$", re.IGNORECASE)
 WEBAPP_DIR = BASE_DIR / "static_ui"
+EMOJI_DIR = DB_PATH.parent / "emoji"
 
 _bot: Bot | None = None
 _bot_username = ""
@@ -54,23 +58,32 @@ async def _notify(user_id: int, text: str) -> None:
         pass
 
 
+def _hmac_matches(pairs: dict[str, str], received: str, skip: set[str]) -> bool:
+    data_check = "\n".join(
+        f"{k}={v}" for k, v in sorted(pairs.items()) if k not in skip
+    )
+    secret = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
+    calc = hmac.new(secret, data_check.encode(), hashlib.sha256).hexdigest()
+    return hmac.compare_digest(calc, received)
+
+
 def _verify_init_data(init_data: str) -> dict[str, Any] | None:
     if not init_data or not BOT_TOKEN:
         return None
-    parsed = dict(parse_qsl(init_data, keep_blank_values=True))
-    received = parsed.pop("hash", "")
+    parsed = dict(parse_qsl(init_data, keep_blank_values=True, encoding="utf-8"))
+    received = (parsed.get("hash") or "").strip()
     if not received:
         return None
-    data_check = "\n".join(f"{k}={v}" for k, v in sorted(parsed.items()))
-    secret = hmac.new(b"WebAppData", BOT_TOKEN.encode(), hashlib.sha256).digest()
-    calc = hmac.new(secret, data_check.encode(), hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(calc, received):
+    if not (
+        _hmac_matches(parsed, received, {"hash"})
+        or _hmac_matches(parsed, received, {"hash", "signature"})
+    ):
         return None
     try:
         auth_date = int(parsed.get("auth_date") or 0)
     except ValueError:
         return None
-    if auth_date <= 0 or abs(time.time() - auth_date) > 86_400 * 2:
+    if auth_date <= 0 or abs(time.time() - auth_date) > 86_400 * 7:
         return None
     try:
         user = json.loads(parsed.get("user") or "")
@@ -86,13 +99,21 @@ def _verify_init_data(init_data: str) -> dict[str, Any] | None:
 def _init_data(request: web.Request) -> str:
     auth = request.headers.get("Authorization", "")
     if auth.lower().startswith("tma "):
-        return auth[4:].strip()
-    return request.headers.get("X-Telegram-Init-Data", "").strip()
+        raw = auth[4:].strip()
+        if raw:
+            return raw
+    for header in ("X-Telegram-Init-Data", "X-Init-Data"):
+        raw = request.headers.get(header, "").strip()
+        if raw:
+            return raw
+    return (request.query.get("_auth") or "").strip()
 
 
 async def _auth(request: web.Request) -> tuple[dict[str, Any] | None, web.Response | None]:
-    tg_user = _verify_init_data(_init_data(request))
+    raw = _init_data(request)
+    tg_user = _verify_init_data(raw)
     if not tg_user:
+        log.warning("webapp auth failed present=%s len=%s", bool(raw), len(raw or ""))
         return None, web.json_response({"ok": False, "error": "auth"}, status=401)
     uid = int(tg_user["id"])
     if await db.is_banned(uid):
@@ -448,11 +469,11 @@ async def api_admin_credit(request: web.Request) -> web.Response:
     if currency not in BALANCE_KEYS:
         return web.json_response({"ok": False, "error": "currency"}, status=400)
     try:
-        target = int(body.get("user_id"))
+        target = int(body.get("user_id") or tg_user["id"])
         amount = float(str(body.get("amount")).replace(",", "."))
     except (TypeError, ValueError):
         return web.json_response({"ok": False, "error": "input"}, status=400)
-    if amount <= 0:
+    if amount == 0:
         return web.json_response({"ok": False, "error": "amount"}, status=400)
     credit = int(amount) if BALANCE_META[currency]["integer"] else amount
     await db.add_balance(target, currency, credit)
@@ -539,6 +560,54 @@ async def health(_: web.Request) -> web.Response:
     return web.json_response({"ok": True, "service": "ggsel-miniapp"})
 
 
+async def _warmup_emoji(bot: Bot) -> None:
+    EMOJI_DIR.mkdir(parents=True, exist_ok=True)
+    id_to_keys: dict[str, list[str]] = {}
+    for key, emoji_id in CUSTOM_EMOJI.items():
+        eid = (emoji_id or "").strip()
+        if not eid:
+            continue
+        id_to_keys.setdefault(eid, []).append(key)
+    ids = list(id_to_keys)
+    if not ids:
+        return
+    try:
+        stickers = await bot.get_custom_emoji_stickers(ids)
+    except Exception as exc:
+        log.warning("custom emoji fetch failed: %s", exc)
+        return
+    for sticker in stickers:
+        eid = sticker.custom_emoji_id
+        dest = EMOJI_DIR / f"{eid}.webp"
+        if not dest.is_file():
+            try:
+                await bot.download(sticker.thumbnail or sticker, destination=dest)
+            except Exception as exc:
+                log.warning("emoji download %s: %s", eid, exc)
+                continue
+        if not dest.is_file():
+            continue
+        data = dest.read_bytes()
+        for key in id_to_keys.get(eid, []):
+            alias = EMOJI_DIR / f"{key}.webp"
+            if not alias.is_file() or alias.stat().st_size != dest.stat().st_size:
+                alias.write_bytes(data)
+    log.info("Mini App emoji cache: %s files", len(list(EMOJI_DIR.glob("*.webp"))))
+
+
+async def serve_emoji(request: web.Request) -> web.StreamResponse:
+    key = request.match_info["key"]
+    if not re.fullmatch(r"[A-Za-z0-9_]+", key):
+        raise web.HTTPNotFound()
+    path = EMOJI_DIR / f"{key}.webp"
+    if not path.is_file():
+        raise web.HTTPNotFound()
+    return web.FileResponse(
+        path,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
+
+
 def build_app() -> web.Application:
     app = web.Application()
     app.router.add_get("/health", health)
@@ -558,13 +627,17 @@ def build_app() -> web.Application:
     app.router.add_post("/api/admin/grant", api_admin_grant)
     app.router.add_post("/api/admin/ban", api_admin_ban)
     app.router.add_get("/api/admin/workers", api_admin_workers)
+    app.router.add_get("/e/{key}.webp", serve_emoji)
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
     app.router.add_get("/", index)
     return app
 
 
 async def index(_: web.Request) -> web.FileResponse:
-    return web.FileResponse(WEBAPP_DIR / "index.html")
+    return web.FileResponse(
+        WEBAPP_DIR / "index.html",
+        headers={"Cache-Control": "no-store, max-age=0"},
+    )
 
 
 async def start_http() -> web.AppRunner:
@@ -580,6 +653,7 @@ async def bind_bot_menu(bot: Bot) -> None:
     attach_bot(bot)
     me = await bot.get_me()
     _bot_username = me.username or ""
+    asyncio.create_task(_warmup_emoji(bot))
     url = WEBAPP_URL
     if not url:
         return
