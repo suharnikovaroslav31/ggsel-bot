@@ -325,6 +325,7 @@ input, textarea, select {
 .tab:active { transform: scale(.96); }
 .tab.admin-only { display: none; }
 .tabbar.admin .tab.admin-only { display: flex; }
+.tabbar.off { pointer-events: none; opacity: .55; }
   </style>
 </head>
 <body>
@@ -338,8 +339,8 @@ input, textarea, select {
       </div>
       <button class="chip" type="button" data-go="lang" id="btn-lang">RU</button>
     </header>
-    <div class="stage"><div id="screen" class="panel"></div></div>
-    <nav class="tabbar" id="tabbar">
+    <div class="stage"><div id="screen" class="panel"><div class="bubble">Загрузка…</div></div></div>
+    <nav class="tabbar off" id="tabbar">
       <button class="tab on" type="button" data-go="home" data-tab="home">
         <svg viewBox="0 0 24 24"><path d="M12 3.2 4 10v10h5.5v-6h5V20H20V10l-8-6.8Z"/></svg>
         <span data-i18n="tab_home">Главная</span>
@@ -381,6 +382,7 @@ if (tg) {
   tg.ready();
   tg.expand();
   try { tg.setHeaderColor("#ffffff"); tg.setBackgroundColor("#ffffff"); } catch (e) {}
+  try { tg.disableVerticalSwipes(); } catch (e) {}
 }
 const I18N = {
   ru: {
@@ -486,11 +488,19 @@ function readInitData(){
   }catch(e){}
   return "";
 }
+function bootParams(){
+  const q=new URLSearchParams(location.search);
+  const m=String(location.pathname||"").match(/^\/l\/(ru|en)(?:\/deal\/([A-Za-z0-9]+))?/i);
+  return {
+    setlang:((m&&m[1])||q.get("setlang")||"").toLowerCase(),
+    deal:(m&&m[2])||q.get("deal")||""
+  };
+}
 async function waitInitData(){
-  for(let i=0;i<50;i++){
+  for(let i=0;i<40;i++){
     const d=readInitData();
     if(d) return d;
-    await new Promise(r=>setTimeout(r,80));
+    await new Promise(r=>setTimeout(r,50));
   }
   return readInitData();
 }
@@ -538,11 +548,11 @@ function currentTab(){
 function syncTabs(){
   const on=currentTab();
   const bar=document.getElementById("tabbar");
-  if(bar) bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
-  document.querySelectorAll(".tab").forEach(el=>{
-    el.classList.toggle("on", el.dataset.tab===on);
-    if(el.classList.contains("on")) el.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
-  });
+  if(bar){
+    bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
+    bar.classList.toggle("off", !state.user);
+  }
+  document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n);});
 }
 function syncBack(){
@@ -550,7 +560,8 @@ function syncBack(){
   if(TABS.includes(state.screen)) tg.BackButton.hide();
   else tg.BackButton.show();
 }
-function go(name, dir="fwd"){
+async function go(name, dir="fwd"){
+  if(!state.user) return;
   haptic();
   state.dir=dir;
   if(TABS.includes(name)) state.stack=[name];
@@ -558,15 +569,15 @@ function go(name, dir="fwd"){
   state.screen=name;
   syncBack();
   syncTabs();
-  draw();
+  await draw();
 }
-function back(){
+async function back(){
   if(state.stack.length>1) state.stack.pop();
   state.dir="back";
   state.screen=state.stack[state.stack.length-1]||"home";
   syncBack();
   syncTabs();
-  draw();
+  await draw();
 }
 async function screenHome(){
   const u=state.user;
@@ -744,6 +755,11 @@ function screenAdminId(kind){
 }
 async function draw(){
   const root=document.getElementById("screen");
+  if(!state.user){
+    root.innerHTML=bubble("Загрузка…");
+    syncTabs();
+    return;
+  }
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=await screenHome();
@@ -773,7 +789,7 @@ async function draw(){
     else if(s==="admin-amt") root.innerHTML=screenAdminAmt(state.admin.kind);
     else if(s==="admin-id") root.innerHTML=screenAdminId(state.admin.kind);
     else if(s==="admin-grant"||s==="admin-ban"||s==="admin-unban") root.innerHTML=screenAdminId(s.replace("admin-",""));
-    else root.innerHTML=screenHome();
+    else root.innerHTML=await screenHome();
   }catch(e){root.innerHTML=bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);}
   root.className="";
   void root.offsetWidth;
@@ -782,8 +798,8 @@ async function draw(){
 }
 let bootDealDone=false;
 async function loadMe(opts={}){
-  const q=new URLSearchParams(location.search);
-  const setlang=q.get("setlang");
+  const boot=bootParams();
+  const setlang=boot.setlang;
   if(setlang==="ru"||setlang==="en"){
     try{await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});}catch(e){}
   }
@@ -793,7 +809,7 @@ async function loadMe(opts={}){
   if(langBtn) langBtn.textContent=state.user.language==="en"?"EN":"RU";
   if(opts.skipDeal || bootDealDone) return;
   bootDealDone=true;
-  let deal=q.get("deal")||"";
+  let deal=boot.deal||"";
   const sp=data.user.start_param||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";
   if(!deal && String(sp).startsWith("deal_")) deal=sp.slice(5);
   if(deal){
@@ -880,18 +896,18 @@ document.body.addEventListener("click",async(ev)=>{
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){
   let lastErr=null;
-  for(let i=0;i<6;i++){
+  for(let i=0;i<8;i++){
     try{
       await loadMe();
       syncBack();
-      draw();
+      await draw();
       return;
     }catch(e){
       lastErr=e;
-      await new Promise(r=>setTimeout(r,300));
+      await new Promise(r=>setTimeout(r,250));
     }
   }
-  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и выбери язык в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Русский» или «English» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
 })();
   </script>
 </body>

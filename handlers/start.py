@@ -256,3 +256,8 @@ async def set_language(callback: CallbackQuery, state: FSMContext) -> None:
     )
     await db.set_language(callback.from_user.id, new_lang)
     await send_app(callback, state)
+
+
+@router.message(F.text.regexp(r"^(?!/).+"))
+async def fallback_open_app(message: Message, state: FSMContext) -> None:
+    await send_app(message, state)

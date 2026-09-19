@@ -722,6 +722,8 @@ def build_app() -> web.Application:
     app.router.add_get("/api/admin/workers", api_admin_workers)
     app.router.add_get("/e/{key}.webp", serve_emoji)
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
+    app.router.add_get("/l/{lang}/deal/{code}", index)
+    app.router.add_get("/l/{lang}", index)
     app.router.add_get("/", index)
     return app
 

@@ -36,42 +36,44 @@ def app_button() -> InlineKeyboardButton | None:
     return InlineKeyboardButton(text="📱 GGSel", web_app=WebAppInfo(url=WEBAPP_URL))
 
 
-def app_url(query: str = "") -> str:
+def app_url(query: str = "", *, path: str = "") -> str:
     base = (WEBAPP_URL or "").rstrip("/")
+    extra = path if path.startswith("/") else (f"/{path}" if path else "")
+    url = base + extra
     if not query:
-        return base
+        return url or base
     if not query.startswith("?"):
         query = "?" + query
-    return base + query
+    return url + query
 
 
 def language_start_kb(deal: str | None = None) -> InlineKeyboardMarkup:
-    extra = f"&deal={deal}" if deal else ""
+    def _url(lang: str) -> str:
+        path = f"/l/{lang}"
+        if deal:
+            path += f"/deal/{deal}"
+        return app_url(path=path)
+
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="Русский",
-                    web_app=WebAppInfo(url=app_url(f"setlang=ru{extra}")),
-                )
-            ],
-            [
-                InlineKeyboardButton(
-                    text="English",
-                    web_app=WebAppInfo(url=app_url(f"setlang=en{extra}")),
-                )
-            ],
+            [InlineKeyboardButton(text="Русский", web_app=WebAppInfo(url=_url("ru")))],
+            [InlineKeyboardButton(text="English", web_app=WebAppInfo(url=_url("en")))],
         ]
     )
 
 
 def open_app_kb(query: str = "") -> InlineKeyboardMarkup:
+    path = ""
+    q = query.lstrip("?")
+    if q.startswith("deal="):
+        path = f"/l/ru/deal/{q.split('=', 1)[-1]}"
+        q = ""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="Открыть GGSel",
-                    web_app=WebAppInfo(url=app_url(query)),
+                    web_app=WebAppInfo(url=app_url(q, path=path)),
                 )
             ]
         ]
