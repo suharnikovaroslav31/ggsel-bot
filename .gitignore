@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+get-pip.py
 data/
 *.db
 .DS_Store
