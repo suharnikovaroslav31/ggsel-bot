@@ -16,6 +16,17 @@ if (!py) {
   process.exit(1);
 }
 
+console.log("Installing Python packages...");
+const pip = spawnSync(
+  py,
+  ["-m", "pip", "install", "--user", "-r", path.join(root, "requirements.txt")],
+  { cwd: root, env: process.env, stdio: "inherit" }
+);
+if (pip.status !== 0) {
+  console.error("pip install failed:", pip.status);
+  process.exit(pip.status || 1);
+}
+
 console.log("GGSel boot:", py, "main.py | proxy", publicPort, "->", pyPort);
 const child = spawn(py, [path.join(root, "main.py")], {
   cwd: root,
