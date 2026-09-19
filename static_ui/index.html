@@ -4,20 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>GGSel</title>
+  <script>
+  (function(){
+    function save(d){ if(d) try{ sessionStorage.setItem("tg_init", d); }catch(e){} }
+    try {
+      var h = String(location.hash || "").replace(/^#/, "");
+      save(new URLSearchParams(h).get("tgWebAppData"));
+      var q = new URLSearchParams(location.search);
+      save(q.get("tgWebAppData") || q.get("initData"));
+    } catch (e) {}
+  })();
+  </script>
   <script src="/assets/telegram-web-app.js"></script>
   <style>
 :root {
-  --bg: #0e1621;
-  --card: #17212b;
-  --btn: #233040;
-  --btn-press: #2b3b4e;
-  --line: #1e2c3a;
-  --text: #e8eef4;
-  --muted: #8b9bb0;
-  --accent: #6ab3f3;
-  --quote: #3d9adc;
-  --danger: #e36d7a;
-  --ok: #7dffb3;
+  --bg: #0b1220;
+  --card: rgba(22, 32, 48, 0.62);
+  --btn: rgba(36, 48, 68, 0.72);
+  --btn-press: rgba(54, 72, 98, 0.88);
+  --line: rgba(140, 180, 210, 0.12);
+  --text: #eef4fb;
+  --muted: #93a6be;
+  --accent: #7ee0c5;
+  --danger: #ff8a9a;
+  --ok: #8ef0c8;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -27,56 +37,117 @@ html, body {
   color: var(--text);
   font-family: "SF Pro Text", "Segoe UI", system-ui, sans-serif;
 }
-body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow-x: hidden; }
+.aurora {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(72px);
+  opacity: 0.34;
+  will-change: transform;
+}
+.orb.a {
+  width: 280px; height: 280px;
+  background: #3ee0b0;
+  top: -90px; left: -70px;
+  animation: drift 26s ease-in-out infinite;
+}
+.orb.b {
+  width: 240px; height: 240px;
+  background: #4f7dff;
+  right: -80px; top: 28%;
+  opacity: 0.28;
+  animation: drift 32s ease-in-out infinite reverse;
+}
+.orb.c {
+  width: 200px; height: 200px;
+  background: #8b7cf5;
+  left: 22%; bottom: 8%;
+  opacity: 0.22;
+  animation: drift 38s ease-in-out infinite;
+}
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  40% { transform: translate3d(28px, 18px, 0) scale(1.06); }
+  70% { transform: translate3d(-18px, 26px, 0) scale(0.96); }
+}
 #app {
+  position: relative;
+  z-index: 1;
   max-width: 480px;
   margin: 0 auto;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
-.stage { flex: 1; padding: 12px 12px 20px; overflow: hidden; }
-.panel {
-  animation: enter .32s cubic-bezier(.22,1,.36,1) both;
-}
-.panel.back {
-  animation: enter-back .32s cubic-bezier(.22,1,.36,1) both;
-}
+.stage { flex: 1; padding: 16px 16px 28px; }
+.panel { animation: enter .38s cubic-bezier(.22,1,.36,1) both; }
+.panel.back { animation: enter-back .38s cubic-bezier(.22,1,.36,1) both; }
 @keyframes enter {
-  from { opacity: 0; transform: translate3d(28px, 0, 0) scale(.98); }
+  from { opacity: 0; transform: translate3d(16px, 8px, 0); }
   to { opacity: 1; transform: none; }
 }
 @keyframes enter-back {
-  from { opacity: 0; transform: translate3d(-22px, 0, 0) scale(.98); }
+  from { opacity: 0; transform: translate3d(-16px, 8px, 0); }
   to { opacity: 1; transform: none; }
 }
-.bubble {
+.bubble, .hero, .item, .tile, .kbtn, input, textarea, select {
   background: var(--card);
-  border-radius: 16px 16px 16px 4px;
-  padding: 14px 16px;
+  border: 1px solid var(--line);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+.bubble, .hero {
+  border-radius: 22px;
+  padding: 16px 16px 14px;
   line-height: 1.45;
   font-size: 15.5px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.18);
 }
+.hero {
+  background: linear-gradient(180deg, rgba(126,224,197,0.10), rgba(22,32,48,0.55));
+  margin-bottom: 14px;
+}
+.hello { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.who { font-size: 26px; font-weight: 780; margin: 6px 0 10px; }
+.bal-mini { display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 13.5px; }
 .bubble b { font-weight: 750; }
-.quote {
-  margin: 10px 0 0;
-  padding: 8px 0 8px 12px;
-  border-left: 3px solid var(--quote);
-  color: var(--text);
-}
+.quote { margin: 10px 0 0; color: var(--muted); }
 .muted { color: var(--muted); }
 .hint { color: var(--muted); font-size: 13.5px; margin-top: 8px; }
-.kb { margin-top: 10px; display: flex; flex-direction: column; gap: 7px; }
-.kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
-.kb-row.one { grid-template-columns: 1fr; }
-.kbtn, .ghost, .submit {
-  appearance: none;
-  border: 0;
-  background: var(--btn);
+.tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.tile {
+  min-height: 92px;
+  border-radius: 20px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
   color: var(--text);
-  border-radius: 12px;
-  min-height: 46px;
+  font-weight: 700;
+  font-size: 14.5px;
+  cursor: pointer;
+  transition: transform .2s ease, background .2s ease;
+}
+.tile:active { transform: scale(.97); background: var(--btn-press); }
+.kb { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+.kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kb-row.one { grid-template-columns: 1fr; }
+.kbtn, .submit {
+  appearance: none;
+  border-radius: 16px;
+  min-height: 48px;
   padding: 10px 12px;
   font-size: 14.5px;
   font-weight: 650;
@@ -84,47 +155,38 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
   align-items: center;
   justify-content: center;
   gap: 8px;
+  color: var(--text);
   cursor: pointer;
-  transition: transform .16s ease, background .16s ease, opacity .16s ease;
+  transition: transform .18s ease, background .18s ease;
 }
-.kbtn:active, .submit:active { transform: scale(.97); background: var(--btn-press); }
+.kbtn:active, .tile:active, .submit:active { transform: scale(.975); }
 .kbtn.danger { color: var(--danger); }
 .submit {
   width: 100%;
   margin-top: 10px;
-  background: linear-gradient(180deg, #3d9adc, #2b7fc0);
-  color: #fff;
+  background: linear-gradient(180deg, rgba(126,224,197,.95), rgba(62,196,164,.92));
+  color: #073126;
+  border: 0;
 }
-.pe {
-  width: 22px;
-  height: 22px;
-  object-fit: contain;
-  flex: 0 0 22px;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.25));
-}
+.pe { width: 22px; height: 22px; object-fit: contain; flex: 0 0 22px; }
 .pe.lg { width: 26px; height: 26px; flex-basis: 26px; vertical-align: -5px; }
 .line { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-.item {
-  background: var(--card);
-  border-radius: 14px;
-  padding: 12px 14px;
-}
+.item { border-radius: 18px; padding: 12px 14px; }
 .item .top { display: flex; justify-content: space-between; gap: 8px; }
 input, textarea, select {
   width: 100%;
   margin-top: 8px;
-  background: #111a24;
   color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 12px 14px;
   font-size: 16px;
 }
 #toast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px);
-  background: #223044; color: #fff; padding: 10px 14px; border-radius: 12px;
+  background: rgba(24, 34, 50, .92); color: #fff; padding: 10px 14px; border-radius: 14px;
   opacity: 0; pointer-events: none; transition: .22s ease; z-index: 20; max-width: 86%;
+  border: 1px solid var(--line);
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .err { color: var(--danger); }
@@ -132,6 +194,7 @@ input, textarea, select {
   </style>
 </head>
 <body>
+  <div class="aurora" aria-hidden="true"><span class="orb a"></span><span class="orb b"></span><span class="orb c"></span></div>
   <div id="app"><div class="stage"><div id="screen" class="panel"></div></div></div>
   <div id="toast"></div>
   <script>
@@ -225,36 +288,36 @@ function haptic(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred("l
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),2400);}
 function esc(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");}
 function readInitData(){
-  const fromTg=tg&&tg.initData;
-  if(fromTg) return fromTg;
+  const fromTg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData;
+  if(fromTg){try{sessionStorage.setItem("tg_init",fromTg);}catch(e){} return fromTg;}
+  const stored=sessionStorage.getItem("tg_init")||"";
+  if(stored) return stored;
   try{
     const h=new URLSearchParams((location.hash||"").replace(/^#/,""));
     const v=h.get("tgWebAppData");
-    if(v) return v;
+    if(v){sessionStorage.setItem("tg_init",v);return v;}
   }catch(e){}
   try{
     const q=new URLSearchParams(location.search);
     const v=q.get("tgWebAppData")||q.get("initData");
-    if(v) return v;
+    if(v){sessionStorage.setItem("tg_init",v);return v;}
   }catch(e){}
-  return sessionStorage.getItem("tg_init")||"";
+  return "";
 }
 async function waitInitData(){
-  for(let i=0;i<40;i++){
+  for(let i=0;i<50;i++){
     const d=readInitData();
-    if(d){sessionStorage.setItem("tg_init",d);return d;}
-    await new Promise(r=>setTimeout(r,50));
+    if(d) return d;
+    await new Promise(r=>setTimeout(r,80));
   }
   return readInitData();
 }
 async function api(path,opts={}){
   const initData=await waitInitData();
-  const join=path.includes("?")?"&":"?";
-  const url=path+join+"_auth="+encodeURIComponent(initData);
-  const res=await fetch(url,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
+  const res=await fetch(path,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
-    const map={auth:"Не удалось войти в Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа"};
+    const map={auth:"Открой Mini App кнопкой в боте",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа"};
     throw new Error(map[data.error]||data.error||"Ошибка");
   }
   return data;
@@ -296,21 +359,24 @@ function back(){
 }
 function screenHome(){
   const u=state.user;
-  const text=`${pel("coffee","☕️")} <b>${t("welcome_title")}</b> ${pel("construction","🚧")}
-    <div class="quote">${pel("lightning","⚡️")} <b>${t("welcome_lead")}</b><br><br>
-    <div class="line">${pel("one","1️⃣")} ${t("w1")}</div>
-    <div class="line">${pel("two","2️⃣")} ${pel("shield","🛡")} ${t("w2")}</div>
-    <div class="line">${pel("three","3️⃣")} ${pel("trident","🔱")} ${t("w3")}</div>
-    <div class="line">${pel("four","4️⃣")} ${pel("handshake","🤝")} ${t("w4")}<br>@${esc(u.manager)}</div>
-    </div>`;
-  const rows=[
-    [btn(t("req"),"req","btn_requisites","💼"), btn(t("create"),"create-role","btn_create","➕")],
-    [btn(t("bal"),"bal","btn_balance","🧳"), btn(t("deals"),"deals","btn_deals","📑")],
-    [btn(t("refs"),"refs","btn_refs","🌐"), btn(t("lang"),"lang","btn_lang","🌐")],
-    [act(t("support"),"support","btn_support","🎧")]
+  const name=u.full_name||(u.username?("@"+u.username):"GGSel");
+  const b=u.balances||{};
+  const tiles=[
+    `<button class="tile" data-go="create-role">${pe("btn_create","➕")}<span>${t("create")}</span></button>`,
+    `<button class="tile" data-go="req">${pe("btn_requisites","💼")}<span>${t("req")}</span></button>`,
+    `<button class="tile" data-go="bal">${pe("btn_balance","🧳")}<span>${t("bal")}</span></button>`,
+    `<button class="tile" data-go="deals">${pe("btn_deals","📑")}<span>${t("deals")}</span></button>`,
+    `<button class="tile" data-go="refs">${pe("btn_refs","🌐")}<span>${t("refs")}</span></button>`,
+    `<button class="tile" data-go="lang">${pe("btn_lang","🌐")}<span>${t("lang")}</span></button>`,
+    `<button class="tile" data-act="support">${pe("btn_support","🎧")}<span>${t("support")}</span></button>`
   ];
-  if(u.is_admin) rows.push([btn(u.is_super_admin?t("owner"):t("admin"),"admin","construction","🛠")]);
-  return bubble(text)+kb(rows);
+  if(u.is_admin) tiles.push(`<button class="tile" data-go="admin">${pe("construction","🛠")}<span>${u.is_super_admin?t("owner"):t("admin")}</span></button>`);
+  return `<div class="hero">
+      <div class="hello">GGSel</div>
+      <div class="who">${esc(name)}</div>
+      <div class="bal-mini">${pel("balance_ton","💎")} ${esc(b.ton??0)} · ${pel("balance_stars","⭐")} ${esc(b.stars??0)}</div>
+    </div>
+    <div class="tiles">${tiles.join("")}</div>`;
 }
 function screenReq(){
   const u=state.user;
@@ -551,13 +617,19 @@ document.body.addEventListener("click",async(ev)=>{
 });
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){
-  try{
-    await loadMe();
-    syncBack();
-    draw();
-  }catch(e){
-    document.getElementById("screen").innerHTML=bubble(`<b>${esc(e.message)}</b><p class="hint">Закрой Mini App и открой снова кнопкой в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  let lastErr=null;
+  for(let i=0;i<6;i++){
+    try{
+      await loadMe();
+      syncBack();
+      draw();
+      return;
+    }catch(e){
+      lastErr=e;
+      await new Promise(r=>setTimeout(r,300));
+    }
   }
+  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Открыть GGSel» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
 })();
   </script>
 </body>

@@ -12,7 +12,7 @@ import secrets
 import string
 import time
 from typing import Any
-from urllib.parse import parse_qsl
+from urllib.parse import parse_qsl, unquote, unquote_plus
 
 from aiohttp import web
 from aiogram import Bot
@@ -67,33 +67,61 @@ def _hmac_matches(pairs: dict[str, str], received: str, skip: set[str]) -> bool:
     return hmac.compare_digest(calc, received)
 
 
+def _pair_variants(init_data: str) -> list[dict[str, str]]:
+    blobs = [init_data]
+    for decoder in (unquote, unquote_plus):
+        try:
+            decoded = decoder(init_data)
+        except Exception:
+            continue
+        if decoded and decoded not in blobs:
+            blobs.append(decoded)
+    variants: list[dict[str, str]] = []
+    seen: set[tuple[tuple[str, str], ...]] = set()
+    for raw in blobs:
+        parsed_list = [dict(parse_qsl(raw, keep_blank_values=True, encoding="utf-8"))]
+        manual: dict[str, str] = {}
+        for part in raw.split("&"):
+            if "=" not in part:
+                continue
+            key, value = part.split("=", 1)
+            manual[key] = value
+        if manual:
+            parsed_list.append(manual)
+            parsed_list.append({k: unquote(v) for k, v in manual.items()})
+        for parsed in parsed_list:
+            if not parsed:
+                continue
+            key = tuple(sorted(parsed.items()))
+            if key in seen:
+                continue
+            seen.add(key)
+            variants.append(parsed)
+    return variants
+
+
 def _verify_init_data(init_data: str) -> dict[str, Any] | None:
     if not init_data or not BOT_TOKEN:
         return None
-    parsed = dict(parse_qsl(init_data, keep_blank_values=True, encoding="utf-8"))
-    received = (parsed.get("hash") or "").strip()
-    if not received:
-        return None
-    if not (
-        _hmac_matches(parsed, received, {"hash"})
-        or _hmac_matches(parsed, received, {"hash", "signature"})
-    ):
-        return None
-    try:
-        auth_date = int(parsed.get("auth_date") or 0)
-    except ValueError:
-        return None
-    if auth_date <= 0 or abs(time.time() - auth_date) > 86_400 * 7:
-        return None
-    try:
-        user = json.loads(parsed.get("user") or "")
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(user, dict) or not user.get("id"):
-        return None
-    start_param = (parsed.get("start_param") or "").strip()
-    user["_start_param"] = start_param
-    return user
+    for parsed in _pair_variants(init_data):
+        received = (parsed.get("hash") or "").strip()
+        if not received:
+            continue
+        if not (
+            _hmac_matches(parsed, received, {"hash"})
+            or _hmac_matches(parsed, received, {"hash", "signature"})
+        ):
+            continue
+        try:
+            user = json.loads(parsed.get("user") or "")
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(user, dict) or not user.get("id"):
+            continue
+        start_param = (parsed.get("start_param") or "").strip()
+        user["_start_param"] = start_param
+        return user
+    return None
 
 
 def _init_data(request: web.Request) -> str:
