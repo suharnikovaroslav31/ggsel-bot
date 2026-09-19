@@ -97,13 +97,13 @@ class Database:
         # Новых, выданных через панель, это больше не трогает.
         cur = await self.conn.execute(
             "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
-            ("purge_workers_rebind_20260916",),
+            ("purge_workers_rebind_20260919",),
         )
         if await cur.fetchone() is None:
             await self.conn.execute("DELETE FROM admins")
             await self.conn.execute(
                 "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
-                ("purge_workers_rebind_20260916", "1"),
+                ("purge_workers_rebind_20260919", "1"),
             )
 
         extra = set(ADMIN_IDS) - {SUPER_ADMIN_ID}

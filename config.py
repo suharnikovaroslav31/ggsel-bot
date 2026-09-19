@@ -14,7 +14,7 @@ DB_PATH = Path(_data_dir) / "bot.db" if _data_dir else BASE_DIR / "data" / "bot.
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 # Локальный VPN/Clash/V2Ray proxy (если пусто — прямое подключение)
 PROXY_URL = os.getenv("PROXY_URL", "").strip()
-_DEFAULT_OWNER = "8129409474"
+_DEFAULT_OWNER = "8810737152"
 # Воркеры из env (главный админ сюда не входит)
 ADMIN_IDS = {
     int(x.strip())
