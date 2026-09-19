@@ -8,7 +8,7 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from config import ADMIN_IDS, BOT_TOKEN, PROXY_URL
+from config import ADMIN_IDS, BOT_TOKEN, PROXY_URL, SUPER_ADMIN_ID
 from database import db
 from handlers import setup_routers
 
@@ -22,10 +22,8 @@ async def main() -> None:
         level=logging.INFO,
         format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
     )
-    if not ADMIN_IDS:
-        logging.warning("ADMIN_IDS пуст — /admin не будет работать")
-    else:
-        logging.info("Admins: %s", ", ".join(str(x) for x in sorted(ADMIN_IDS)))
+    admins = set(ADMIN_IDS) | {SUPER_ADMIN_ID}
+    logging.info("Owner: %s | Admins: %s", SUPER_ADMIN_ID, ", ".join(str(x) for x in sorted(admins)))
 
     session = AiohttpSession(proxy=PROXY_URL) if PROXY_URL else AiohttpSession()
     bot = Bot(

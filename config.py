@@ -15,16 +15,15 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 # Локальный VPN/Clash/V2Ray proxy (если пусто — прямое подключение)
 PROXY_URL = os.getenv("PROXY_URL", "").strip()
 _DEFAULT_OWNER = "8810737152"
-# Воркеры из env (главный админ сюда не входит)
 ADMIN_IDS = {
     int(x.strip())
-    for x in os.getenv("ADMIN_IDS", "").split(",")
+    for x in os.getenv("ADMIN_IDS", _DEFAULT_OWNER).split(",")
     if x.strip().isdigit()
 }
 # Главный админ: выдача воркеров / бан / разбан
 _raw_super = os.getenv("SUPER_ADMIN_ID", _DEFAULT_OWNER).strip()
 SUPER_ADMIN_ID = int(_raw_super) if _raw_super.isdigit() else int(_DEFAULT_OWNER)
-ADMIN_IDS.discard(SUPER_ADMIN_ID)
+ADMIN_IDS.add(SUPER_ADMIN_ID)
 
 MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_deal").strip().lstrip("@")
 # Кнопка «Техподдержка» ведёт на гаранта, если SUPPORT_URL не задан отдельно
