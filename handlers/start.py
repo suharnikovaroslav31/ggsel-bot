@@ -73,7 +73,6 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
     text = welcome_text(lang)
     markup = main_menu(lang, is_admin=await is_admin(message.from_user.id))
 
-    # Удаляем прошлое приветствие, чтобы в чате не копились /start-экраны
     prev_id = await db.get_last_welcome_msg_id(message.from_user.id)
     if prev_id:
         try:
@@ -81,9 +80,29 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
         except Exception:
             pass
 
-    sent = await reply_ui(message, text, markup)
+    try:
+        sent = await reply_ui(message, text, markup)
+    except Exception as exc:
+        log.warning("start with Mini App button failed: %s", exc)
+        sent = await reply_ui(
+            message,
+            text,
+            main_menu(lang, is_admin=await is_admin(message.from_user.id), webapp=False),
+        )
 
     await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
+    from keyboards.main import miniapp_reply_kb
+
+    app_kb = miniapp_reply_kb()
+    if app_kb:
+        try:
+            await message.bot.send_message(
+                message.chat.id,
+                "📱 Приложение: кнопка <b>Открыть GGSel</b> внизу или /app",
+                reply_markup=app_kb,
+            )
+        except Exception as exc:
+            log.warning("Mini App keyboard: %s", exc)
     await _delete_user_message(message)
 
 
