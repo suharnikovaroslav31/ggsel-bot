@@ -9,8 +9,8 @@ COPY . .
 
 ENV DATA_DIR=/app/data
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8080
+ENV PORT=3000
 RUN mkdir -p /app/data && chmod 777 /app/data
-EXPOSE 8080
+EXPOSE 3000
 
 CMD ["python", "main.py"]
