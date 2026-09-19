@@ -48,7 +48,11 @@ async def main() -> None:
                 if attempt == 10:
                     raise
                 await asyncio.sleep(3)
-        runner = await start_webapp(bot)
+        runner = None
+        try:
+            runner = await start_webapp(bot)
+        except Exception as exc:
+            logging.exception("Mini App не поднялась, бот всё равно работает: %s", exc)
         db_admins = await db.list_admins()
         logging.info("Admins in DB: %s", ", ".join(str(x) for x in db_admins) or "(none)")
         logging.info("Bot started as @%s", me.username)

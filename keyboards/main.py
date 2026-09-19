@@ -45,18 +45,7 @@ def miniapp_reply_kb() -> ReplyKeyboardMarkup | None:
 
 
 def main_menu(lang: str | None = "ru", *, is_admin: bool = False) -> InlineKeyboardMarkup:
-    rows = []
-    if WEBAPP_URL:
-        rows.append(
-            [
-                InlineKeyboardButton(
-                    text="📱 Открыть приложение",
-                    web_app=WebAppInfo(url=WEBAPP_URL),
-                )
-            ]
-        )
-    rows.extend(
-        [
+    rows = [
         [
             _btn(t(lang, "btn_requisites"), fallback_emoji="💼", callback="menu:requisites", icon_key="btn_requisites"),
             _btn(t(lang, "btn_create"), fallback_emoji="➕", callback="menu:create", icon_key="btn_create"),
@@ -70,8 +59,7 @@ def main_menu(lang: str | None = "ru", *, is_admin: bool = False) -> InlineKeybo
             _btn(t(lang, "btn_lang"), fallback_emoji="🌐", callback="menu:lang", icon_key="btn_lang"),
         ],
         [_btn(t(lang, "btn_support"), fallback_emoji="🎧", url=SUPPORT_URL, icon_key="btn_support")],
-        ]
-    )
+    ]
     if is_admin:
         rows.append(
             [_btn(t(lang, "btn_admin"), fallback_emoji="🛠", callback="menu:admin", icon_key="btn_admin")]

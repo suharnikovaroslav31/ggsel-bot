@@ -31,7 +31,10 @@ SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_US
 MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
 
 # Mini App на Bothost: PORT выдаёт хост, WEBAPP_URL — публичный https-домен сервиса
-WEB_PORT = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "3000")
+try:
+    WEB_PORT = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "3000")
+except ValueError:
+    WEB_PORT = 3000
 _DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
 WEBAPP_URL = (os.getenv("WEBAPP_URL", _DEFAULT_WEBAPP).strip() or _DEFAULT_WEBAPP).rstrip("/")
 

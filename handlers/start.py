@@ -15,7 +15,6 @@ from keyboards.main import (
     buyer_pay_kb,
     language_menu,
     main_menu,
-    miniapp_reply_kb,
     seller_deal_kb,
 )
 from states.balance import BalanceStates
@@ -85,16 +84,6 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
     sent = await reply_ui(message, text, markup)
 
     await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
-    app_kb = miniapp_reply_kb()
-    if app_kb:
-        try:
-            await message.bot.send_message(
-                message.chat.id,
-                "📱 Mini App — кнопка <b>Открыть GGSel</b> внизу экрана.",
-                reply_markup=app_kb,
-            )
-        except Exception:
-            pass
     await _delete_user_message(message)
 
 
@@ -106,14 +95,18 @@ async def cmd_app(message: Message) -> None:
     if not WEBAPP_URL:
         await reply_ui(message, "Mini App ещё не привязана к домену.")
         return
-    await message.answer(
-        "Открой приложение GGSel:",
-        reply_markup=InlineKeyboardMarkup(
-            inline_keyboard=[
-                [InlineKeyboardButton(text="📱 Открыть GGSel", web_app=WebAppInfo(url=WEBAPP_URL))]
-            ]
-        ),
-    )
+    try:
+        await message.answer(
+            "Открой приложение GGSel:",
+            reply_markup=InlineKeyboardMarkup(
+                inline_keyboard=[
+                    [InlineKeyboardButton(text="📱 Открыть GGSel", web_app=WebAppInfo(url=WEBAPP_URL))]
+                ]
+            ),
+        )
+    except Exception as exc:
+        log.warning("Mini App button failed: %s", exc)
+        await reply_ui(message, "Бот работает. Mini App пока не открывается — проверь домен на Bothost.")
 
 
 async def _delete_user_message(message: Message) -> None:
