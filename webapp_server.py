@@ -250,8 +250,27 @@ async def api_language(request: web.Request) -> web.Response:
         return err
     body = await request.json()
     lang = _normalize_locale(str(body.get("language") or "en"))
-    await db.set_language(int(tg_user["id"]), lang)
+    uid = int(tg_user["id"])
+    await db.set_language(uid, lang)
+    await _refresh_start_button(uid, str(body.get("deal") or "").strip())
     return web.json_response({"ok": True, "language": lang})
+
+
+async def _refresh_start_button(uid: int, deal: str = "") -> None:
+    if _bot is None:
+        return
+    msg_id = await db.get_last_welcome_msg_id(uid)
+    if not msg_id:
+        return
+    from keyboards.main import open_app_kb
+    from utils.app_gate import APP_READY
+    from utils.media import edit_message_ui
+
+    query = f"deal={deal}" if deal else ""
+    try:
+        await edit_message_ui(_bot, uid, msg_id, APP_READY, open_app_kb(query))
+    except Exception:
+        pass
 
 
 async def api_requisites(request: web.Request) -> web.Response:

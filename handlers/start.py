@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from database import db
-from keyboards.main import language_start_kb, open_app_kb
+from keyboards.main import open_app_kb
 from texts.deal_messages import (
     buyer_goods_ready_text,
     buyer_payment_accepted_text,
@@ -15,7 +15,7 @@ from texts.deal_messages import (
     deal_completed_text,
     seller_deal_connected_text,
 )
-from utils.app_gate import APP_PROMPT, send_app, wipe_reply_kb
+from utils.app_gate import entry_kb, entry_text, send_app, wipe_reply_kb
 from utils.media import reply_ui, send_ui
 from utils.panel import report_deal
 
@@ -45,6 +45,7 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
         full_name=message.from_user.full_name,
         referrer_id=referrer_id,
     )
+    user = await db.get_user(message.from_user.id)
 
     prev_id = await db.get_last_welcome_msg_id(message.from_user.id)
     if prev_id:
@@ -55,8 +56,8 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
 
     sent = await reply_ui(
         message,
-        APP_PROMPT,
-        language_start_kb(),
+        entry_text(user),
+        entry_kb(user),
     )
     await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
     await wipe_reply_kb(message.bot, message.chat.id)
@@ -95,9 +96,12 @@ async def _handle_deal_start(message: Message, code: str) -> None:
         username=message.from_user.username,
         full_name=message.from_user.full_name,
     )
+    user = await db.get_user(message.from_user.id)
     deal = await db.get_deal_by_code(code)
     if not deal:
-        await _send_retry(lambda: reply_ui(message, "❌ Сделка не найдена.", language_start_kb()))
+        sent = await _send_retry(lambda: reply_ui(message, "❌ Сделка не найдена.", entry_kb(user)))
+        if sent:
+            await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
         await _delete_user_message(message)
         return
 
@@ -106,26 +110,32 @@ async def _handle_deal_start(message: Message, code: str) -> None:
     uid = message.from_user.id
 
     if uid == seller_id or uid == buyer_id:
-        await _send_retry(lambda: reply_ui(message, APP_PROMPT, language_start_kb(code)))
+        sent = await _send_retry(lambda: reply_ui(message, entry_text(user), entry_kb(user, code)))
+        if sent:
+            await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
         await _delete_user_message(message)
         return
 
     if deal["status"] != "open":
-        await _send_retry(
-            lambda: reply_ui(message, "❌ Сделка уже занята или закрыта.", language_start_kb())
+        sent = await _send_retry(
+            lambda: reply_ui(message, "❌ Сделка уже занята или закрыта.", entry_kb(user))
         )
+        if sent:
+            await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
         await _delete_user_message(message)
         return
 
     joined_as = await db.join_deal(code, uid)
     if not joined_as:
-        await _send_retry(
+        sent = await _send_retry(
             lambda: reply_ui(
                 message,
                 "❌ Не удалось подключиться к сделке. Попробуйте ещё раз.",
-                language_start_kb(code),
+                entry_kb(user, code),
             )
         )
+        if sent:
+            await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
         await _delete_user_message(message)
         return
 
@@ -136,7 +146,9 @@ async def _handle_deal_start(message: Message, code: str) -> None:
     other = buyer_id if uid == seller_id else seller_id
     if other:
         await _notify_deal_parties(message, deal, code, resend_only_for=int(other))
-    await _send_retry(lambda: reply_ui(message, APP_PROMPT, language_start_kb(code)))
+    sent = await _send_retry(lambda: reply_ui(message, entry_text(user), entry_kb(user, code)))
+    if sent:
+        await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
     await _delete_user_message(message)
 
 

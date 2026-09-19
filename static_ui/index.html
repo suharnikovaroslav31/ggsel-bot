@@ -616,6 +616,11 @@ input, textarea, select {
   font-size: 12px;
   font-weight: 600;
 }
+.status-pill.ok {
+  background: #e7f8ec;
+  color: #148a3c;
+}
+.status-ok { color: var(--ok); font-weight: 700; }
 .avatar {
   width: 64px;
   height: 64px;
@@ -1031,7 +1036,9 @@ async function enterApp(){
 async function pickLanguage(code){
   if(!code) return;
   try{
-    await api("/api/language",{method:"POST",body:JSON.stringify({language:code})});
+    const boot=bootParams();
+    const deal=state.pendingDeal||boot.deal||"";
+    await api("/api/language",{method:"POST",body:JSON.stringify({language:code,deal})});
     rememberLang(code);
     await loadMe();
     haptic();
@@ -1094,6 +1101,9 @@ function nftCard(desc){
 }
 function statusLabel(st){
   return ({open:t("st_open"),active:t("st_active"),paid:t("st_paid"),goods_sent:t("st_sent"),completed:t("st_done"),cancelled:t("st_cancel")}[st])||st;
+}
+function statusTone(st){
+  return st==="completed"?"ok":"";
 }
 function typeLabel(tp){return ({gift:t("gift"),channel:t("channel"),stars:t("stars"),nft:t("nft")}[tp])||tp;}
 function payLabel(p){const map={ton:t("pay_ton"),card:t("pay_card"),stars:t("pay_stars"),usdt:t("pay_usdt"),usd:t("pay_usd"),eur:t("pay_eur"),byn:t("pay_byn"),kzt:t("pay_kzt"),uah:t("pay_uah")};return map[p]||String(p).toUpperCase();}
@@ -1241,7 +1251,7 @@ async function screenHome(){
     ["p","refs",t("refs")],
     ["s","",t("support"),"support"]
   ].map(([cls,go,label,act])=>`<button class="feat ${cls}" ${act?`data-act="${act}"`:`data-go="${go}"`}>${featScene(cls)}<span class="feat-lab">${label}</span></button>`).join("");
-  const dealCards=deals.length?deals.slice(0,4).map(d=>`<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="muted">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount}</div></button>`).join(""):`<div class="item"><b>${t("emptyDeals")}</b><p class="hint">${t("w1")}</p></div>`;
+  const dealCards=deals.length?deals.slice(0,4).map(d=>`<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="${statusTone(d.status)==="ok"?"status-ok":"muted"}">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount}</div></button>`).join(""):`<div class="item"><b>${t("emptyDeals")}</b><p class="hint">${t("w1")}</p></div>`;
   return `<div class="hero">
       <div class="muted">P2P-гарант · @${esc(manager)}</div>
       <div class="who">${esc(name)}</div>
@@ -1340,7 +1350,7 @@ async function screenDealView(){
   if(d.status==="goods_sent"&&d.role==="buyer") actions.push([act(t("recv_goods"),"deal-recv-"+d.code,"btn_deal_recv","✅")]);
   actions.push([backBtn()]);
   return bubble(`${pe("btn_deals","📑")} <b>${t("deal_card")} #${esc(d.code)}</b>
-    <div style="margin-top:8px"><span class="status-pill">${esc(statusLabel(d.status))}</span></div>
+    <div style="margin-top:8px"><span class="status-pill ${statusTone(d.status)}">${esc(statusLabel(d.status))}</span></div>
     ${nftCard(d.description)}
     <div class="kv"><span>${uiLang()==="en"?"Role":"Роль"}</span><b>${esc(roleLabel(d.role))}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Type":"Тип"}</span><b>${esc(typeLabel(d.deal_type))}</b></div>
@@ -1395,7 +1405,7 @@ async function screenDeals(){
   state.dealsSig=dealsFingerprint(deals);
   if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
   const cards=deals.map(d=>{
-    return `<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="muted">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount} · ${esc(roleLabel(d.role))}</div>${nftInfo(d.description)?`<div class="hint">${t("gift_title")}</div>`:""}</button>`;
+    return `<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="${statusTone(d.status)==="ok"?"status-ok":"muted"}">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount} · ${esc(roleLabel(d.role))}</div>${nftInfo(d.description)?`<div class="hint">${t("gift_title")}</div>`:""}</button>`;
   }).join("");
   return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b>`)+`<div class="list">${cards}</div>`+kb([[backBtn()]]);
 }
@@ -1548,13 +1558,13 @@ async function loadMe(opts={}){
     rememberLang(state.user.language);
   }else if(saved){
     try{
-      await api("/api/language",{method:"POST",body:JSON.stringify({language:saved})});
+      await api("/api/language",{method:"POST",body:JSON.stringify({language:saved,deal:boot.deal||""})});
       data=await api("/api/me");
       state.user=data.user;
     }catch(e){}
   }else if(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/.test(setlang)){
     try{
-      await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});
+      await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang,deal:boot.deal||""})});
       rememberLang(setlang);
       data=await api("/api/me");
       state.user=data.user;

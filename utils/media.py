@@ -58,6 +58,41 @@ async def reply_ui(
     return await send_ui(message.bot, message.chat.id, text, markup)
 
 
+async def edit_message_ui(
+    bot: Bot,
+    chat_id: int,
+    message_id: int,
+    text: str,
+    markup: InlineKeyboardMarkup | None = None,
+) -> None:
+    try:
+        await bot.edit_message_caption(
+            chat_id=chat_id, message_id=message_id, caption=text, reply_markup=markup
+        )
+        return
+    except TelegramBadRequest as exc:
+        if "message is not modified" in str(exc).lower():
+            return
+    except Exception:
+        pass
+    try:
+        await bot.edit_message_text(
+            chat_id=chat_id, message_id=message_id, text=text, reply_markup=markup
+        )
+        return
+    except TelegramBadRequest as exc:
+        if "message is not modified" in str(exc).lower():
+            return
+    except Exception:
+        pass
+    try:
+        await bot.edit_message_reply_markup(
+            chat_id=chat_id, message_id=message_id, reply_markup=markup
+        )
+    except Exception:
+        pass
+
+
 async def edit_ui(
     callback: CallbackQuery,
     text: str,
