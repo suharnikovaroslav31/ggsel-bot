@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from aiogram import F, Router
-from aiogram.filters import CommandObject, CommandStart
+from aiogram.filters import Command, CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -15,6 +15,7 @@ from keyboards.main import (
     buyer_pay_kb,
     language_menu,
     main_menu,
+    miniapp_reply_kb,
     seller_deal_kb,
 )
 from states.balance import BalanceStates
@@ -84,7 +85,35 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
     sent = await reply_ui(message, text, markup)
 
     await db.set_last_welcome_msg_id(message.from_user.id, sent.message_id)
+    app_kb = miniapp_reply_kb()
+    if app_kb:
+        try:
+            await message.bot.send_message(
+                message.chat.id,
+                "📱 Mini App — кнопка <b>Открыть GGSel</b> внизу экрана.",
+                reply_markup=app_kb,
+            )
+        except Exception:
+            pass
     await _delete_user_message(message)
+
+
+@router.message(Command("app"))
+async def cmd_app(message: Message) -> None:
+    from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+    from config import WEBAPP_URL
+
+    if not WEBAPP_URL:
+        await reply_ui(message, "Mini App ещё не привязана к домену.")
+        return
+    await message.answer(
+        "Открой приложение GGSel:",
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [InlineKeyboardButton(text="📱 Открыть GGSel", web_app=WebAppInfo(url=WEBAPP_URL))]
+            ]
+        ),
+    )
 
 
 async def _delete_user_message(message: Message) -> None:

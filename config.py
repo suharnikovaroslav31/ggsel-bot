@@ -32,7 +32,8 @@ MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3"
 
 # Mini App на Bothost: PORT выдаёт хост, WEBAPP_URL — публичный https-домен сервиса
 WEB_PORT = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "3000")
-WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip().rstrip("/")
+_DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
+WEBAPP_URL = (os.getenv("WEBAPP_URL", _DEFAULT_WEBAPP).strip() or _DEFAULT_WEBAPP).rstrip("/")
 
 # Панель Ural Team: куда слать события сделок (домен бота панели на Bothost).
 # Пусто — отправка выключена, бот работает как раньше.

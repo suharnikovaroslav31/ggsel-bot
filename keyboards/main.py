@@ -1,4 +1,10 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
+from aiogram.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    WebAppInfo,
+)
 
 from config import SUPPORT_URL, WEBAPP_URL
 from texts.deal_messages import CURRENCY_NAMES
@@ -24,6 +30,18 @@ def _btn(
     if emoji:
         kwargs["icon_custom_emoji_id"] = emoji
     return InlineKeyboardButton(**kwargs)
+
+
+def miniapp_reply_kb() -> ReplyKeyboardMarkup | None:
+    if not WEBAPP_URL:
+        return None
+    return ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📱 Открыть GGSel", web_app=WebAppInfo(url=WEBAPP_URL))]
+        ],
+        resize_keyboard=True,
+        is_persistent=True,
+    )
 
 
 def main_menu(lang: str | None = "ru", *, is_admin: bool = False) -> InlineKeyboardMarkup:
