@@ -198,8 +198,10 @@ def _deal_json(row, uid: int) -> dict[str, Any]:
     seller = int(row["seller_id"] or 0)
     buyer = int(row["buyer_id"] or 0) if row["buyer_id"] else 0
     role = "seller" if seller == uid else "buyer" if buyer == uid else ""
+    code = row["code"]
+    link = f"https://t.me/{_bot_username}?start=deal_{code}" if _bot_username else ""
     return {
-        "code": row["code"],
+        "code": code,
         "deal_type": row["deal_type"],
         "pay_method": row["pay_method"],
         "amount": float(row["amount"]),
@@ -208,6 +210,7 @@ def _deal_json(row, uid: int) -> dict[str, Any]:
         "role": role,
         "seller_id": seller or None,
         "buyer_id": buyer or None,
+        "link": link,
     }
 
 
@@ -384,10 +387,13 @@ async def api_deals_create(request: web.Request) -> web.Response:
         description=description,
     )
     report_deal(code, "created", actor_id=uid)
-    link = f"https://t.me/{_bot_username}?start=deal_{code}" if _bot_username else code
+    link = f"https://t.me/{_bot_username}?start=deal_{code}" if _bot_username else ""
     deal = await db.get_deal_by_code(code)
+    payload = _deal_json(deal, uid)
+    if not payload.get("link"):
+        payload["link"] = link
     return web.json_response(
-        {"ok": True, "deal": _deal_json(deal, uid), "link": link},
+        {"ok": True, "deal": payload, "link": payload["link"] or f"deal_{code}"},
     )
 
 
@@ -396,6 +402,21 @@ async def _load_deal(code: str, uid: int):
     if not deal:
         return None, web.json_response({"ok": False, "error": "not_found"}, status=404)
     return deal, None
+
+
+async def api_deal_get(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    uid = int(tg_user["id"])
+    code = request.match_info["code"]
+    deal, err_resp = await _load_deal(code, uid)
+    if err_resp:
+        return err_resp
+    payload = _deal_json(deal, uid)
+    if not payload["role"] and deal["status"] not in {"open"}:
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
+    return web.json_response({"ok": True, "deal": payload})
 
 
 async def api_deal_cancel(request: web.Request) -> web.Response:
@@ -719,6 +740,7 @@ def build_app() -> web.Application:
     app.router.add_post("/api/requisites", api_requisites)
     app.router.add_post("/api/withdraw", api_withdraw)
     app.router.add_get("/api/deals", api_deals_list)
+    app.router.add_get("/api/deals/{code}", api_deal_get)
     app.router.add_post("/api/deals", api_deals_create)
     app.router.add_post("/api/deals/{code}/cancel", api_deal_cancel)
     app.router.add_post("/api/deals/{code}/join", api_deal_join)
