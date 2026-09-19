@@ -11,7 +11,6 @@ from aiogram.fsm.storage.memory import MemoryStorage
 from config import ADMIN_IDS, BOT_TOKEN, PROXY_URL, SUPER_ADMIN_ID, WEBAPP_URL
 from database import db
 from handlers import setup_routers
-from webapp_server import start_webapp
 
 
 async def main() -> None:
@@ -25,6 +24,7 @@ async def main() -> None:
     )
     admins = set(ADMIN_IDS) | {SUPER_ADMIN_ID}
     logging.info("Owner: %s | Admins: %s", SUPER_ADMIN_ID, ", ".join(str(x) for x in sorted(admins)))
+    logging.info("Proxy: %s", PROXY_URL or "(off)")
 
     session = AiohttpSession(proxy=PROXY_URL) if PROXY_URL else AiohttpSession()
     bot = Bot(
@@ -38,6 +38,14 @@ async def main() -> None:
     await db.connect()
     runner = None
     try:
+        try:
+            from webapp_server import start_http
+
+            runner = await start_http()
+        except Exception as exc:
+            logging.exception("HTTP не поднялся, бот всё равно стартует: %s", exc)
+
+        me = None
         for attempt in range(1, 11):
             try:
                 await bot.delete_webhook(drop_pending_updates=True)
@@ -48,14 +56,18 @@ async def main() -> None:
                 if attempt == 10:
                     raise
                 await asyncio.sleep(3)
-        runner = None
-        try:
-            runner = await start_webapp(bot)
-        except Exception as exc:
-            logging.exception("Mini App не поднялась, бот всё равно работает: %s", exc)
+
+        if runner is not None:
+            try:
+                from webapp_server import bind_bot_menu as _bind
+
+                await _bind(bot)
+            except Exception as exc:
+                logging.warning("Mini App menu: %s", exc)
+
         db_admins = await db.list_admins()
         logging.info("Admins in DB: %s", ", ".join(str(x) for x in db_admins) or "(none)")
-        logging.info("Bot started as @%s", me.username)
+        logging.info("Bot started as @%s", me.username if me else "?")
         if WEBAPP_URL:
             logging.info("Mini App: %s", WEBAPP_URL)
         await dp.start_polling(bot)

@@ -12,8 +12,9 @@ _data_dir = os.getenv("DATA_DIR", "").strip()
 DB_PATH = Path(_data_dir) / "bot.db" if _data_dir else BASE_DIR / "data" / "bot.db"
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
-# Локальный VPN/Clash/V2Ray proxy (если пусто — прямое подключение)
-PROXY_URL = os.getenv("PROXY_URL", "").strip()
+# Локальный VPN только на ПК. На Bothost DATA_DIR задан — прокси игнорируем.
+_on_host = bool(_data_dir)
+PROXY_URL = "" if _on_host else os.getenv("PROXY_URL", "").strip()
 _DEFAULT_OWNER = 8058806494
 ADMIN_IDS = {
     int(x.strip())

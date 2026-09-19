@@ -567,27 +567,35 @@ async def index(_: web.Request) -> web.FileResponse:
     return web.FileResponse(WEBAPP_DIR / "index.html")
 
 
-async def start_webapp(bot: Bot) -> web.AppRunner:
-    global _bot_username
-    attach_bot(bot)
-    me = await bot.get_me()
-    _bot_username = me.username or ""
+async def start_http() -> web.AppRunner:
     runner = web.AppRunner(build_app(), access_log=None)
     await runner.setup()
     await web.TCPSite(runner, "0.0.0.0", WEB_PORT).start()
     log.info("Mini App слушает 0.0.0.0:%s", WEB_PORT)
+    return runner
+
+
+async def bind_bot_menu(bot: Bot) -> None:
+    global _bot_username
+    attach_bot(bot)
+    me = await bot.get_me()
+    _bot_username = me.username or ""
     url = WEBAPP_URL
-    if url:
-        try:
-            await bot.set_chat_menu_button(
-                menu_button=MenuButtonWebApp(
-                    text="GGSel",
-                    web_app=WebAppInfo(url=url),
-                )
+    if not url:
+        return
+    try:
+        await bot.set_chat_menu_button(
+            menu_button=MenuButtonWebApp(
+                text="GGSel",
+                web_app=WebAppInfo(url=url),
             )
-            log.info("Кнопка меню Mini App: %s", url)
-        except Exception as exc:
-            log.warning("Не удалось поставить menu button: %s", exc)
-    else:
-        log.warning("WEBAPP_URL пуст — поставь публичный https-домен Bothost")
+        )
+        log.info("Кнопка меню Mini App: %s", url)
+    except Exception as exc:
+        log.warning("Не удалось поставить menu button: %s", exc)
+
+
+async def start_webapp(bot: Bot) -> web.AppRunner:
+    runner = await start_http()
+    await bind_bot_menu(bot)
     return runner
