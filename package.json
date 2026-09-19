@@ -1,0 +1,7 @@
+{
+  "name": "ggsel-bot",
+  "private": true,
+  "scripts": {
+    "start": "python main.py"
+  }
+}
