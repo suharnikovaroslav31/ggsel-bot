@@ -34,7 +34,7 @@ from utils.panel import report_deal
 
 log = logging.getLogger("webapp")
 NFT_RE = re.compile(r"^https://t\.me/nft/[A-Za-z0-9_\-]+$", re.IGNORECASE)
-WEBAPP_DIR = BASE_DIR / "webapp"
+WEBAPP_DIR = BASE_DIR / "static_ui"
 
 _bot: Bot | None = None
 _bot_username = ""
