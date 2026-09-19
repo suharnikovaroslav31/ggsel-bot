@@ -1,7 +1,8 @@
 {
   "name": "ggsel-bot",
   "private": true,
+  "main": "webapp/app.js",
   "scripts": {
-    "start": "python main.py"
+    "start": "node webapp/app.js"
   }
 }
