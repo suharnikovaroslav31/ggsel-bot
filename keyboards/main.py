@@ -36,10 +36,49 @@ def app_button() -> InlineKeyboardButton | None:
     return InlineKeyboardButton(text="📱 GGSel", web_app=WebAppInfo(url=WEBAPP_URL))
 
 
+def app_url(query: str = "") -> str:
+    base = (WEBAPP_URL or "").rstrip("/")
+    if not query:
+        return base
+    if not query.startswith("?"):
+        query = "?" + query
+    return base + query
+
+
+def language_start_kb(deal: str | None = None) -> InlineKeyboardMarkup:
+    extra = f"&deal={deal}" if deal else ""
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Русский",
+                    web_app=WebAppInfo(url=app_url(f"setlang=ru{extra}")),
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="English",
+                    web_app=WebAppInfo(url=app_url(f"setlang=en{extra}")),
+                )
+            ],
+        ]
+    )
+
+
+def open_app_kb(query: str = "") -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="Открыть GGSel",
+                    web_app=WebAppInfo(url=app_url(query)),
+                )
+            ]
+        ]
+    )
+
+
 def _kb(rows: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
-    extra = app_button()
-    if extra:
-        rows = [[extra], *rows]
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 

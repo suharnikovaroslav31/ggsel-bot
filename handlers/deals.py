@@ -52,15 +52,9 @@ async def _edit(callback: CallbackQuery, text: str, markup) -> None:
 
 @router.callback_query(F.data == "menu:create")
 async def menu_create(callback: CallbackQuery, state: FSMContext) -> None:
-    lang = await get_lang(callback.from_user.id)
-    await state.clear()
-    await state.set_state(CreateDealStates.choosing_role)
-    await _edit(
-        callback,
-        "— Кто вы в этой сделке?",
-        deal_role_menu(lang),
-    )
-    await callback.answer()
+    from utils.app_gate import send_app
+
+    await send_app(callback, state)
 
 
 @router.callback_query(F.data.startswith("deal:role:"))

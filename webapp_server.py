@@ -49,11 +49,11 @@ def attach_bot(bot: Bot) -> None:
     _bot = bot
 
 
-async def _notify(user_id: int, text: str) -> None:
-    if _bot is None:
+async def _notify(user_id: int, text: str, markup=None) -> None:
+    if _bot is None or not user_id:
         return
     try:
-        await _bot.send_message(user_id, text, parse_mode="HTML")
+        await _bot.send_message(user_id, text, parse_mode="HTML", reply_markup=markup)
     except Exception:
         pass
 
@@ -406,12 +406,60 @@ async def api_deal_join(request: web.Request) -> web.Response:
         return err
     uid = int(tg_user["id"])
     code = request.match_info["code"]
+    deal = await db.get_deal_by_code(code)
+    if not deal:
+        return web.json_response({"ok": False, "error": "not_found"}, status=404)
+    seller = int(deal["seller_id"] or 0)
+    buyer = int(deal["buyer_id"] or 0) if deal["buyer_id"] else 0
+    if uid in {seller, buyer} and uid:
+        return web.json_response(
+            {"ok": True, "joined": False, "role": _deal_json(deal, uid)["role"], "deal": _deal_json(deal, uid)}
+        )
+    if deal["status"] != "open":
+        return web.json_response({"ok": False, "error": "cannot_join"}, status=400)
     role = await db.join_deal(code, uid)
     if not role:
         return web.json_response({"ok": False, "error": "cannot_join"}, status=400)
     report_deal(code, "joined", actor_id=uid)
     deal = await db.get_deal_by_code(code)
-    return web.json_response({"ok": True, "role": role, "deal": _deal_json(deal, uid)})
+    await _notify_join(deal, code, uid)
+    return web.json_response(
+        {"ok": True, "joined": True, "role": role, "deal": _deal_json(deal, uid)}
+    )
+
+
+async def _notify_join(deal, code: str, uid: int) -> None:
+    from keyboards.main import open_app_kb
+    from texts.deal_messages import buyer_seller_joined_text, seller_deal_connected_text
+
+    if not deal:
+        return
+    seller_id = int(deal["seller_id"] or 0)
+    buyer_id = int(deal["buyer_id"] or 0) if deal["buyer_id"] else 0
+    if not seller_id or not buyer_id:
+        return
+    other = buyer_id if uid == seller_id else seller_id
+    kb = open_app_kb(f"deal={code}")
+    buyer_user = await db.get_user(buyer_id)
+    seller_user = await db.get_user(seller_id)
+    if other == seller_id:
+        text = seller_deal_connected_text(
+            code=code,
+            buyer_username=buyer_user["username"] if buyer_user else None,
+            buyer_id=buyer_id,
+            buyer_deals=await db.count_user_deals(buyer_id),
+            description=deal["description"] or "",
+            pay_method=deal["pay_method"],
+            amount=float(deal["amount"]),
+        )
+    else:
+        text = buyer_seller_joined_text(
+            code=code,
+            seller_username=seller_user["username"] if seller_user else None,
+            seller_id=seller_id,
+            seller_completed_deals=await db.count_completed_deals(seller_id),
+        )
+    await _notify(other, text, kb)
 
 
 async def api_deal_paybal(request: web.Request) -> web.Response:
@@ -433,7 +481,13 @@ async def api_deal_paybal(request: web.Request) -> web.Response:
     if not await db.set_deal_status(code, "paid", only_if="active"):
         return web.json_response({"ok": False, "error": "status"}, status=400)
     report_deal(code, "paid", actor_id=uid)
-    await _notify(int(deal["seller_id"]), f"✅ Оплата по сделке <code>{code}</code> прошла.")
+    from keyboards.main import open_app_kb
+
+    await _notify(
+        int(deal["seller_id"]),
+        f"✅ Оплата по сделке <code>{code}</code> прошла.",
+        open_app_kb(f"deal={code}"),
+    )
     deal = await db.get_deal_by_code(code)
     return web.json_response({"ok": True, "deal": _deal_json(deal, uid)})
 
@@ -455,9 +509,12 @@ async def api_deal_sent(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": "status"}, status=400)
     report_deal(code, "goods_sent", actor_id=uid)
     if deal["buyer_id"]:
+        from keyboards.main import open_app_kb
+
         await _notify(
             int(deal["buyer_id"]),
             f"📦 Товар по сделке <code>{code}</code> передан гаранту @{MANAGER_USERNAME}.",
+            open_app_kb(f"deal={code}"),
         )
     deal = await db.get_deal_by_code(code)
     return web.json_response({"ok": True, "deal": _deal_json(deal, uid)})
@@ -483,7 +540,13 @@ async def api_deal_recv(request: web.Request) -> web.Response:
     credit = PAY_TO_BALANCE.get(deal["pay_method"], "rub")
     await db.add_balance(int(deal["seller_id"]), credit, float(deal["amount"]))
     report_deal(code, "completed", actor_id=uid)
-    await _notify(int(deal["seller_id"]), f"✅ Сделка <code>{code}</code> завершена.")
+    from keyboards.main import open_app_kb
+
+    await _notify(
+        int(deal["seller_id"]),
+        f"✅ Сделка <code>{code}</code> завершена.",
+        open_app_kb(f"deal={code}"),
+    )
     deal = await db.get_deal_by_code(code)
     return web.json_response({"ok": True, "deal": _deal_json(deal, uid)})
 

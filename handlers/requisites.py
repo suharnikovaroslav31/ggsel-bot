@@ -58,8 +58,9 @@ async def _ask(callback: CallbackQuery, state: FSMContext, *, state_name, text_k
 
 @router.callback_query(F.data == "menu:requisites")
 async def menu_requisites(callback: CallbackQuery, state: FSMContext) -> None:
-    await state.clear()
-    await show_requisites(callback)
+    from utils.app_gate import send_app
+
+    await send_app(callback, state)
 
 
 @router.callback_query(F.data == "req:ton")

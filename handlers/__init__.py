@@ -33,9 +33,9 @@ def setup_routers() -> Router:
     root = Router()
     root.message.middleware(BanMiddleware())
     root.callback_query.middleware(BanMiddleware())
+    root.include_router(start_router)
     root.include_router(admin_router)
     root.include_router(deals_router)
     root.include_router(requisites_router)
-    root.include_router(start_router)
     root.include_router(emoji_router)
     return root

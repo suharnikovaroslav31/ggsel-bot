@@ -10,6 +10,7 @@ from keyboards.main import _btn, _kb
 from states.admin import AdminStates
 from texts.deal_messages import manager_balance_sent_text
 from utils.admin_access import is_admin, is_super_admin
+from utils.app_gate import send_app
 from utils.currencies import BALANCE_KEYS, BALANCE_META
 from utils.emoji import ce
 from utils.media import edit_ui, reply_ui, send_ui
@@ -202,27 +203,12 @@ async def cmd_panel_test(message: Message) -> None:
 
 @router.message(Command("admin"))
 async def cmd_admin(message: Message, state: FSMContext) -> None:
-    if await _deny_if_not_admin(message):
-        return
-    await state.clear()
-    await reply_ui(
-        message,
-        _admin_home_text(message.from_user.id),
-        admin_menu(message.from_user.id),
-    )
+    await send_app(message, state)
 
 
 @router.callback_query(F.data == "menu:admin")
 async def menu_admin(callback: CallbackQuery, state: FSMContext) -> None:
-    if await _deny_if_not_admin(callback):
-        return
-    await state.clear()
-    await edit_ui(
-        callback,
-        _admin_home_text(callback.from_user.id),
-        admin_menu(callback.from_user.id),
-    )
-    await callback.answer()
+    await send_app(callback, state)
 
 
 @router.callback_query(F.data == "admin:close")

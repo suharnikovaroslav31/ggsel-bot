@@ -176,13 +176,46 @@ input, textarea, select {
   font-family: inherit;
 }
 #toast {
-  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(8px);
+  position: fixed; left: 50%; bottom: 96px; transform: translateX(-50%) translateY(8px);
   background: #171717; color: #fff; padding: 10px 14px; border-radius: 16px;
   opacity: 0; pointer-events: none; transition: .22s ease; z-index: 20; max-width: 86%;
 }
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .err { color: var(--danger); }
 .ok { color: var(--ok); }
+.stage { flex: 1; padding: 8px 16px 110px; }
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 16;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #1c1c1e;
+  border-radius: 28px;
+  padding: 8px 10px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.16);
+}
+.tab {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #8e8e93;
+  min-width: 76px;
+  padding: 4px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.tab svg { width: 22px; height: 22px; fill: currentColor; }
+.tab.on { color: #fff; }
+.tab:active { transform: scale(.96); }
   </style>
 </head>
 <body>
@@ -197,6 +230,20 @@ input, textarea, select {
       <button class="chip" type="button" data-go="lang" id="btn-lang">RU</button>
     </header>
     <div class="stage"><div id="screen" class="panel"></div></div>
+    <nav class="tabbar" id="tabbar">
+      <button class="tab on" type="button" data-go="home" data-tab="home">
+        <svg viewBox="0 0 24 24"><path d="M12 3.2 4 10v10h5.5v-6h5V20H20V10l-8-6.8Z"/></svg>
+        <span id="tab-home-label">Главная</span>
+      </button>
+      <button class="tab" type="button" data-go="bal" data-tab="bal">
+        <svg viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Zm13.25 5.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></svg>
+        <span id="tab-bal-label">Кошелек</span>
+      </button>
+      <button class="tab" type="button" data-go="profile" data-tab="profile">
+        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.4 0-8 1.7-8 5v1h16v-1c0-3.3-4.6-5-8-5Z"/></svg>
+        <span id="tab-profile-label">Профиль</span>
+      </button>
+    </nav>
   </div>
   <div id="toast"></div>
   <script>
@@ -216,7 +263,8 @@ const I18N = {
     w4:"Передача товаров через гаранта:",
     req:"Мои реквизиты", create:"Создать сделку", bal:"Баланс", deals:"Мои сделки",
     refs:"Рефералы", lang:"Язык / Lang", support:"Техподдержка", admin:"Админ-панель",
-    back:"Вернуться в меню", cancel:"Отмена", save:"Сохранить",
+    tab_home:"Главная", tab_wallet:"Кошелек", tab_profile:"Профиль",
+    back:"Назад", cancel:"Отмена", save:"Сохранить",
     req_title:"Управление реквизитами", req_hint:"Используйте кнопки ниже чтобы добавить/изменить реквизиты",
     ton:"Добавить/изменить TON кошелек", card:"Добавить/изменить карту", uname:"Добавить/изменить юзернейм",
     ask_ton:"Отправьте адрес кошелька. Пример: UQ... или EQ...",
@@ -247,7 +295,8 @@ const I18N = {
     w4:"Goods transfer via guarantor:",
     req:"My details", create:"Create deal", bal:"Balance", deals:"My deals",
     refs:"Referrals", lang:"Language / Язык", support:"Support", admin:"Admin panel",
-    back:"Back to menu", cancel:"Cancel", save:"Save",
+    tab_home:"Home", tab_wallet:"Wallet", tab_profile:"Profile",
+    back:"Back", cancel:"Cancel", save:"Save",
     req_title:"Payment details", req_hint:"Use the buttons below to add/change payment details",
     ton:"Add/change TON wallet", card:"Add/change card", uname:"Add/change username",
     ask_ton:"Send wallet address. Example: UQ... or EQ...",
@@ -315,7 +364,7 @@ async function api(path,opts={}){
   const res=await fetch(path,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
-    const map={auth:"Открой Mini App кнопкой GGSel в боте",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки"};
+    const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена"};
     throw new Error(map[data.error]||data.error||"Ошибка");
   }
   return data;
@@ -331,21 +380,43 @@ function act(label, action, icon, fb, cls=""){
   const ico=icon?pe(icon,fb):"";
   return `<button class="kbtn ${cls||"primary"}" data-act="${esc(action)}">${ico}<span>${label}</span></button>`;
 }
-function backBtn(){return btn(t("back"),"home","btn_back","🔙");}
+function backBtn(){
+  const tab=currentTab();
+  const target=["home","bal","profile"].includes(tab)?tab:"home";
+  return btn(t("back"),target,"btn_back","🔙");
+}
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
+const TABS=["home","bal","profile"];
+function currentTab(){
+  const s=state.screen;
+  if(s==="bal"||s==="wd") return "bal";
+  if(s==="profile"||s==="req"||s==="req-ton"||s==="req-card"||s==="req-user"||s==="refs"||s==="lang"||s.startsWith("admin")) return "profile";
+  return "home";
+}
+function syncTabs(){
+  const on=currentTab();
+  document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
+  const h=document.getElementById("tab-home-label");
+  const w=document.getElementById("tab-bal-label");
+  const p=document.getElementById("tab-profile-label");
+  if(h) h.textContent=t("tab_home");
+  if(w) w.textContent=t("tab_wallet");
+  if(p) p.textContent=t("tab_profile");
+}
 function syncBack(){
   if(!tg||!tg.BackButton) return;
-  if(state.screen==="home") tg.BackButton.hide();
+  if(TABS.includes(state.screen)) tg.BackButton.hide();
   else tg.BackButton.show();
 }
 function go(name, dir="fwd"){
   haptic();
   state.dir=dir;
-  if(name==="home") state.stack=["home"];
-  else if(dir==="fwd") state.stack.push(name);
+  if(TABS.includes(name)) state.stack=[name];
+  else if(dir==="fwd" && state.stack[state.stack.length-1]!==name) state.stack.push(name);
   state.screen=name;
   syncBack();
+  syncTabs();
   draw();
 }
 function back(){
@@ -353,6 +424,7 @@ function back(){
   state.dir="back";
   state.screen=state.stack[state.stack.length-1]||"home";
   syncBack();
+  syncTabs();
   draw();
 }
 function screenHome(){
@@ -361,13 +433,8 @@ function screenHome(){
   const b=u.balances||{};
   const tiles=[
     `<button class="tile" data-go="create-role">${pe("btn_create","➕")}<span>${t("create")}</span></button>`,
-    `<button class="tile" data-go="req">${pe("btn_requisites","💼")}<span>${t("req")}</span></button>`,
-    `<button class="tile" data-go="bal">${pe("btn_balance","🧳")}<span>${t("bal")}</span></button>`,
-    `<button class="tile" data-go="deals">${pe("btn_deals","📑")}<span>${t("deals")}</span></button>`,
-    `<button class="tile" data-go="refs">${pe("btn_refs","🌐")}<span>${t("refs")}</span></button>`,
-    `<button class="tile" data-act="support">${pe("btn_support","🎧")}<span>${t("support")}</span></button>`
+    `<button class="tile" data-go="deals">${pe("btn_deals","📑")}<span>${t("deals")}</span></button>`
   ];
-  if(u.is_admin) tiles.push(`<button class="tile" data-go="admin">${pe("construction","🛠")}<span>${u.is_super_admin?t("owner"):t("admin")}</span></button>`);
   return `<div class="hero">
       <div class="muted">P2P-гарант</div>
       <div class="who">${esc(name)}</div>
@@ -376,8 +443,19 @@ function screenHome(){
         <span class="pill">${pel("balance_stars","⭐")} ${esc(b.stars??0)} Stars</span>
       </div>
     </div>
-    <div class="sec">Каталог</div>
+    <div class="sec">${t("tab_home")}</div>
     <div class="tiles">${tiles.join("")}</div>`;
+}
+function screenProfile(){
+  const u=state.user;
+  const tiles=[
+    `<button class="tile" data-go="req">${pe("btn_requisites","💼")}<span>${t("req")}</span></button>`,
+    `<button class="tile" data-go="refs">${pe("btn_refs","🌐")}<span>${t("refs")}</span></button>`,
+    `<button class="tile" data-go="lang">${pe("btn_lang","🌐")}<span>${t("lang")}</span></button>`,
+    `<button class="tile" data-act="support">${pe("btn_support","🎧")}<span>${t("support")}</span></button>`
+  ];
+  if(u.is_admin) tiles.push(`<button class="tile" data-go="admin">${pe("construction","🛠")}<span>${u.is_super_admin?t("owner"):t("admin")}</span></button>`);
+  return `<div class="sec">${t("tab_profile")}</div><div class="tiles">${tiles.join("")}</div>`;
 }
 function screenReq(){
   const u=state.user;
@@ -439,7 +517,6 @@ function screenBal(){
     if(c) row.push(btn(t(c[1]),"wd-"+c[0],c[2],c[3]));
     rows.push(row);
   }
-  rows.push([backBtn()]);
   return bubble(`${pe("balance_card","💳")} <b>${t("bal")}</b><br><br>${groups}<p class="hint">${pe("deal_excl","❗️")} ${t("withdraw_hint")}</p>`)+kb(rows);
 }
 function screenWd(){
@@ -510,6 +587,7 @@ async function draw(){
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=screenHome();
+    else if(s==="profile") root.innerHTML=screenProfile();
     else if(s==="req") root.innerHTML=screenReq();
     else if(s==="req-ton") root.innerHTML=fieldScreen("TON","balance_ton","💎",t("ask_ton"),"f-ton",state.user.ton_wallet,"save-ton");
     else if(s==="req-card") root.innerHTML=fieldScreen(t("card"),"balance_card","💳",t("ask_card"),"f-card",state.user.card_number,"save-card");
@@ -541,15 +619,31 @@ async function draw(){
   root.className="";
   void root.offsetWidth;
   root.className="panel"+(state.dir==="back"?" back":"");
+  syncTabs();
 }
-async function loadMe(){
+let bootDealDone=false;
+async function loadMe(opts={}){
+  const q=new URLSearchParams(location.search);
+  const setlang=q.get("setlang");
+  if(setlang==="ru"||setlang==="en"){
+    try{await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});}catch(e){}
+  }
   const data=await api("/api/me");
   state.user=data.user;
   const langBtn=document.getElementById("btn-lang");
   if(langBtn) langBtn.textContent=state.user.language==="en"?"EN":"RU";
+  if(opts.skipDeal || bootDealDone) return;
+  bootDealDone=true;
+  let deal=q.get("deal")||"";
   const sp=data.user.start_param||(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.start_param)||"";
-  if(String(sp).startsWith("deal_")){
-    try{await api("/api/deals/"+sp.slice(5)+"/join",{method:"POST"});toast("Вы вошли в сделку");state.screen="deals";state.stack=["home","deals"];}catch(e){toast(e.message);}
+  if(!deal && String(sp).startsWith("deal_")) deal=sp.slice(5);
+  if(deal){
+    try{
+      const r=await api("/api/deals/"+deal+"/join",{method:"POST"});
+      if(r.joined) toast("Вы вошли в сделку");
+    }catch(e){toast(e.message);}
+    state.screen="deals";
+    state.stack=["home","deals"];
   }
 }
 document.body.addEventListener("click",async(ev)=>{
@@ -562,7 +656,7 @@ document.body.addEventListener("click",async(ev)=>{
     if(name.startsWith("create-amt-")){state.draft.pay_method=name.slice(11);go("create-amt");return;}
     if(name.startsWith("wd-")){state.wmethod=name.slice(3);go("wd");return;}
     if(name.startsWith("set-lang-")){
-      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe();go("home");}catch(e){toast(e.message);}
+      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe({skipDeal:true});go("profile");}catch(e){toast(e.message);}
       return;
     }
     if(name.startsWith("acred-")){state.admin={kind:"credit",currency:name.slice(6)};go("admin-amt");return;}
@@ -638,7 +732,7 @@ if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
       await new Promise(r=>setTimeout(r,300));
     }
   }
-  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Открыть GGSel» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и выбери язык в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
 })();
   </script>
 </body>
