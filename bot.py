@@ -8,9 +8,10 @@ from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 
-from config import ADMIN_IDS, BOT_TOKEN, PROXY_URL, SUPER_ADMIN_ID
+from config import ADMIN_IDS, BOT_TOKEN, PROXY_URL, SUPER_ADMIN_ID, WEBAPP_URL
 from database import db
 from handlers import setup_routers
+from webapp_server import start_webapp
 
 
 async def main() -> None:
@@ -35,6 +36,7 @@ async def main() -> None:
     dp.include_router(setup_routers())
 
     await db.connect()
+    runner = None
     try:
         for attempt in range(1, 11):
             try:
@@ -46,11 +48,16 @@ async def main() -> None:
                 if attempt == 10:
                     raise
                 await asyncio.sleep(3)
+        runner = await start_webapp(bot)
         db_admins = await db.list_admins()
         logging.info("Admins in DB: %s", ", ".join(str(x) for x in db_admins) or "(none)")
         logging.info("Bot started as @%s", me.username)
+        if WEBAPP_URL:
+            logging.info("Mini App: %s", WEBAPP_URL)
         await dp.start_polling(bot)
     finally:
+        if runner is not None:
+            await runner.cleanup()
         await db.close()
         await bot.session.close()
 

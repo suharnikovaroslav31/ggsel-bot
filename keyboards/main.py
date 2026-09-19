@@ -1,6 +1,6 @@
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 
-from config import SUPPORT_URL
+from config import SUPPORT_URL, WEBAPP_URL
 from texts.deal_messages import CURRENCY_NAMES
 from texts.i18n import t
 from utils.emoji import icon_id
@@ -27,7 +27,18 @@ def _btn(
 
 
 def main_menu(lang: str | None = "ru", *, is_admin: bool = False) -> InlineKeyboardMarkup:
-    rows = [
+    rows = []
+    if WEBAPP_URL:
+        rows.append(
+            [
+                InlineKeyboardButton(
+                    text="📱 Открыть приложение",
+                    web_app=WebAppInfo(url=WEBAPP_URL),
+                )
+            ]
+        )
+    rows.extend(
+        [
         [
             _btn(t(lang, "btn_requisites"), fallback_emoji="💼", callback="menu:requisites", icon_key="btn_requisites"),
             _btn(t(lang, "btn_create"), fallback_emoji="➕", callback="menu:create", icon_key="btn_create"),
@@ -41,7 +52,8 @@ def main_menu(lang: str | None = "ru", *, is_admin: bool = False) -> InlineKeybo
             _btn(t(lang, "btn_lang"), fallback_emoji="🌐", callback="menu:lang", icon_key="btn_lang"),
         ],
         [_btn(t(lang, "btn_support"), fallback_emoji="🎧", url=SUPPORT_URL, icon_key="btn_support")],
-    ]
+        ]
+    )
     if is_admin:
         rows.append(
             [_btn(t(lang, "btn_admin"), fallback_emoji="🛠", callback="menu:admin", icon_key="btn_admin")]
