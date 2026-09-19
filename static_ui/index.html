@@ -69,6 +69,100 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
   font: 600 13px/1 Geist, ui-sans-serif, system-ui, sans-serif;
 }
 .stage { flex: 1; padding: 8px 16px 28px; }
+.search-like {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 12px;
+}
+.chip-cat {
+  appearance: none;
+  border: 0;
+  background: var(--btn);
+  color: var(--text);
+  border-radius: 100px;
+  min-height: 36px;
+  padding: 0 14px;
+  font: 600 13px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.cats {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 2px 0 14px;
+  scrollbar-width: none;
+}
+.cats::-webkit-scrollbar { display: none; }
+.cards-h {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 0 16px;
+  scrollbar-width: none;
+}
+.cards-h::-webkit-scrollbar { display: none; }
+.feat {
+  flex: 0 0 148px;
+  height: 168px;
+  border: 0;
+  border-radius: 20px;
+  padding: 14px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  cursor: pointer;
+}
+.feat.g { background: linear-gradient(160deg, #44cf5e 0%, #1fa34a 100%); }
+.feat.d { background: linear-gradient(160deg, #2b2f38 0%, #111318 100%); }
+.feat.b { background: linear-gradient(160deg, #575df6 0%, #3b40d4 100%); }
+.feat.t { background: linear-gradient(160deg, #0f766e 0%, #115e59 100%); }
+.feat.p { background: linear-gradient(160deg, #7c3aed 0%, #5b21b6 100%); }
+.feat.s { background: linear-gradient(160deg, #0ea5e9 0%, #0369a1 100%); }
+.feat .pe { width: 28px; height: 28px; flex-basis: 28px; }
+.panel-card {
+  background: #f4f6f8;
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.panel-card .lab { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+.amt-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }
+.amt-chip {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cta {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px;
+  min-height: 48px;
+  font: 600 15px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+}
+.cta:active { background: var(--accent-hover); }
+.points { margin: 8px 0 0; padding-left: 18px; color: var(--text); }
+.points li { margin: 4px 0; }
 .panel { animation: enter .32s cubic-bezier(.22,1,.36,1) both; }
 .panel.back { animation: enter-back .32s cubic-bezier(.22,1,.36,1) both; }
 @keyframes enter {
@@ -163,6 +257,14 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
 .line { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
 .list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
 .item { border-radius: 16px; background: #fff; }
+button.item {
+  appearance: none;
+  width: 100%;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
 .item .top { display: flex; justify-content: space-between; gap: 8px; }
 input, textarea, select {
   width: 100%;
@@ -183,7 +285,7 @@ input, textarea, select {
 #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .err { color: var(--danger); }
 .ok { color: var(--ok); }
-.stage { flex: 1; padding: 8px 16px 110px; }
+.stage { flex: 1; padding: 8px 16px 120px; }
 .tabbar {
   position: fixed;
   left: 50%;
@@ -192,30 +294,37 @@ input, textarea, select {
   z-index: 16;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   background: #1c1c1e;
   border-radius: 28px;
-  padding: 8px 10px;
+  padding: 8px 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,.16);
+  max-width: min(480px, calc(100vw - 16px));
+  overflow-x: auto;
+  scrollbar-width: none;
 }
+.tabbar::-webkit-scrollbar { display: none; }
 .tab {
   appearance: none;
   border: 0;
   background: transparent;
   color: #8e8e93;
-  min-width: 76px;
-  padding: 4px 8px;
+  min-width: 44px;
+  padding: 4px 5px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   cursor: pointer;
+  flex: 0 0 auto;
 }
-.tab svg { width: 22px; height: 22px; fill: currentColor; }
+.tab svg { width: 20px; height: 20px; fill: currentColor; }
 .tab.on { color: #fff; }
 .tab:active { transform: scale(.96); }
+.tab.admin-only { display: none; }
+.tabbar.admin .tab.admin-only { display: flex; }
   </style>
 </head>
 <body>
@@ -233,15 +342,35 @@ input, textarea, select {
     <nav class="tabbar" id="tabbar">
       <button class="tab on" type="button" data-go="home" data-tab="home">
         <svg viewBox="0 0 24 24"><path d="M12 3.2 4 10v10h5.5v-6h5V20H20V10l-8-6.8Z"/></svg>
-        <span id="tab-home-label">Главная</span>
+        <span data-i18n="tab_home">Главная</span>
+      </button>
+      <button class="tab" type="button" data-go="create-role" data-tab="create">
+        <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
+        <span data-i18n="tab_create">Сделка</span>
+      </button>
+      <button class="tab" type="button" data-go="deals" data-tab="deals">
+        <svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14l-7-3-7 3V5a2 2 0 0 1 2-2Zm2 4h6v2H9V7Zm0 4h6v2H9v-2Z"/></svg>
+        <span data-i18n="tab_deals">Сделки</span>
       </button>
       <button class="tab" type="button" data-go="bal" data-tab="bal">
         <svg viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Zm13.25 5.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></svg>
-        <span id="tab-bal-label">Кошелек</span>
+        <span data-i18n="tab_bal">Баланс</span>
       </button>
-      <button class="tab" type="button" data-go="profile" data-tab="profile">
-        <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-3.4 0-8 1.7-8 5v1h16v-1c0-3.3-4.6-5-8-5Z"/></svg>
-        <span id="tab-profile-label">Профиль</span>
+      <button class="tab" type="button" data-go="req" data-tab="req">
+        <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM7 8h10v2H7V8Zm0 4h6v2H7v-2Z"/></svg>
+        <span data-i18n="tab_req">Реквизиты</span>
+      </button>
+      <button class="tab" type="button" data-go="refs" data-tab="refs">
+        <svg viewBox="0 0 24 24"><path d="M8 10a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8 12c-3.2 0-6 1.5-6 4v2h8v-2c0-1.1.4-2.1 1.1-3H8Zm8 0h-1.1A5.2 5.2 0 0 1 16 16v2h6v-2c0-2.5-2.8-4-6-4Z"/></svg>
+        <span data-i18n="tab_refs">Рефералы</span>
+      </button>
+      <button class="tab" type="button" data-act="support" data-tab="support">
+        <svg viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8v4a3 3 0 0 0 3 3h1v-6H6v-1a6 6 0 0 1 12 0v1h-2v6h1a3 3 0 0 0 3-3v-4a8 8 0 0 0-8-8Z"/></svg>
+        <span data-i18n="tab_support">Поддержка</span>
+      </button>
+      <button class="tab admin-only" type="button" data-go="admin" data-tab="admin">
+        <svg viewBox="0 0 24 24"><path d="M21 7.5 13.5 4 12 6.2 10.5 4 3 7.5l1.5 2.6L3 12.6 10.5 16 12 13.8 13.5 16 21 12.6l-1.5-2.5L21 7.5ZM12 11.2 8.2 9.1 12 7l3.8 2.1L12 11.2Z"/></svg>
+        <span data-i18n="tab_admin">Админ</span>
       </button>
     </nav>
   </div>
@@ -263,7 +392,10 @@ const I18N = {
     w4:"Передача товаров через гаранта:",
     req:"Мои реквизиты", create:"Создать сделку", bal:"Баланс", deals:"Мои сделки",
     refs:"Рефералы", lang:"Язык / Lang", support:"Техподдержка", admin:"Админ-панель",
-    tab_home:"Главная", tab_wallet:"Кошелек", tab_profile:"Профиль",
+    tab_home:"Главная", tab_create:"Сделка", tab_deals:"Сделки", tab_bal:"Баланс",
+    tab_req:"Реквизиты", tab_refs:"Рефералы", tab_support:"Поддержка", tab_admin:"Админ",
+    hits:"Мои сделки", topup:"Баланс и сделка", buy_cta:"Создать сделку",
+    stat_deals:"Сделок", sections:"Разделы",
     back:"Назад", cancel:"Отмена", save:"Сохранить",
     req_title:"Управление реквизитами", req_hint:"Используйте кнопки ниже чтобы добавить/изменить реквизиты",
     ton:"Добавить/изменить TON кошелек", card:"Добавить/изменить карту", uname:"Добавить/изменить юзернейм",
@@ -295,7 +427,10 @@ const I18N = {
     w4:"Goods transfer via guarantor:",
     req:"My details", create:"Create deal", bal:"Balance", deals:"My deals",
     refs:"Referrals", lang:"Language / Язык", support:"Support", admin:"Admin panel",
-    tab_home:"Home", tab_wallet:"Wallet", tab_profile:"Profile",
+    tab_home:"Home", tab_create:"Deal", tab_deals:"Deals", tab_bal:"Balance",
+    tab_req:"Details", tab_refs:"Refs", tab_support:"Support", tab_admin:"Admin",
+    hits:"My deals", topup:"Balance and deal", buy_cta:"Create deal",
+    stat_deals:"Deals", sections:"Sections",
     back:"Back", cancel:"Cancel", save:"Save",
     req_title:"Payment details", req_hint:"Use the buttons below to add/change payment details",
     ton:"Add/change TON wallet", card:"Add/change card", uname:"Add/change username",
@@ -381,28 +516,34 @@ function act(label, action, icon, fb, cls=""){
   return `<button class="kbtn ${cls||"primary"}" data-act="${esc(action)}">${ico}<span>${label}</span></button>`;
 }
 function backBtn(){
-  const tab=currentTab();
-  const target=["home","bal","profile"].includes(tab)?tab:"home";
-  return btn(t("back"),target,"btn_back","🔙");
+  const root=tabScreen(currentTab());
+  if(state.screen===root) return btn(t("back"),"home","btn_back","🔙");
+  return btn(t("back"), root, "btn_back","🔙");
 }
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
-const TABS=["home","bal","profile"];
+const TAB_SCREENS={home:"home",create:"create-role",deals:"deals",bal:"bal",req:"req",refs:"refs",admin:"admin"};
+const TABS=Object.values(TAB_SCREENS);
+function tabScreen(tab){return TAB_SCREENS[tab]||"home";}
 function currentTab(){
   const s=state.screen;
+  if(s==="create-role"||s.startsWith("create-")||s==="create-done") return "create";
+  if(s==="deals") return "deals";
   if(s==="bal"||s==="wd") return "bal";
-  if(s==="profile"||s==="req"||s==="req-ton"||s==="req-card"||s==="req-user"||s==="refs"||s==="lang"||s.startsWith("admin")) return "profile";
+  if(s==="req"||s.startsWith("req-")) return "req";
+  if(s==="refs") return "refs";
+  if(s.startsWith("admin")) return "admin";
   return "home";
 }
 function syncTabs(){
   const on=currentTab();
-  document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
-  const h=document.getElementById("tab-home-label");
-  const w=document.getElementById("tab-bal-label");
-  const p=document.getElementById("tab-profile-label");
-  if(h) h.textContent=t("tab_home");
-  if(w) w.textContent=t("tab_wallet");
-  if(p) p.textContent=t("tab_profile");
+  const bar=document.getElementById("tabbar");
+  if(bar) bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
+  document.querySelectorAll(".tab").forEach(el=>{
+    el.classList.toggle("on", el.dataset.tab===on);
+    if(el.classList.contains("on")) el.scrollIntoView({inline:"center",block:"nearest",behavior:"smooth"});
+  });
+  document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n);});
 }
 function syncBack(){
   if(!tg||!tg.BackButton) return;
@@ -427,35 +568,54 @@ function back(){
   syncTabs();
   draw();
 }
-function screenHome(){
+async function screenHome(){
   const u=state.user;
   const name=u.full_name||(u.username?("@"+u.username):"ggsel");
   const b=u.balances||{};
-  const tiles=[
-    `<button class="tile" data-go="create-role">${pe("btn_create","➕")}<span>${t("create")}</span></button>`,
-    `<button class="tile" data-go="deals">${pe("btn_deals","📑")}<span>${t("deals")}</span></button>`
-  ];
+  const manager=(u.manager||"GGsel_deal").replace(/^@/,"");
+  let deals=[];
+  try{ if(readInitData()) deals=(await api("/api/deals")).deals||[]; }catch(e){}
+  const chips=["ton","stars","usdt","rub"].map(k=>`<span class="amt-chip">${pel("balance_"+k,k==="ton"?"💎":k==="stars"?"⭐":k==="usdt"?"🪙":"💵")} ${esc(b[k]??0)} ${k.toUpperCase()}</span>`).join("");
+  const feats=[
+    ["g","create-role","btn_create","➕",t("create")],
+    ["d","deals","btn_deals","📑",t("deals")],
+    ["b","bal","btn_balance","🧳",t("bal")],
+    ["t","req","btn_requisites","💼",t("req")],
+    ["p","refs","btn_refs","🌐",t("refs")],
+    ["s","","btn_support","🎧",t("support"),"support"]
+  ].map(([cls,go,icon,fb,label,act])=>`<button class="feat ${cls}" ${act?`data-act="${act}"`:`data-go="${go}"`}>${pe(icon,fb)}<span>${label}</span></button>`).join("");
+  const dealCards=deals.length?deals.slice(0,4).map(d=>`<button class="item" data-go="deals"><div class="top"><b>#${esc(d.code)}</b><span class="muted">${esc(d.status)}</span></div><div class="hint">${esc(d.deal_type)} · ${esc(d.pay_method)} · ${d.amount}</div></button>`).join(""):`<div class="item"><b>${t("emptyDeals")}</b><p class="hint">${t("w1")}</p></div>`;
   return `<div class="hero">
-      <div class="muted">P2P-гарант</div>
+      <div class="muted">P2P-гарант · @${esc(manager)}</div>
       <div class="who">${esc(name)}</div>
-      <div class="bal-mini">
-        <span class="pill">${pel("balance_ton","💎")} ${esc(b.ton??0)} TON</span>
-        <span class="pill">${pel("balance_stars","⭐")} ${esc(b.stars??0)} Stars</span>
-      </div>
     </div>
-    <div class="sec">${t("tab_home")}</div>
-    <div class="tiles">${tiles.join("")}</div>`;
-}
-function screenProfile(){
-  const u=state.user;
-  const tiles=[
-    `<button class="tile" data-go="req">${pe("btn_requisites","💼")}<span>${t("req")}</span></button>`,
-    `<button class="tile" data-go="refs">${pe("btn_refs","🌐")}<span>${t("refs")}</span></button>`,
-    `<button class="tile" data-go="lang">${pe("btn_lang","🌐")}<span>${t("lang")}</span></button>`,
-    `<button class="tile" data-act="support">${pe("btn_support","🎧")}<span>${t("support")}</span></button>`
-  ];
-  if(u.is_admin) tiles.push(`<button class="tile" data-go="admin">${pe("construction","🛠")}<span>${u.is_super_admin?t("owner"):t("admin")}</span></button>`);
-  return `<div class="sec">${t("tab_profile")}</div><div class="tiles">${tiles.join("")}</div>`;
+    <div class="cats">
+      <button class="chip-cat" data-go="create-role">${pe("btn_create","➕")} ${t("create")}</button>
+      <button class="chip-cat" data-go="deals">${pe("btn_deals","📑")} ${t("deals")}</button>
+      <button class="chip-cat" data-go="bal">${pe("btn_balance","🧳")} ${t("bal")}</button>
+      <button class="chip-cat" data-go="req">${pe("btn_requisites","💼")} ${t("req")}</button>
+      <button class="chip-cat" data-go="refs">${pe("btn_refs","🌐")} ${t("refs")}</button>
+      <button class="chip-cat" data-act="support">${pe("btn_support","🎧")} ${t("support")}</button>
+      ${u.is_admin?`<button class="chip-cat" data-go="admin">${pe("construction","🛠")} ${t("admin")}</button>`:""}
+    </div>
+    <div class="cards-h">${feats}</div>
+    <div class="panel-card">
+      <div class="lab">${t("topup")}</div>
+      <div class="amt-row">${chips}</div>
+      <button class="cta" data-go="create-role">${pe("btn_create","➕")}<span>${t("buy_cta")}</span></button>
+    </div>
+    <div class="sec">${t("hits")}</div>
+    <div class="list">${dealCards}</div>
+    <div class="panel-card" style="margin-top:16px">
+      <b>${t("welcome_title")}</b>
+      <p class="hint">${t("welcome_lead")}</p>
+      <ul class="points">
+        <li>${t("w1")}</li>
+        <li>${t("w2")}</li>
+        <li>${t("w3")}</li>
+        <li>${t("w4")} @${esc(manager)}</li>
+      </ul>
+    </div>`;
 }
 function screenReq(){
   const u=state.user;
@@ -586,8 +746,7 @@ async function draw(){
   const root=document.getElementById("screen");
   try{
     const s=state.screen;
-    if(s==="home") root.innerHTML=screenHome();
-    else if(s==="profile") root.innerHTML=screenProfile();
+    if(s==="home") root.innerHTML=await screenHome();
     else if(s==="req") root.innerHTML=screenReq();
     else if(s==="req-ton") root.innerHTML=fieldScreen("TON","balance_ton","💎",t("ask_ton"),"f-ton",state.user.ton_wallet,"save-ton");
     else if(s==="req-card") root.innerHTML=fieldScreen(t("card"),"balance_card","💳",t("ask_card"),"f-card",state.user.card_number,"save-card");
@@ -656,7 +815,7 @@ document.body.addEventListener("click",async(ev)=>{
     if(name.startsWith("create-amt-")){state.draft.pay_method=name.slice(11);go("create-amt");return;}
     if(name.startsWith("wd-")){state.wmethod=name.slice(3);go("wd");return;}
     if(name.startsWith("set-lang-")){
-      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe({skipDeal:true});go("profile");}catch(e){toast(e.message);}
+      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe({skipDeal:true});go("home");}catch(e){toast(e.message);}
       return;
     }
     if(name.startsWith("acred-")){state.admin={kind:"credit",currency:name.slice(6)};go("admin-amt");return;}
