@@ -149,7 +149,7 @@ function startHttp() {
           incoming.pipe(res);
         }
       );
-      proxy.setTimeout(4000);
+      proxy.setTimeout(60000);
       proxy.on("timeout", () => {
         proxy.destroy();
         if (!res.headersSent) {
@@ -190,6 +190,7 @@ function startHttp() {
       ...ready.env,
       PORT: String(pyPort),
       WEB_PORT: String(pyPort),
+      GGSEL_BEHIND_PROXY: "1",
       PYTHONUNBUFFERED: "1",
     },
     stdio: "inherit",
