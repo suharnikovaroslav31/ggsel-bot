@@ -35,7 +35,6 @@ async def main() -> None:
     dp = Dispatcher(storage=MemoryStorage())
     dp.include_router(setup_routers())
 
-    await db.connect()
     runner = None
     try:
         try:
@@ -44,6 +43,8 @@ async def main() -> None:
             runner = await start_http()
         except Exception as exc:
             logging.exception("HTTP не поднялся, бот всё равно стартует: %s", exc)
+
+        await db.connect()
 
         me = None
         for attempt in range(1, 11):

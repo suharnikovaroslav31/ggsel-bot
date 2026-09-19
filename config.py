@@ -31,9 +31,9 @@ MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_deal").strip().lstrip("@
 SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_USERNAME}"
 MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
 
-# Mini App на Bothost: PORT выдаёт хост, WEBAPP_URL — публичный https-домен сервиса
+# Mini App: Bothost даёт публичный PORT, сам aiohttp слушает WEB_PORT (внутренний).
 try:
-    WEB_PORT = int(os.getenv("PORT") or os.getenv("WEB_PORT") or "3000")
+    WEB_PORT = int(os.getenv("WEB_PORT") or os.getenv("PORT") or "3000")
 except ValueError:
     WEB_PORT = 3000
 _DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
