@@ -341,8 +341,10 @@ async def api_deals_create(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": "type"}, status=400)
     if pay_method not in PAY_REQUISITE and pay_method != "stars":
         return web.json_response({"ok": False, "error": "pay"}, status=400)
+    raw_amount = str(body.get("amount") or "").strip().replace(",", ".").replace(" ", "")
+    raw_amount = re.sub(r"[^\d.\-]", "", raw_amount)
     try:
-        amount = float(str(body.get("amount") or "").replace(",", "."))
+        amount = float(raw_amount)
     except ValueError:
         return web.json_response({"ok": False, "error": "amount"}, status=400)
     if amount <= 0 or amount > 10_000_000:

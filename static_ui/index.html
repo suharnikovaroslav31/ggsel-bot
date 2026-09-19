@@ -280,6 +280,10 @@ function pe(key, fb){return `<img class="pe" src="/e/${key}.webp" alt="${fb||""}
 function pel(key, fb){return `<img class="pe lg" src="/e/${key}.webp" alt="${fb||""}" onerror="this.outerHTML=this.alt||''">`;}
 function haptic(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred("light");}catch(e){}}
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),2400);}
+function parseAmount(v){
+  const n=parseFloat(String(v??"").replace(",",".").replace(/\s/g,"").replace(/[^\d.\-]/g,""));
+  return Number.isFinite(n)&&n>0&&n<=10000000?n:null;
+}
 function esc(s){return String(s??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");}
 function readInitData(){
   const fromTg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData;
@@ -311,7 +315,7 @@ async function api(path,opts={}){
   const res=await fetch(path,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
-    const map={auth:"Открой Mini App кнопкой в боте",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа"};
+    const map={auth:"Открой Mini App кнопкой GGSel в боте",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки"};
     throw new Error(map[data.error]||data.error||"Ошибка");
   }
   return data;
@@ -582,10 +586,16 @@ document.body.addEventListener("click",async(ev)=>{
       state.user={...state.user,...data.user,is_admin:state.user.is_admin,is_super_admin:state.user.is_super_admin};
       toast("Сохранено");go("req","back");return;
     }
-    if(actName==="deal-amount"){state.draft.amount=document.getElementById("f-amount").value;go("create-desc");return;}
+    if(actName==="deal-amount"){
+      const n=parseAmount((document.getElementById("f-amount")||{}).value);
+      if(n==null){toast("Введите сумму числом, например 100");return;}
+      state.draft.amount=n;go("create-desc");return;
+    }
     if(actName==="deal-make"){
-      state.draft.description=document.getElementById("f-desc").value;
-      const data=await api("/api/deals",{method:"POST",body:JSON.stringify(state.draft)});
+      state.draft.description=(document.getElementById("f-desc")||{}).value||"";
+      const n=parseAmount(state.draft.amount);
+      if(n==null){toast("Введите сумму сделки");go("create-amt");return;}
+      const data=await api("/api/deals",{method:"POST",body:JSON.stringify({...state.draft,amount:n})});
       state.link=data.link;go("create-done");return;
     }
     if(actName==="copy-link"||actName.startsWith("copy:")){

@@ -3,10 +3,10 @@ from __future__ import annotations
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import CallbackQuery, Message
 
 from database import db
-from keyboards.main import _btn
+from keyboards.main import _btn, _kb
 from states.admin import AdminStates
 from texts.deal_messages import manager_balance_sent_text
 from utils.admin_access import is_admin, is_super_admin
@@ -87,7 +87,7 @@ def admin_menu(user_id: int | None = None) -> InlineKeyboardMarkup:
             )
         ]
     )
-    return InlineKeyboardMarkup(inline_keyboard=rows)
+    return _kb(rows)
 
 
 def admin_currency_menu(*, prefix: str = "admin:add") -> InlineKeyboardMarkup:
@@ -113,12 +113,12 @@ def admin_currency_menu(*, prefix: str = "admin:add") -> InlineKeyboardMarkup:
             )
         ]
     )
-    return InlineKeyboardMarkup(inline_keyboard=rows)
+    return _kb(rows)
 
 
 def admin_cancel() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
+    return _kb(
+        [
             [
                 _btn(
                     "Отмена",
