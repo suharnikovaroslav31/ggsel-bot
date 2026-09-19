@@ -48,32 +48,28 @@ def app_url(query: str = "", *, path: str = "") -> str:
 
 
 def language_start_kb(deal: str | None = None) -> InlineKeyboardMarkup:
-    def _url(lang: str) -> str:
-        path = f"/l/{lang}"
-        if deal:
-            path += f"/deal/{deal}"
-        return app_url(path=path)
-
+    q = "picklang=1"
+    if deal:
+        q += f"&deal={deal}"
     return InlineKeyboardMarkup(
         inline_keyboard=[
-            [InlineKeyboardButton(text="Русский", web_app=WebAppInfo(url=_url("ru")))],
-            [InlineKeyboardButton(text="English", web_app=WebAppInfo(url=_url("en")))],
+            [
+                InlineKeyboardButton(
+                    text="🌐 Выбрать язык",
+                    web_app=WebAppInfo(url=app_url(q)),
+                )
+            ]
         ]
     )
 
 
 def open_app_kb(query: str = "") -> InlineKeyboardMarkup:
-    path = ""
-    q = query.lstrip("?")
-    if q.startswith("deal="):
-        path = f"/l/ru/deal/{q.split('=', 1)[-1]}"
-        q = ""
     return InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(
                     text="Открыть GGSel",
-                    web_app=WebAppInfo(url=app_url(q, path=path)),
+                    web_app=WebAppInfo(url=app_url(query)),
                 )
             ]
         ]

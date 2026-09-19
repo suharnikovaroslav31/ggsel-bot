@@ -325,19 +325,206 @@ input, textarea, select {
 .tab:active { transform: scale(.96); }
 .tab.admin-only { display: none; }
 .tabbar.admin .tab.admin-only { display: flex; }
-.tabbar.off { pointer-events: none; opacity: .55; }
+.tabbar.off { pointer-events: none; opacity: .45; }
+.tabbar.hide { pointer-events: none; opacity: 0; visibility: hidden; }
+.logo { perspective: 420px; }
+.logo-float {
+  display: block;
+  transform-style: preserve-3d;
+  transform-origin: 18px 50%;
+  animation: logo-bob 4.4s ease-in-out infinite;
+  will-change: transform;
+  filter: drop-shadow(0 8px 12px rgba(68,207,94,.16));
+}
+.logo-mark {
+  transform-origin: 18px 20px;
+  animation: logo-hue 9s linear infinite;
+}
+.chip-lang {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.chip-lang .gear {
+  width: 14px;
+  height: 14px;
+  animation: ico-spin 7s linear infinite;
+}
+.tab svg { transform-origin: 50% 50%; }
+.tab[data-tab="home"] svg { animation: ico-bob 2.6s ease-in-out infinite; }
+.tab[data-tab="create"] svg { animation: ico-pulse 1.8s ease-in-out infinite; }
+.tab[data-tab="deals"] svg { animation: ico-flip 3.2s ease-in-out infinite; }
+.tab[data-tab="bal"] svg { animation: ico-coin 2.5s ease-in-out infinite; }
+.tab[data-tab="req"] svg { animation: ico-tilt 2.8s ease-in-out infinite; }
+.tab[data-tab="refs"] svg { animation: ico-nudge 2.4s ease-in-out infinite; }
+.tab[data-tab="support"] svg { animation: ico-pulse 2.2s ease-in-out infinite; }
+.tab[data-tab="admin"] svg { animation: ico-spin 8s linear infinite; }
+.tab.on { transform: translateY(-1px); }
+.kbtn, .tile, .feat, .cta, .chip, .chip-cat, .lang-row {
+  transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
+}
+.kbtn .pe, .tile .pe, .feat .pe { animation: ico-bob 2.8s ease-in-out infinite; }
+.kbtn[data-go="lang"] .pe, .kbtn[data-go="admin"] .pe { animation: ico-spin 7s linear infinite; }
+.kbtn[data-go="create-role"] .pe, .cta .pe { animation: ico-pulse 1.8s ease-in-out infinite; }
+.kbtn[data-go="bal"] .pe { animation: ico-coin 2.4s ease-in-out infinite; }
+.kbtn[data-go="deals"] .pe { animation: ico-flip 3s ease-in-out infinite; }
+.kbtn[data-go="req"] .pe { animation: ico-tilt 2.8s ease-in-out infinite; }
+.kbtn[data-go="refs"] .pe { animation: ico-nudge 2.4s ease-in-out infinite; }
+.chip-cat .pe { animation: ico-bob 2.8s ease-in-out infinite; }
+.chip-cat[data-go="lang"] .pe, .chip-cat[data-go="admin"] .pe { animation: ico-spin 7s linear infinite; }
+.chip-cat[data-go="create-role"] .pe { animation: ico-pulse 1.8s ease-in-out infinite; }
+.chip-cat[data-go="bal"] .pe { animation: ico-coin 2.4s ease-in-out infinite; }
+.chip-cat[data-go="deals"] .pe { animation: ico-flip 3s ease-in-out infinite; }
+.chip-cat[data-go="req"] .pe { animation: ico-tilt 2.8s ease-in-out infinite; }
+.chip-cat[data-go="refs"] .pe { animation: ico-nudge 2.4s ease-in-out infinite; }
+.feat { animation: feat-idle 5.2s ease-in-out infinite; }
+.feat:nth-child(2) { animation-delay: .35s; }
+.feat:nth-child(3) { animation-delay: .7s; }
+.feat:nth-child(4) { animation-delay: 1s; }
+.cta { box-shadow: 0 8px 18px rgba(68,207,94,.2); animation: cta-glow 2.8s ease-in-out infinite; }
+.lang-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: calc(100dvh - 250px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+.lang-row {
+  appearance: none;
+  border: 0;
+  width: 100%;
+  background: var(--btn);
+  border-radius: 14px;
+  min-height: 48px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  text-align: left;
+  font: 600 14.5px/1.2 Geist, ui-sans-serif, system-ui, sans-serif;
+  color: var(--text);
+  cursor: pointer;
+}
+.lang-row small { color: var(--muted); font-weight: 500; }
+.lang-row.on { background: var(--accent); color: #fff; }
+.lang-row.on small { color: rgba(255,255,255,.82); }
+.lang-row:active { transform: scale(.985); }
+#intro {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  perspective: 640px;
+}
+#intro[hidden] { display: none; }
+.intro-orb {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(68,207,94,.28), rgba(87,93,246,.08) 62%, transparent 70%);
+  animation: orb-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+.intro-mark {
+  width: 118px;
+  height: auto;
+  transform-style: preserve-3d;
+  animation: intro-spin 1.15s cubic-bezier(.22,1,.36,1) both, logo-hue 6s linear infinite;
+  filter: drop-shadow(0 14px 22px rgba(68,207,94,.28));
+}
+.intro-word {
+  margin-top: 14px;
+  font: 700 22px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -.03em;
+  animation: intro-fade 1s .2s both;
+}
+#intro.out { animation: intro-leave .38s ease forwards; }
+@keyframes logo-bob {
+  0%,100% { transform: translate3d(0,0,0) rotateX(8deg) rotateY(-10deg); }
+  50% { transform: translate3d(0,-6px,8px) rotateX(-4deg) rotateY(12deg); }
+}
+@keyframes logo-hue {
+  from { filter: hue-rotate(0deg) saturate(1.2); }
+  to { filter: hue-rotate(360deg) saturate(1.2); }
+}
+@keyframes ico-spin { to { transform: rotate(360deg); } }
+@keyframes ico-bob {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+@keyframes ico-pulse {
+  0%,100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+@keyframes ico-flip {
+  0%,100% { transform: rotateY(0deg); }
+  50% { transform: rotateY(18deg); }
+}
+@keyframes ico-coin {
+  0%,100% { transform: rotate(-8deg); }
+  50% { transform: rotate(10deg); }
+}
+@keyframes ico-tilt {
+  0%,100% { transform: rotate(-4deg) translateY(0); }
+  50% { transform: rotate(4deg) translateY(-1px); }
+}
+@keyframes ico-nudge {
+  0%,100% { transform: translateX(0); }
+  50% { transform: translateX(2px); }
+}
+@keyframes feat-idle {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes cta-glow {
+  0%,100% { box-shadow: 0 8px 18px rgba(68,207,94,.18); }
+  50% { box-shadow: 0 12px 24px rgba(68,207,94,.34); }
+}
+@keyframes intro-spin {
+  from { transform: translateY(28px) rotateY(-88deg) scale(.72); opacity: 0; }
+  to { transform: translateY(0) rotateY(14deg) scale(1); opacity: 1; }
+}
+@keyframes intro-fade {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes intro-leave {
+  to { opacity: 0; transform: scale(.96); }
+}
+@keyframes orb-pulse {
+  0%,100% { transform: scale(1); opacity: .85; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-float, .logo-mark, .tab svg, .kbtn .pe, .tile .pe, .feat, .cta, .chip-lang .gear, .intro-mark, .intro-orb {
+    animation: none !important;
+  }
+}
   </style>
 </head>
 <body>
   <div id="app">
     <header class="topbar">
       <div class="logo" aria-label="ggsel">
+        <div class="logo-float">
         <svg xmlns="http://www.w3.org/2000/svg" width="132" height="35" fill="none" viewBox="0 0 150 40">
-          <path fill="var(--logo-mark-color)" d="m32.496 32.795-11.289 6.39a6.47 6.47 0 0 1-6.637-.207L3.432 32.402a7 7 0 0 1-2.507-2.544 6.96 6.96 0 0 1-.92-3.442v-12.88a6.4 6.4 0 0 1 .798-3.334 6.4 6.4 0 0 1 2.412-2.447L16.009.513a3.73 3.73 0 0 1 4.781.868 3.415 3.415 0 0 1-1.073 4.96L8.146 12.89a2.531 2.531 0 0 0-1.285 2.214l-.007 9.91A2.6 2.6 0 0 0 8.14 27.26l8.573 5.055a2.57 2.57 0 0 0 2.571.032l8.571-4.852a2.532 2.532 0 0 0 1.286-2.214l.002-7.432-7.577 4.289a3.55 3.55 0 0 1-4.631-.953 3.416 3.416 0 0 1 1.073-4.96L30.755 9.01a3.47 3.47 0 0 1 4.787 1.23A3.4 3.4 0 0 1 36 11.986l-.003 14.864a6.9 6.9 0 0 1-.955 3.435 6.95 6.95 0 0 1-2.546 2.51"></path>
+          <path class="logo-mark" fill="var(--logo-mark-color)" d="m32.496 32.795-11.289 6.39a6.47 6.47 0 0 1-6.637-.207L3.432 32.402a7 7 0 0 1-2.507-2.544 6.96 6.96 0 0 1-.92-3.442v-12.88a6.4 6.4 0 0 1 .798-3.334 6.4 6.4 0 0 1 2.412-2.447L16.009.513a3.73 3.73 0 0 1 4.781.868 3.415 3.415 0 0 1-1.073 4.96L8.146 12.89a2.531 2.531 0 0 0-1.285 2.214l-.007 9.91A2.6 2.6 0 0 0 8.14 27.26l8.573 5.055a2.57 2.57 0 0 0 2.571.032l8.571-4.852a2.532 2.532 0 0 0 1.286-2.214l.002-7.432-7.577 4.289a3.55 3.55 0 0 1-4.631-.953 3.416 3.416 0 0 1 1.073-4.96L30.755 9.01a3.47 3.47 0 0 1 4.787 1.23A3.4 3.4 0 0 1 36 11.986l-.003 14.864a6.9 6.9 0 0 1-.955 3.435 6.95 6.95 0 0 1-2.546 2.51"></path>
           <path fill="var(--logo-wordmark-color)" d="M60.8 24.816v-3.104l.224-.768v-4.48l-.224-.672v-4.64h6.528V24.56q0 3.36-1.568 5.76t-4.384 3.648q-2.784 1.248-6.592 1.248-2.527 0-4.704-.672-2.145-.64-4.288-1.92v-4.928q1.985 1.472 4.16 2.112 2.208.672 4.416.672 3.136 0 4.768-1.344 1.664-1.344 1.664-4.32m-7.84 2.688q-2.592 0-4.608-1.056a8.2 8.2 0 0 1-3.2-2.944Q44 21.584 44 19.056q0-2.56 1.152-4.448a8.2 8.2 0 0 1 3.2-2.944q2.016-1.056 4.608-1.056 1.92 0 3.52.608a10 10 0 0 1 2.848 1.568q1.248.96 2.08 2.112.864 1.12 1.312 2.24t.448 1.984q0 1.185-.704 2.624-.672 1.44-1.984 2.752t-3.232 2.176q-1.888.832-4.288.832m2.208-4.448q1.889 0 3.36-.992t2.496-3.008q-1.056-2.048-2.528-3.008-1.471-.992-3.328-.992-1.408 0-2.464.48-1.024.48-1.568 1.408-.544.896-.544 2.112 0 1.184.544 2.112.544.896 1.568 1.408 1.024.48 2.464.48M86.191 24.816v-3.104l.224-.768v-4.48l-.224-.672v-4.64h6.528V24.56q0 3.36-1.568 5.76-1.567 2.4-4.384 3.648-2.784 1.248-6.592 1.248-2.528 0-4.704-.672-2.144-.64-4.288-1.92v-4.928q1.985 1.472 4.16 2.112 2.208.672 4.416.672 3.136 0 4.768-1.344 1.665-1.344 1.664-4.32m-7.84 2.688q-2.592 0-4.608-1.056a8.2 8.2 0 0 1-3.2-2.944q-1.152-1.92-1.152-4.448 0-2.56 1.152-4.448a8.2 8.2 0 0 1 3.2-2.944q2.016-1.056 4.608-1.056 1.92 0 3.52.608a10 10 0 0 1 2.848 1.568q1.248.96 2.08 2.112.864 1.12 1.312 2.24t.448 1.984q0 1.185-.704 2.624-.672 1.44-1.984 2.752t-3.232 2.176q-1.888.832-4.288.832m2.208-4.448q1.889 0 3.36-.992 1.473-.992 2.496-3.008-1.055-2.048-2.528-3.008-1.471-.992-3.328-.992-1.407 0-2.464.48-1.023.48-1.568 1.408-.543.896-.544 2.112 0 1.184.544 2.112.545.896 1.568 1.408 1.024.48 2.464.48M117.438 23.472q0 2.112-1.279 3.552-1.28 1.44-3.649 2.176-2.367.735-5.696.736-3.423 0-6.015-.832-2.56-.832-4-2.336t-1.537-3.488h6.625q.224.735.863 1.28.673.512 1.761.8 1.087.256 2.592.256 1.951 0 2.944-.384 1.023-.384 1.024-1.152 0-.608-.768-.896-.768-.32-2.624-.48l-3.232-.256q-3.232-.225-5.153-.96-1.887-.768-2.72-1.952-.831-1.215-.831-2.752 0-2.08 1.28-3.424 1.312-1.376 3.616-2.048 2.335-.704 5.439-.704 3.073 0 5.472.8t3.841 2.24q1.44 1.408 1.664 3.328h-6.624q-.16-.608-.704-1.088-.544-.512-1.504-.832t-2.465-.32q-1.76 0-2.687.384-.897.384-.897 1.088 0 .544.545.864.576.32 2.112.448l4.256.32q3.168.192 4.991.928 1.825.705 2.593 1.888.768 1.185.767 2.816M130.592 29.936q-3.329 0-5.952-1.216-2.592-1.215-4.096-3.392-1.504-2.208-1.504-5.12 0-2.848 1.44-4.992 1.44-2.175 3.936-3.392 2.528-1.215 5.696-1.216 3.296 0 5.6 1.44 2.336 1.408 3.584 4 1.28 2.592 1.28 6.112H124.32v-3.936h12.576l-2.144 1.376q-.128-1.408-.704-2.368a3.85 3.85 0 0 0-1.536-1.504q-.928-.512-2.24-.512-1.44 0-2.464.576a4.1 4.1 0 0 0-1.6 1.6q-.576.992-.576 2.336 0 1.728.768 2.944.8 1.184 2.304 1.824 1.536.64 3.744.64 2.016 0 4-.512 2.016-.544 3.648-1.504v4.16q-1.888 1.28-4.32 1.984-2.4.672-5.184.672M143.372 4.784h6.56v24.64h-6.56z"></path>
         </svg>
+        </div>
       </div>
-      <button class="chip" type="button" data-go="lang" id="btn-lang">RU</button>
+      <button class="chip chip-lang" type="button" data-go="lang" id="btn-lang" aria-label="Language">
+        <svg class="gear" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.74 8.87a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.24.08.49 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+        <span id="btn-lang-code">RU</span>
+      </button>
     </header>
     <div class="stage"><div id="screen" class="panel"><div class="bubble">Загрузка…</div></div></div>
     <nav class="tabbar off" id="tabbar">
@@ -370,12 +557,19 @@ input, textarea, select {
         <span data-i18n="tab_support">Поддержка</span>
       </button>
       <button class="tab admin-only" type="button" data-go="admin" data-tab="admin">
-        <svg viewBox="0 0 24 24"><path d="M21 7.5 13.5 4 12 6.2 10.5 4 3 7.5l1.5 2.6L3 12.6 10.5 16 12 13.8 13.5 16 21 12.6l-1.5-2.5L21 7.5ZM12 11.2 8.2 9.1 12 7l3.8 2.1L12 11.2Z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.74 8.87a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.24.08.49 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
         <span data-i18n="tab_admin">Админ</span>
       </button>
     </nav>
   </div>
   <div id="toast"></div>
+  <div id="intro" hidden>
+    <div class="intro-orb"></div>
+    <svg class="intro-mark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 36 40" fill="none">
+      <path fill="#44cf5e" d="m32.496 32.795-11.289 6.39a6.47 6.47 0 0 1-6.637-.207L3.432 32.402a7 7 0 0 1-2.507-2.544 6.96 6.96 0 0 1-.92-3.442v-12.88a6.4 6.4 0 0 1 .798-3.334 6.4 6.4 0 0 1 2.412-2.447L16.009.513a3.73 3.73 0 0 1 4.781.868 3.415 3.415 0 0 1-1.073 4.96L8.146 12.89a2.531 2.531 0 0 0-1.285 2.214l-.007 9.91A2.6 2.6 0 0 0 8.14 27.26l8.573 5.055a2.57 2.57 0 0 0 2.571.032l8.571-4.852a2.532 2.532 0 0 0 1.286-2.214l.002-7.432-7.577 4.289a3.55 3.55 0 0 1-4.631-.953 3.416 3.416 0 0 1 1.073-4.96L30.755 9.01a3.47 3.47 0 0 1 4.787 1.23A3.4 3.4 0 0 1 36 11.986l-.003 14.864a6.9 6.9 0 0 1-.955 3.435 6.95 6.95 0 0 1-2.546 2.51"/>
+    </svg>
+    <div class="intro-word">GGSel</div>
+  </div>
   <script>
 const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) {
@@ -418,7 +612,8 @@ const I18N = {
     withdraw:"Вывести", credit:"Начислить баланс", mybal:"Мой баланс", transfer:"Передать на баланс",
     grant:"Добавить воркера", ban:"Забанить", unban:"Разбанить", close:"Закрыть",
     owner:"Главный админ", worker:"Админ-панель", pick_cur:"Выберите валюту",
-    uid:"Telegram ID", lang_title:"Выбор языка / Language", ru:"Русский", en:"English"
+    uid:"Telegram ID", lang_title:"Выбор языка / Language", ru:"Русский", en:"English",
+    search_lang:"Поиск языка", pick_lang:"Выберите язык", all_langs:"Все языки мира"
   },
   en: {
     welcome_title:"Welcome to GGSel",
@@ -453,15 +648,116 @@ const I18N = {
     withdraw:"Withdraw", credit:"Credit balance", mybal:"My balance", transfer:"Transfer",
     grant:"Add worker", ban:"Ban", unban:"Unban", close:"Close",
     owner:"Owner admin", worker:"Admin panel", pick_cur:"Choose currency",
-    uid:"Telegram ID", lang_title:"Language / Выбор языка", ru:"Русский", en:"English"
+    uid:"Telegram ID", lang_title:"Language / Выбор языка", ru:"Русский", en:"English",
+    search_lang:"Search language", pick_lang:"Choose language", all_langs:"All world languages"
   }
 };
+const WORLD_LANGS=[
+  ["ru","Русский","Russian"],["en","English","English"],["uk","Українська","Ukrainian"],["be","Беларуская","Belarusian"],
+  ["kk","Қазақша","Kazakh"],["uz","Oʻzbekcha","Uzbek"],["ky","Кыргызча","Kyrgyz"],["tg","Тоҷикӣ","Tajik"],
+  ["az","Azərbaycan","Azerbaijani"],["hy","Հայերեն","Armenian"],["ka","ქართული","Georgian"],["tk","Türkmençe","Turkmen"],
+  ["tt","Татарча","Tatar"],["ba","Башҡортса","Bashkir"],["cv","Чӑвашла","Chuvash"],["ce","Нохчийн","Chechen"],
+  ["os","Ирон","Ossetian"],["ab","Аԥсуа","Abkhaz"],["av","Авар","Avaric"],["kv","Коми","Komi"],
+  ["de","Deutsch","German"],["fr","Français","French"],["es","Español","Spanish"],["pt","Português","Portuguese"],
+  ["it","Italiano","Italian"],["nl","Nederlands","Dutch"],["pl","Polski","Polish"],["cs","Čeština","Czech"],
+  ["sk","Slovenčina","Slovak"],["sl","Slovenščina","Slovenian"],["hr","Hrvatski","Croatian"],["sr","Српски","Serbian"],
+  ["bs","Bosanski","Bosnian"],["mk","Македонски","Macedonian"],["bg","Български","Bulgarian"],["ro","Română","Romanian"],
+  ["hu","Magyar","Hungarian"],["el","Ελληνικά","Greek"],["tr","Türkçe","Turkish"],["sq","Shqip","Albanian"],
+  ["fi","Suomi","Finnish"],["sv","Svenska","Swedish"],["no","Norsk","Norwegian"],["nb","Bokmål","Norwegian Bokmål"],
+  ["nn","Nynorsk","Norwegian Nynorsk"],["da","Dansk","Danish"],["is","Íslenska","Icelandic"],["et","Eesti","Estonian"],
+  ["lv","Latviešu","Latvian"],["lt","Lietuvių","Lithuanian"],["ga","Gaeilge","Irish"],["gd","Gàidhlig","Scottish Gaelic"],
+  ["cy","Cymraeg","Welsh"],["mt","Malti","Maltese"],["eu","Euskara","Basque"],["ca","Català","Catalan"],
+  ["gl","Galego","Galician"],["lb","Lëtzebuergesch","Luxembourgish"],["rm","Rumantsch","Romansh"],["br","Brezhoneg","Breton"],
+  ["co","Corsu","Corsican"],["oc","Occitan","Occitan"],["an","Aragonés","Aragonese"],
+  ["ar","العربية","Arabic"],["he","עברית","Hebrew"],["fa","فارسی","Persian"],["ps","پښتو","Pashto"],
+  ["ur","اردو","Urdu"],["sd","سنڌي","Sindhi"],["ku","Kurdî","Kurdish"],["yi","ייִדיש","Yiddish"],
+  ["am","አማርኛ","Amharic"],["ti","ትግርኛ","Tigrinya"],["so","Soomaali","Somali"],["sw","Kiswahili","Swahili"],
+  ["ha","Hausa","Hausa"],["yo","Yorùbá","Yoruba"],["ig","Igbo","Igbo"],["zu","isiZulu","Zulu"],
+  ["xh","isiXhosa","Xhosa"],["af","Afrikaans","Afrikaans"],["st","Sesotho","Southern Sotho"],["tn","Setswana","Tswana"],
+  ["ts","Xitsonga","Tsonga"],["ss","siSwati","Swati"],["nr","isiNdebele","South Ndebele"],["nd","isiNdebele","North Ndebele"],
+  ["rw","Ikinyarwanda","Kinyarwanda"],["rn","Ikirundi","Rundi"],["lg","Luganda","Ganda"],["mg","Malagasy","Malagasy"],
+  ["sn","chiShona","Shona"],["ny","Chichewa","Chichewa"],["wo","Wolof","Wolof"],["ff","Fulfulde","Fulah"],
+  ["bm","Bamanankan","Bambara"],["ln","Lingála","Lingala"],["kg","Kikongo","Kongo"],["ee","Eʋegbe","Ewe"],
+  ["ak","Akan","Akan"],["tw","Twi","Twi"],["om","Oromoo","Oromo"],["aa","Qafar","Afar"],
+  ["ve","Tshivenḓa","Venda"],["hz","Otjiherero","Herero"],["ng","Ndonga","Ndonga"],["kj","Kuanyama","Kuanyama"],
+  ["zh","中文","Chinese"],["ja","日本語","Japanese"],["ko","한국어","Korean"],["vi","Tiếng Việt","Vietnamese"],
+  ["th","ไทย","Thai"],["lo","ລາວ","Lao"],["km","ខ្មែរ","Khmer"],["my","မြန်မာ","Burmese"],
+  ["id","Bahasa Indonesia","Indonesian"],["ms","Bahasa Melayu","Malay"],["jv","Basa Jawa","Javanese"],["su","Basa Sunda","Sundanese"],
+  ["tl","Tagalog","Tagalog"],["hi","हिन्दी","Hindi"],["bn","বাংলা","Bengali"],
+  ["pa","ਪੰਜਾਬੀ","Punjabi"],["gu","ગુજરાતી","Gujarati"],["mr","मराठी","Marathi"],["ta","தமிழ்","Tamil"],
+  ["te","తెలుగు","Telugu"],["kn","ಕನ್ನಡ","Kannada"],["ml","മലയാളം","Malayalam"],["or","ଓଡ଼ିଆ","Odia"],
+  ["as","অসমীয়া","Assamese"],["ne","नेपाली","Nepali"],["si","සිංහල","Sinhala"],["sa","संस्कृतम्","Sanskrit"],
+  ["dv","ދިވެހި","Dhivehi"],["bo","བོད་ཡིག","Tibetan"],["dz","རྫོང་ཁ","Dzongkha"],["mn","Монгол","Mongolian"],
+  ["ug","ئۇيغۇرچە","Uyghur"],["ii","ꆈꌠ꒿","Sichuan Yi"],
+  ["pt-br","Português (Brasil)","Portuguese Brazil"],["es-mx","Español (México)","Spanish Mexico"],
+  ["zh-cn","简体中文","Chinese Simplified"],["zh-tw","繁體中文","Chinese Traditional"],
+  ["la","Latina","Latin"],["eo","Esperanto","Esperanto"],["ia","Interlingua","Interlingua"],
+  ["mi","Māori","Maori"],["sm","Gagana Samoa","Samoan"],["to","Lea faka-Tonga","Tongan"],["fj","Na Vosa Vakaviti","Fijian"],
+  ["ty","Reo Tahiti","Tahitian"],["mh","Kajin M̧ajeļ","Marshallese"],["na","Dorerin Naoero","Nauru"],
+  ["ch","Chamoru","Chamorro"],["bi","Bislama","Bislama"],["kl","Kalaallisut","Greenlandic"],
+  ["iu","ᐃᓄᒃᑎᑐᑦ","Inuktitut"],["ik","Iñupiaq","Inupiaq"],["nv","Diné bizaad","Navajo"],["oj","Anishinaabemowin","Ojibwe"],
+  ["cr","ᓀᐦᐃᔭᐍᐏᐣ","Cree"],["gn","Avañeʼẽ","Guarani"],["ay","Aymar aru","Aymara"],["qu","Runa Simi","Quechua"],
+  ["se","Davvisámegiella","Northern Sami"],["fo","Føroyskt","Faroese"],["fy","Frysk","Western Frisian"],
+  ["li","Limburgs","Limburgish"],["wa","Walon","Walloon"],["sc","Sardu","Sardinian"],["cu","Словѣньскъ","Church Slavonic"]
+];
 const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_card","💳"],["stars","pay_stars","btn_pay_stars","⭐"],["usdt","pay_usdt","btn_pay_usdt","🪙"],["usd","pay_usd","btn_pay_usd","💸"],["eur","pay_eur","btn_pay_eur","💰"],["byn","pay_byn","btn_pay_byn","🇧🇾"],["kzt","pay_kzt","btn_pay_kzt","🇰🇿"],["uah","pay_uah","btn_pay_uah","🇺🇦"]];
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
 const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:""};
-function t(key){const lang=state.user&&state.user.language==="en"?"en":"ru";return (I18N[lang][key]||I18N.ru[key]||key);}
+function uiLang(){
+  const l=String((state.user&&state.user.language)||"ru").toLowerCase();
+  return l==="ru"||l.startsWith("ru-")?"ru":"en";
+}
+function t(key){return (I18N[uiLang()][key]||I18N.en[key]||I18N.ru[key]||key);}
+function langLabel(){
+  return String((state.user&&state.user.language)||"ru").split("-")[0].toUpperCase();
+}
+function syncLangChip(){
+  const code=document.getElementById("btn-lang-code");
+  if(code) code.textContent=langLabel();
+  document.documentElement.lang=(state.user&&state.user.language)||"ru";
+}
+function rememberedLang(){
+  try{return sessionStorage.getItem("ggsel_lang")||"";}catch(e){return "";}
+}
+function rememberLang(code){
+  try{sessionStorage.setItem("ggsel_lang",code);}catch(e){}
+}
+function needLangPicker(){
+  const boot=bootParams();
+  if(boot.picklang) return true;
+  return !rememberedLang();
+}
+function playIntro(){
+  const el=document.getElementById("intro");
+  if(!el) return Promise.resolve();
+  el.hidden=false;
+  el.classList.remove("out");
+  return new Promise(resolve=>{
+    setTimeout(()=>{
+      el.classList.add("out");
+      setTimeout(()=>{el.hidden=true;el.classList.remove("out");resolve();},360);
+    },1180);
+  });
+}
+async function pickLanguage(code){
+  if(!code) return;
+  try{
+    await api("/api/language",{method:"POST",body:JSON.stringify({language:code})});
+    rememberLang(code);
+    await loadMe({skipDeal:true});
+    haptic();
+    await playIntro();
+    go("home");
+  }catch(e){toast(e.message);}
+}
+function filterLangs(){
+  const q=String((document.getElementById("lang-q")||{}).value||"").toLowerCase().trim();
+  document.querySelectorAll(".lang-row").forEach(el=>{
+    el.hidden=!!q && !(el.dataset.q||"").includes(q);
+  });
+}
 function pe(key, fb){return `<img class="pe" src="/e/${key}.webp" alt="${fb||""}" onerror="this.outerHTML=this.alt||''">`;}
 function pel(key, fb){return `<img class="pe lg" src="/e/${key}.webp" alt="${fb||""}" onerror="this.outerHTML=this.alt||''">`;}
 function haptic(){try{tg&&tg.HapticFeedback&&tg.HapticFeedback.impactOccurred("light");}catch(e){}}
@@ -490,10 +786,13 @@ function readInitData(){
 }
 function bootParams(){
   const q=new URLSearchParams(location.search);
-  const m=String(location.pathname||"").match(/^\/l\/(ru|en)(?:\/deal\/([A-Za-z0-9]+))?/i);
+  const m=String(location.pathname||"").match(/^\/l\/([a-z]{2,8}(?:-[a-z0-9]+)?)(?:\/deal\/([A-Za-z0-9]+))?/i);
+  const d=String(location.pathname||"").match(/^\/deal\/([A-Za-z0-9]+)/i);
+  const pick=String(q.get("picklang")||"").toLowerCase();
   return {
     setlang:((m&&m[1])||q.get("setlang")||"").toLowerCase(),
-    deal:(m&&m[2])||q.get("deal")||""
+    deal:(m&&m[2])||(d&&d[1])||q.get("deal")||"",
+    picklang:pick==="1"||pick==="true"||pick==="yes"
   };
 }
 async function waitInitData(){
@@ -543,6 +842,7 @@ function currentTab(){
   if(s==="req"||s.startsWith("req-")) return "req";
   if(s==="refs") return "refs";
   if(s.startsWith("admin")) return "admin";
+  if(s==="lang") return "";
   return "home";
 }
 function syncTabs(){
@@ -551,13 +851,16 @@ function syncTabs(){
   if(bar){
     bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
     bar.classList.toggle("off", !state.user);
+    bar.classList.toggle("hide", state.screen==="lang");
   }
   document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  syncLangChip();
 }
 function syncBack(){
   if(!tg||!tg.BackButton) return;
-  if(TABS.includes(state.screen)) tg.BackButton.hide();
+  const hide=TABS.includes(state.screen)||(state.screen==="lang"&&state.stack.length<=1);
+  if(hide) tg.BackButton.hide();
   else tg.BackButton.show();
 }
 async function go(name, dir="fwd"){
@@ -606,6 +909,7 @@ async function screenHome(){
       <button class="chip-cat" data-go="bal">${pe("btn_balance","🧳")} ${t("bal")}</button>
       <button class="chip-cat" data-go="req">${pe("btn_requisites","💼")} ${t("req")}</button>
       <button class="chip-cat" data-go="refs">${pe("btn_refs","🌐")} ${t("refs")}</button>
+      <button class="chip-cat" data-go="lang">${pe("btn_lang","⚙️")} ${t("lang")}</button>
       <button class="chip-cat" data-act="support">${pe("btn_support","🎧")} ${t("support")}</button>
       ${u.is_admin?`<button class="chip-cat" data-go="admin">${pe("construction","🛠")} ${t("admin")}</button>`:""}
     </div>
@@ -715,7 +1019,15 @@ function screenRefs(){
     kb([[act(t("copy"),"copy:"+link,"deal_link","🔗")],[backBtn()]]);
 }
 function screenLang(){
-  return bubble(`🌐 <b>${t("lang_title")}</b>`)+kb([[btn(t("ru"),"set-lang-ru","btn_lang_ru","🇷🇺")],[btn(t("en"),"set-lang-en","btn_lang_en","🇬🇧")],[backBtn()]]);
+  const cur=String((state.user&&state.user.language)||"");
+  const rows=WORLD_LANGS.map(([code,native,en])=>{
+    const q=`${code} ${native} ${en}`.toLowerCase();
+    return `<button type="button" class="lang-row${cur===code?" on":""}" data-act="pick-lang" data-lang="${esc(code)}" data-q="${esc(q)}"><span>${esc(native)}</span><small>${esc(en)} · ${esc(code.toUpperCase())}</small></button>`;
+  }).join("");
+  const showBack=!!rememberedLang();
+  return bubble(`<b>${t("pick_lang")}</b><p class="hint">${t("all_langs")}</p><input id="lang-q" type="search" autocomplete="off" placeholder="${esc(t("search_lang"))}" />`)+
+    `<div class="lang-list" id="lang-list">${rows}</div>`+
+    (showBack?kb([[backBtn()]]):"");
 }
 function screenAdmin(){
   const u=state.user;
@@ -800,13 +1112,12 @@ let bootDealDone=false;
 async function loadMe(opts={}){
   const boot=bootParams();
   const setlang=boot.setlang;
-  if(setlang==="ru"||setlang==="en"){
-    try{await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});}catch(e){}
+  if(!boot.picklang && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/.test(setlang)){
+    try{await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});rememberLang(setlang);}catch(e){}
   }
   const data=await api("/api/me");
   state.user=data.user;
-  const langBtn=document.getElementById("btn-lang");
-  if(langBtn) langBtn.textContent=state.user.language==="en"?"EN":"RU";
+  syncLangChip();
   if(opts.skipDeal || bootDealDone) return;
   bootDealDone=true;
   let deal=boot.deal||"";
@@ -831,7 +1142,7 @@ document.body.addEventListener("click",async(ev)=>{
     if(name.startsWith("create-amt-")){state.draft.pay_method=name.slice(11);go("create-amt");return;}
     if(name.startsWith("wd-")){state.wmethod=name.slice(3);go("wd");return;}
     if(name.startsWith("set-lang-")){
-      try{await api("/api/language",{method:"POST",body:JSON.stringify({language:name.endsWith("en")?"en":"ru"})});await loadMe({skipDeal:true});go("home");}catch(e){toast(e.message);}
+      await pickLanguage(name.endsWith("en")?"en":"ru");
       return;
     }
     if(name.startsWith("acred-")){state.admin={kind:"credit",currency:name.slice(6)};go("admin-amt");return;}
@@ -842,6 +1153,7 @@ document.body.addEventListener("click",async(ev)=>{
   if(!a) return;
   const actName=a.dataset.act;
   try{
+    if(actName==="pick-lang"){await pickLanguage(a.dataset.lang);return;}
     if(actName==="support"){const url=state.user.support_url;if(tg&&tg.openTelegramLink) tg.openTelegramLink(url);else window.open(url,"_blank");return;}
     if(actName==="go:home"){
       if(!state.user){try{await loadMe();}catch(e){toast(e.message);return;}}
@@ -893,12 +1205,20 @@ document.body.addEventListener("click",async(ev)=>{
     if(actName==="id-unban"){await api("/api/admin/ban",{method:"POST",body:JSON.stringify({user_id:document.getElementById("a-uid").value,action:"unban"})});toast("Готово");go("admin","back");return;}
   }catch(e){toast(e.message);}
 });
+document.body.addEventListener("input",(ev)=>{
+  if(ev.target&&ev.target.id==="lang-q") filterLangs();
+});
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){
   let lastErr=null;
   for(let i=0;i<8;i++){
     try{
       await loadMe();
+      if(needLangPicker()){
+        state.screen="lang";
+        state.stack=["lang"];
+      }
+      syncLangChip();
       syncBack();
       await draw();
       return;
@@ -907,7 +1227,7 @@ if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
       await new Promise(r=>setTimeout(r,250));
     }
   }
-  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Русский» или «English» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Выбрать язык» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
 })();
   </script>
 </body>

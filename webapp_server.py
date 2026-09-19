@@ -224,12 +224,22 @@ async def api_me(request: web.Request) -> web.Response:
     return web.json_response({"ok": True, "user": payload})
 
 
+_LANG_RE = re.compile(r"^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$", re.I)
+
+
+def _normalize_locale(raw: str) -> str:
+    lang = str(raw or "en").strip().lower().replace("_", "-")
+    if not _LANG_RE.fullmatch(lang):
+        return "en"
+    return lang
+
+
 async def api_language(request: web.Request) -> web.Response:
     tg_user, err = await _auth(request)
     if err:
         return err
     body = await request.json()
-    lang = "en" if str(body.get("language") or "").lower().startswith("en") else "ru"
+    lang = _normalize_locale(str(body.get("language") or "en"))
     await db.set_language(int(tg_user["id"]), lang)
     return web.json_response({"ok": True, "language": lang})
 
@@ -724,6 +734,7 @@ def build_app() -> web.Application:
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
     app.router.add_get("/l/{lang}/deal/{code}", index)
     app.router.add_get("/l/{lang}", index)
+    app.router.add_get("/deal/{code}", index)
     app.router.add_get("/", index)
     return app
 
