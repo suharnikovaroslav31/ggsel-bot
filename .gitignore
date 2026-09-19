@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 venv/
 get-pip.py
+pydeps/
 data/
 *.db
 .DS_Store

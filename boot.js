@@ -12,6 +12,9 @@ const venvPy =
   process.platform === "win32"
     ? path.join(venvDir, "Scripts", "python.exe")
     : path.join(venvDir, "bin", "python");
+const vendorDir = path.join(root, "pydeps");
+const pipPyz = path.join(root, "pip.pyz");
+const reqFile = path.join(root, "requirements.txt");
 
 function has(bin) {
   return spawnSync(bin, ["--version"], { encoding: "utf8" }).status === 0;
@@ -22,15 +25,10 @@ function run(py, args) {
     cwd: root,
     env: {
       ...process.env,
-      PIP_BREAK_SYSTEM_PACKAGES: "1",
       PIP_DISABLE_PIP_VERSION_CHECK: "1",
     },
     stdio: "inherit",
   });
-}
-
-function pipOk(py) {
-  return spawnSync(py, ["-m", "pip", "--version"], { encoding: "utf8" }).status === 0;
 }
 
 function download(url, dest) {
@@ -52,67 +50,42 @@ function download(url, dest) {
   });
 }
 
-async function fetchGetPip() {
-  const dest = path.join(root, "get-pip.py");
-  if (!fs.existsSync(dest)) {
-    console.log("Downloading get-pip.py...");
-    await download("https://bootstrap.pypa.io/get-pip.py", dest);
-  }
-  return dest;
+async function ensurePipPyz() {
+  if (fs.existsSync(pipPyz) && fs.statSync(pipPyz).size > 10000) return;
+  console.log("Downloading pip.pyz...");
+  await download("https://bootstrap.pypa.io/pip/pip.pyz", pipPyz);
 }
 
-async function ensurePip(py, extraArgs) {
-  if (pipOk(py)) return true;
-  console.log("Trying ensurepip for", py);
-  run(py, ["-m", "ensurepip", "--upgrade"]);
-  if (pipOk(py)) return true;
-  const getPip = await fetchGetPip();
-  console.log("Running get-pip.py", extraArgs.join(" "));
-  run(py, [getPip, ...extraArgs]);
-  return pipOk(py);
-}
-
-function installReqs(py, systemWide) {
-  const args = ["-m", "pip", "install"];
-  if (systemWide) {
-    args.push("--user", "--break-system-packages");
-  }
-  args.push("-r", path.join(root, "requirements.txt"));
-  return run(py, args);
+function withPythonPath(extra) {
+  const parts = [vendorDir];
+  if (process.env.PYTHONPATH) parts.push(process.env.PYTHONPATH);
+  return { PYTHONPATH: parts.join(path.delimiter), ...extra };
 }
 
 async function preparePython(systemPy) {
-  console.log("Creating virtualenv at", venvDir);
-  run(systemPy, ["-m", "venv", venvDir]);
-  if (!fs.existsSync(venvPy)) {
-    console.log("venv failed, retrying without bundled pip...");
-    run(systemPy, ["-m", "venv", "--without-pip", "--clear", venvDir]);
-  }
+  await ensurePipPyz();
+  run(systemPy, ["-V"]);
 
+  console.log("Creating venv without system pip...");
+  run(systemPy, ["-m", "venv", "--without-pip", "--clear", venvDir]);
   if (fs.existsSync(venvPy)) {
-    const ok = await ensurePip(venvPy, []);
-    if (ok) {
-      console.log("Installing packages into venv...");
-      const pip = installReqs(venvPy, false);
-      if (pip.status === 0) return venvPy;
-      console.error("venv pip install failed:", pip.status);
-    } else {
-      console.error("pip missing inside venv");
+    console.log("Installing packages into venv via pip.pyz...");
+    const pip = run(venvPy, [pipPyz, "install", "-r", reqFile]);
+    if (pip.status === 0) {
+      return { py: venvPy, env: {} };
     }
+    console.error("venv install failed:", pip.status);
   } else {
-    console.error("virtualenv was not created");
+    console.error("venv was not created, using --target instead");
   }
 
-  console.log("Falling back to system Python with --break-system-packages");
-  const ok = await ensurePip(systemPy, ["--user", "--break-system-packages"]);
-  if (!ok) {
-    throw new Error("could not install pip");
-  }
-  const pip = installReqs(systemPy, true);
+  fs.mkdirSync(vendorDir, { recursive: true });
+  console.log("Installing packages into", vendorDir, "via pip.pyz --target...");
+  const pip = run(systemPy, [pipPyz, "install", "--target", vendorDir, "-r", reqFile]);
   if (pip.status !== 0) {
-    throw new Error("pip install failed: " + pip.status);
+    throw new Error("pip.pyz install failed: " + pip.status);
   }
-  return systemPy;
+  return { py: systemPy, env: withPythonPath() };
 }
 
 function startHttp() {
@@ -150,17 +123,17 @@ function startHttp() {
   }
 
   startHttp();
-  const py = await preparePython(systemPy);
+  const ready = await preparePython(systemPy);
 
-  console.log("GGSel boot:", py, "main.py | proxy", publicPort, "->", pyPort);
-  const child = spawn(py, [path.join(root, "main.py")], {
+  console.log("GGSel boot:", ready.py, "main.py | proxy", publicPort, "->", pyPort);
+  const child = spawn(ready.py, [path.join(root, "main.py")], {
     cwd: root,
     env: {
       ...process.env,
+      ...ready.env,
       PORT: String(pyPort),
       WEB_PORT: String(pyPort),
       PYTHONUNBUFFERED: "1",
-      PIP_BREAK_SYSTEM_PACKAGES: "1",
     },
     stdio: "inherit",
   });
