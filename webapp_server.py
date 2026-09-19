@@ -170,11 +170,18 @@ def _bal(row, key: str) -> float | int:
 
 def _user_json(row, uid: int, start_param: str = "") -> dict[str, Any]:
     balances = {key: _bal(row, key) for key in BALANCE_KEYS}
+    picked = 0
+    if row is not None:
+        try:
+            picked = int(row["lang_picked"] or 0)
+        except (KeyError, IndexError, TypeError):
+            picked = 0
     return {
         "id": uid,
         "username": (row["username"] if row else None) or "",
         "full_name": (row["full_name"] if row else "") or "",
         "language": (row["language"] if row else "ru") or "ru",
+        "lang_picked": picked,
         "ton_wallet": (row["ton_wallet"] if row else "") or "",
         "card_number": (row["card_number"] if row else "") or "",
         "payout_username": (row["payout_username"] if row else "") or "",
@@ -335,7 +342,7 @@ async def api_deals_list(request: web.Request) -> web.Response:
         return err
     uid = int(tg_user["id"])
     deals = [_deal_json(d, uid) for d in await db.list_user_deals(uid, limit=40)]
-    return web.json_response({"ok": True, "deals": deals})
+    return web.json_response({"ok": True, "deals": deals}, headers={"Cache-Control": "no-store"})
 
 
 async def api_deals_create(request: web.Request) -> web.Response:
@@ -416,7 +423,7 @@ async def api_deal_get(request: web.Request) -> web.Response:
     payload = _deal_json(deal, uid)
     if not payload["role"] and deal["status"] not in {"open"}:
         return web.json_response({"ok": False, "error": "forbidden"}, status=403)
-    return web.json_response({"ok": True, "deal": payload})
+    return web.json_response({"ok": True, "deal": payload}, headers={"Cache-Control": "no-store"})
 
 
 async def api_deal_cancel(request: web.Request) -> web.Response:
@@ -428,7 +435,8 @@ async def api_deal_cancel(request: web.Request) -> web.Response:
     if not await db.cancel_deal(code, uid):
         return web.json_response({"ok": False, "error": "cannot_cancel"}, status=400)
     report_deal(code, "cancelled", actor_id=uid)
-    return web.json_response({"ok": True})
+    deal = await db.get_deal_by_code(code)
+    return web.json_response({"ok": True, "deal": _deal_json(deal, uid) if deal else None})
 
 
 async def api_deal_join(request: web.Request) -> web.Response:

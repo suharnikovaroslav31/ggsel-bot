@@ -931,7 +931,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:""};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:""};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -946,15 +946,25 @@ function syncLangChip(){
   document.documentElement.lang=(state.user&&state.user.language)||"ru";
 }
 function rememberedLang(){
-  try{return sessionStorage.getItem("ggsel_lang")||"";}catch(e){return "";}
+  try{
+    const local=localStorage.getItem("ggsel_lang")||"";
+    const sess=sessionStorage.getItem("ggsel_lang")||"";
+    const v=local||sess;
+    if(v&&!local) localStorage.setItem("ggsel_lang",v);
+    return v;
+  }catch(e){
+    try{return sessionStorage.getItem("ggsel_lang")||"";}catch(x){return "";}
+  }
 }
 function rememberLang(code){
+  if(!code) return;
+  try{localStorage.setItem("ggsel_lang",code);}catch(e){}
   try{sessionStorage.setItem("ggsel_lang",code);}catch(e){}
 }
 function needLangPicker(){
-  const boot=bootParams();
-  if(boot.picklang) return true;
-  return !rememberedLang();
+  if(rememberedLang()) return false;
+  if(state.user && Number(state.user.lang_picked)) return false;
+  return true;
 }
 function logoHtml(cls){
   const src=document.querySelector(".logo svg");
@@ -1126,7 +1136,7 @@ async function waitInitData(){
 }
 async function api(path,opts={}){
   const initData=await waitInitData();
-  const res=await fetch(path,{...opts,headers:{"Content-Type":"application/json","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
+  const res=await fetch(path,{cache:"no-store",...opts,headers:{"Content-Type":"application/json","Cache-Control":"no-cache","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
     const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена"};
@@ -1317,6 +1327,8 @@ async function screenDealView(){
   if(!code) return screenDealViewFallback();
   let d=null;
   try{ d=(await api("/api/deals/"+code)).deal; }catch(e){ return bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]); }
+  state.deal=d;
+  state.dealSig=dealFingerprint(d);
   state.link=d.link||dealLink(d.code);
   const link=state.link;
   const manager=String((state.user&&state.user.manager)||"").replace(/^@/,"");
@@ -1380,6 +1392,7 @@ function screenWd(){
 async function screenDeals(){
   const {deals}=await api("/api/deals");
   state.deals=deals;
+  state.dealsSig=dealsFingerprint(deals);
   if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
   const cards=deals.map(d=>{
     return `<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="muted">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount} · ${esc(roleLabel(d.role))}</div>${nftInfo(d.description)?`<div class="hint">${t("gift_title")}</div>`:""}</button>`;
@@ -1398,7 +1411,7 @@ function screenLang(){
     const q=`${code} ${native} ${en}`.toLowerCase();
     return `<button type="button" class="lang-row${cur===code?" on":""}" data-act="pick-lang" data-lang="${esc(code)}" data-q="${esc(q)}"><span>${esc(native)}</span><small>${esc(en)} · ${esc(code.toUpperCase())}</small></button>`;
   }).join("");
-  const showBack=!!rememberedLang();
+  const showBack=!!rememberedLang()||!!(state.user&&Number(state.user.lang_picked));
   return bubble(`<b>${t("pick_lang")}</b><p class="hint">${t("all_langs")}</p><input id="lang-q" type="search" autocomplete="off" placeholder="${esc(t("search_lang"))}" />`)+
     `<div class="lang-list" id="lang-list">${rows}</div>`+
     (showBack?kb([[backBtn()]]):"");
@@ -1439,7 +1452,7 @@ function screenAdminId(kind){
   return bubble(`${pe("deal_person","👤")} <b>${t("uid")}</b><input id="a-uid" inputmode="numeric" placeholder="123456789" />`)+
     kb([[act(t("save"),"id-"+kind,"deal_check","✅")],[backBtn()]]);
 }
-async function draw(){
+async function draw(opts={}){
   const root=document.getElementById("screen");
   if(!state.user){
     root.innerHTML=bubble("Загрузка…");
@@ -1479,20 +1492,74 @@ async function draw(){
     else if(s==="admin-grant"||s==="admin-ban"||s==="admin-unban") root.innerHTML=screenAdminId(s.replace("admin-",""));
     else root.innerHTML=await screenHome();
   }catch(e){root.innerHTML=bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);}
-  root.className="";
-  void root.offsetWidth;
-  root.className="panel"+(state.dir==="back"?" back":"");
+  if(!opts.quiet){
+    root.className="";
+    void root.offsetWidth;
+    root.className="panel"+(state.dir==="back"?" back":"");
+  }
   syncTabs();
+  watchDeal();
+}
+function dealFingerprint(d){
+  if(!d) return "";
+  return [d.code,d.status,d.role||"",d.buyer_id||"",d.seller_id||"",d.amount].join("|");
+}
+function dealsFingerprint(list){
+  return (list||[]).map(d=>[d.code,d.status,d.role||""].join(":")).join(",");
+}
+let dealWatch=null;
+function watchDeal(){
+  clearInterval(dealWatch);
+  dealWatch=null;
+  const s=state.screen;
+  if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,2000);
+  else if(s==="deals") dealWatch=setInterval(refreshDealsList,2500);
+}
+async function refreshOpenDeal(){
+  if(state.screen!=="deal-view"||!state.dealCode) return;
+  try{
+    const d=(await api("/api/deals/"+state.dealCode)).deal;
+    const fp=dealFingerprint(d);
+    if(fp===state.dealSig) return;
+    state.deal=d;
+    state.dealSig=fp;
+    await draw({quiet:true});
+  }catch(e){}
+}
+async function refreshDealsList(){
+  if(state.screen!=="deals") return;
+  try{
+    const {deals}=await api("/api/deals");
+    const fp=dealsFingerprint(deals);
+    if(fp===state.dealsSig) return;
+    state.deals=deals;
+    state.dealsSig=fp;
+    await draw({quiet:true});
+  }catch(e){}
 }
 let bootDealDone=false;
 async function loadMe(opts={}){
   const boot=bootParams();
   const setlang=boot.setlang;
-  if(!boot.picklang && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/.test(setlang)){
-    try{await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});rememberLang(setlang);}catch(e){}
-  }
-  const data=await api("/api/me");
+  const saved=rememberedLang();
+  let data=await api("/api/me");
   state.user=data.user;
+  if(Number(state.user.lang_picked)&&state.user.language){
+    rememberLang(state.user.language);
+  }else if(saved){
+    try{
+      await api("/api/language",{method:"POST",body:JSON.stringify({language:saved})});
+      data=await api("/api/me");
+      state.user=data.user;
+    }catch(e){}
+  }else if(/^[a-z]{2,3}(?:-[a-z0-9]{2,8})?$/.test(setlang)){
+    try{
+      await api("/api/language",{method:"POST",body:JSON.stringify({language:setlang})});
+      rememberLang(setlang);
+      data=await api("/api/me");
+      state.user=data.user;
+    }catch(e){}
+  }
   syncLangChip();
 }
 document.body.addEventListener("click",async(ev)=>{
@@ -1562,10 +1629,26 @@ document.body.addEventListener("click",async(ev)=>{
       await api("/api/withdraw",{method:"POST",body:JSON.stringify({method:state.wmethod,amount:document.getElementById("w-amount").value})});
       toast("Заявка принята");await loadMe();go("bal","back");return;
     }
-    if(actName.startsWith("deal-cancel-")){await api("/api/deals/"+actName.slice(12)+"/cancel",{method:"POST"});toast("Отменено");state.dealCode=actName.slice(12);go("deal-view");return;}
-    if(actName.startsWith("deal-paybal-")){await api("/api/deals/"+actName.slice(12)+"/paybal",{method:"POST"});toast("Оплачено");state.dealCode=actName.slice(12);go("deal-view");return;}
-    if(actName.startsWith("deal-sent-")){await api("/api/deals/"+actName.slice(10)+"/sent",{method:"POST"});toast("Готово");state.dealCode=actName.slice(10);go("deal-view");return;}
-    if(actName.startsWith("deal-recv-")){await api("/api/deals/"+actName.slice(10)+"/recv",{method:"POST"});toast("Готово");state.dealCode=actName.slice(10);go("deal-view");return;}
+    if(actName.startsWith("deal-cancel-")){
+      const r=await api("/api/deals/"+actName.slice(12)+"/cancel",{method:"POST"});
+      toast("Отменено");state.dealCode=actName.slice(12);if(r.deal){state.deal=r.deal;state.dealSig=dealFingerprint(r.deal);}
+      go("deal-view");return;
+    }
+    if(actName.startsWith("deal-paybal-")){
+      const r=await api("/api/deals/"+actName.slice(12)+"/paybal",{method:"POST"});
+      toast("Оплачено");state.dealCode=actName.slice(12);if(r.deal){state.deal=r.deal;state.dealSig=dealFingerprint(r.deal);}
+      await loadMe();go("deal-view");return;
+    }
+    if(actName.startsWith("deal-sent-")){
+      const r=await api("/api/deals/"+actName.slice(10)+"/sent",{method:"POST"});
+      toast("Готово");state.dealCode=actName.slice(10);if(r.deal){state.deal=r.deal;state.dealSig=dealFingerprint(r.deal);}
+      go("deal-view");return;
+    }
+    if(actName.startsWith("deal-recv-")){
+      const r=await api("/api/deals/"+actName.slice(10)+"/recv",{method:"POST"});
+      toast("Готово");state.dealCode=actName.slice(10);if(r.deal){state.deal=r.deal;state.dealSig=dealFingerprint(r.deal);}
+      await loadMe();go("deal-view");return;
+    }
     if(actName==="do-credit"){
       await api("/api/admin/credit",{method:"POST",body:JSON.stringify({currency:state.admin.currency,amount:document.getElementById("a-amt").value})});
       toast("Готово");await loadMe();go("admin","back");return;
@@ -1582,6 +1665,11 @@ document.body.addEventListener("click",async(ev)=>{
 });
 document.body.addEventListener("input",(ev)=>{
   if(ev.target&&ev.target.id==="lang-q") filterLangs();
+});
+document.addEventListener("visibilitychange",()=>{
+  if(document.visibilityState!=="visible") return;
+  if(state.screen==="deal-view") refreshOpenDeal();
+  else if(state.screen==="deals") refreshDealsList();
 });
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){

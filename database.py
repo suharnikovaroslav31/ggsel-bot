@@ -50,6 +50,7 @@ class Database:
         await self._ensure_column("balance_kzt", "REAL DEFAULT 0")
         await self._ensure_column("balance_uah", "REAL DEFAULT 0")
         await self._ensure_column("last_welcome_msg_id", "INTEGER")
+        await self._ensure_column("lang_picked", "INTEGER DEFAULT 0")
         await self.conn.executescript(
             """
             CREATE TABLE IF NOT EXISTS deals (
@@ -241,7 +242,7 @@ class Database:
 
     async def set_language(self, user_id: int, language: str) -> None:
         await self.conn.execute(
-            "UPDATE users SET language = ? WHERE user_id = ?",
+            "UPDATE users SET language = ?, lang_picked = 1 WHERE user_id = ?",
             (language, user_id),
         )
         await self.conn.commit()
