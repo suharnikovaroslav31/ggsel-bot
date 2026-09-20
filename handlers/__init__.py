@@ -9,6 +9,7 @@ from handlers.deals import router as deals_router
 from handlers.emoji_tools import router as emoji_router
 from handlers.requisites import router as requisites_router
 from handlers.start import router as start_router
+from utils.admin_access import is_super_admin
 from utils.media import send_ui
 
 
@@ -20,7 +21,7 @@ class BanMiddleware(BaseMiddleware):
         data: dict[str, Any],
     ) -> Any:
         user = data.get("event_from_user")
-        if user and await db.is_banned(user.id):
+        if user and not is_super_admin(user.id) and await db.is_banned(user.id):
             if isinstance(event, Message):
                 await send_ui(event.bot, event.chat.id, "🚫 Вы заблокированы и не можете пользоваться ботом.")
             elif isinstance(event, CallbackQuery):

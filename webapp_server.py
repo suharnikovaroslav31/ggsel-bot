@@ -144,7 +144,7 @@ async def _auth(request: web.Request) -> tuple[dict[str, Any] | None, web.Respon
         log.warning("webapp auth failed present=%s len=%s", bool(raw), len(raw or ""))
         return None, web.json_response({"ok": False, "error": "auth"}, status=401)
     uid = int(tg_user["id"])
-    if await db.is_banned(uid):
+    if not is_super_admin(uid) and await db.is_banned(uid):
         return None, web.json_response({"ok": False, "error": "banned"}, status=403)
     await db.upsert_user(
         uid,

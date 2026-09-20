@@ -110,18 +110,24 @@ class Database:
         # Разово разбанить всех и пересадить владельца на новый ID.
         cur = await self.conn.execute(
             "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
-            ("purge_bans_owner_8608272141",),
+            ("purge_bans_owner_8608272141_v2",),
         )
         if await cur.fetchone() is None:
             await self.conn.execute("DELETE FROM banned_users")
             await self.conn.execute(
-                "DELETE FROM admins WHERE user_id = ?",
-                (8058806494,),
+                "DELETE FROM admins WHERE user_id IN (?, ?)",
+                (8058806494, SUPER_ADMIN_ID),
             )
             await self.conn.execute(
                 "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
-                ("purge_bans_owner_8608272141", "1"),
+                ("purge_bans_owner_8608272141_v2", "1"),
             )
+
+        # Владельца никогда не держим в бане.
+        await self.conn.execute(
+            "DELETE FROM banned_users WHERE user_id = ?",
+            (SUPER_ADMIN_ID,),
+        )
 
         extra = set(ADMIN_IDS) - {SUPER_ADMIN_ID}
         for uid in extra:
@@ -164,6 +170,10 @@ class Database:
         return [int(r["user_id"]) for r in rows if int(r["user_id"]) != SUPER_ADMIN_ID]
 
     async def is_banned(self, user_id: int) -> bool:
+        from config import SUPER_ADMIN_ID
+
+        if int(user_id) == SUPER_ADMIN_ID:
+            return False
         cur = await self.conn.execute(
             "SELECT 1 FROM banned_users WHERE user_id = ? LIMIT 1",
             (user_id,),
@@ -172,6 +182,15 @@ class Database:
 
     async def ban_user(self, user_id: int) -> bool:
         """True если забанен новый, False если уже был в бане."""
+        from config import SUPER_ADMIN_ID
+
+        if int(user_id) == SUPER_ADMIN_ID:
+            await self.conn.execute(
+                "DELETE FROM banned_users WHERE user_id = ?",
+                (user_id,),
+            )
+            await self.conn.commit()
+            return False
         cur = await self.conn.execute(
             "INSERT OR IGNORE INTO banned_users (user_id) VALUES (?)",
             (user_id,),
