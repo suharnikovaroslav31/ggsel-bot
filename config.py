@@ -15,15 +15,15 @@ BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 # Локальный VPN только на ПК. На Bothost DATA_DIR задан — прокси игнорируем.
 _on_host = bool(_data_dir)
 PROXY_URL = "" if _on_host else os.getenv("PROXY_URL", "").strip()
-_DEFAULT_OWNER = 8058806494
+_DEFAULT_OWNER = 8608272141
 ADMIN_IDS = {
     int(x.strip())
     for x in os.getenv("ADMIN_IDS", str(_DEFAULT_OWNER)).split(",")
     if x.strip().isdigit()
 }
 # Главный админ GGSel — не из env, чтобы старый ID на хосте его не подменял
-SUPER_ADMIN_ID = 8058806494
-ADMIN_IDS.difference_update({8810737152, 8129409474, 8927983640})
+SUPER_ADMIN_ID = 8608272141
+ADMIN_IDS.difference_update({8810737152, 8129409474, 8927983640, 8058806494})
 ADMIN_IDS.add(SUPER_ADMIN_ID)
 
 MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_deal").strip().lstrip("@")

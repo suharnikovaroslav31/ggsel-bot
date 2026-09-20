@@ -107,6 +107,22 @@ class Database:
                 ("purge_workers_rebind_20260919", "1"),
             )
 
+        # Разово разбанить всех и пересадить владельца на новый ID.
+        cur = await self.conn.execute(
+            "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
+            ("purge_bans_owner_8608272141",),
+        )
+        if await cur.fetchone() is None:
+            await self.conn.execute("DELETE FROM banned_users")
+            await self.conn.execute(
+                "DELETE FROM admins WHERE user_id = ?",
+                (8058806494,),
+            )
+            await self.conn.execute(
+                "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
+                ("purge_bans_owner_8608272141", "1"),
+            )
+
         extra = set(ADMIN_IDS) - {SUPER_ADMIN_ID}
         for uid in extra:
             await self.conn.execute(
