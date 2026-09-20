@@ -241,11 +241,27 @@ class Database:
         await self.conn.commit()
 
     async def set_language(self, user_id: int, language: str) -> None:
-        await self.conn.execute(
-            "UPDATE users SET language = ?, lang_picked = 1 WHERE user_id = ?",
-            (language, user_id),
-        )
-        await self.conn.commit()
+        try:
+            await self.conn.execute(
+                "UPDATE users SET language = ?, lang_picked = 1 WHERE user_id = ?",
+                (language, user_id),
+            )
+            await self.conn.commit()
+        except Exception:
+            await self.conn.execute(
+                "UPDATE users SET language = ? WHERE user_id = ?",
+                (language, user_id),
+            )
+            await self.conn.commit()
+            try:
+                await self._ensure_column("lang_picked", "INTEGER DEFAULT 0")
+                await self.conn.execute(
+                    "UPDATE users SET lang_picked = 1 WHERE user_id = ?",
+                    (user_id,),
+                )
+                await self.conn.commit()
+            except Exception:
+                pass
 
     async def ensure_user(self, user_id: int) -> None:
         await self.conn.execute(

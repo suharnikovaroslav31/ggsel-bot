@@ -252,23 +252,27 @@ async def api_language(request: web.Request) -> web.Response:
     lang = _normalize_locale(str(body.get("language") or "en"))
     uid = int(tg_user["id"])
     await db.set_language(uid, lang)
-    await _refresh_start_button(uid, str(body.get("deal") or "").strip())
+    # Не ждём Telegram: иначе Mini App зависает на выборе языка / старте.
+    asyncio.create_task(_refresh_start_button(uid, str(body.get("deal") or "").strip()))
     return web.json_response({"ok": True, "language": lang})
 
 
 async def _refresh_start_button(uid: int, deal: str = "") -> None:
     if _bot is None:
         return
-    msg_id = await db.get_last_welcome_msg_id(uid)
-    if not msg_id:
-        return
-    from keyboards.main import open_app_kb
-    from utils.app_gate import APP_READY
-    from utils.media import edit_message_ui
-
-    query = f"deal={deal}" if deal else ""
     try:
-        await edit_message_ui(_bot, uid, msg_id, APP_READY, open_app_kb(query))
+        msg_id = await db.get_last_welcome_msg_id(uid)
+        if not msg_id:
+            return
+        from keyboards.main import open_app_kb
+        from utils.app_gate import APP_READY
+        from utils.media import edit_message_ui
+
+        query = f"deal={deal}" if deal else ""
+        await asyncio.wait_for(
+            edit_message_ui(_bot, uid, msg_id, APP_READY, open_app_kb(query)),
+            timeout=8,
+        )
     except Exception:
         pass
 
