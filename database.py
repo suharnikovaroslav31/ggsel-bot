@@ -86,10 +86,20 @@ class Database:
                 key   TEXT PRIMARY KEY,
                 value TEXT
             );
+            CREATE TABLE IF NOT EXISTS reviews (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                username    TEXT NOT NULL,
+                rating      INTEGER NOT NULL DEFAULT 5,
+                body        TEXT NOT NULL,
+                review_date TEXT DEFAULT '',
+                sort_order  INTEGER DEFAULT 0,
+                created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
             """
         )
         await self.conn.commit()
         await self._seed_env_admins()
+        await self._seed_demo_reviews()
 
     async def _seed_env_admins(self) -> None:
         from config import ADMIN_IDS, SUPER_ADMIN_ID
@@ -506,6 +516,96 @@ class Database:
             (user_id, user_id, limit),
         )
         return await cur.fetchall()
+
+    async def list_completed_feed(self, limit: int = 12) -> list[aiosqlite.Row]:
+        cur = await self.conn.execute(
+            """
+            SELECT code, deal_type, pay_method, amount, description, status, created_at
+            FROM deals
+            WHERE status = 'completed'
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        return await cur.fetchall()
+
+    async def _seed_demo_reviews(self) -> None:
+        cur = await self.conn.execute("SELECT COUNT(*) AS c FROM reviews")
+        row = await cur.fetchone()
+        if row and int(row["c"] or 0) > 0:
+            return
+        demos = [
+            ("chupayl", 5, "хороший сервис все отлично работает", "20 сент."),
+            ("denchik", 5, "гарант отвечает быстро, сделка без нервов", "17 сент."),
+            ("vika_nft", 5, "перевела подарок через гаранта — всё ок", "15 сент."),
+            ("lextrade", 5, "комиссия нормальная, UI понятный", "12 сент."),
+            ("rarebrod", 5, "все четко, 1 проц комсы", "21 сент."),
+        ]
+        for i, (user, rating, body, date) in enumerate(demos):
+            await self.conn.execute(
+                """
+                INSERT INTO reviews (username, rating, body, review_date, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (user, rating, body, date, i),
+            )
+        await self.conn.commit()
+
+    async def list_reviews(self, *, newest_first: bool = True) -> list[aiosqlite.Row]:
+        order = "sort_order ASC, id DESC" if newest_first else "sort_order DESC, id ASC"
+        cur = await self.conn.execute(f"SELECT * FROM reviews ORDER BY {order}")
+        return await cur.fetchall()
+
+    async def add_review(
+        self,
+        username: str,
+        rating: int,
+        body: str,
+        review_date: str = "",
+    ) -> aiosqlite.Row | None:
+        cur = await self.conn.execute("SELECT COALESCE(MIN(sort_order), 0) AS m FROM reviews")
+        row = await cur.fetchone()
+        sort_order = int(row["m"] or 0) - 1
+        cur = await self.conn.execute(
+            """
+            INSERT INTO reviews (username, rating, body, review_date, sort_order)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (username.lstrip("@"), max(1, min(5, int(rating))), body.strip(), review_date.strip(), sort_order),
+        )
+        await self.conn.commit()
+        return await self.get_review(int(cur.lastrowid))
+
+    async def get_review(self, review_id: int) -> aiosqlite.Row | None:
+        cur = await self.conn.execute("SELECT * FROM reviews WHERE id = ?", (review_id,))
+        return await cur.fetchone()
+
+    async def delete_review(self, review_id: int) -> bool:
+        cur = await self.conn.execute("DELETE FROM reviews WHERE id = ?", (review_id,))
+        await self.conn.commit()
+        return cur.rowcount > 0
+
+    async def move_review(self, review_id: int, direction: str) -> bool:
+        rows = await self.list_reviews(newest_first=True)
+        ids = [int(r["id"]) for r in rows]
+        if review_id not in ids:
+            return False
+        i = ids.index(review_id)
+        j = i - 1 if direction == "up" else i + 1
+        if j < 0 or j >= len(ids):
+            return False
+        a, b = rows[i], rows[j]
+        await self.conn.execute(
+            "UPDATE reviews SET sort_order = ? WHERE id = ?",
+            (int(b["sort_order"]), int(a["id"])),
+        )
+        await self.conn.execute(
+            "UPDATE reviews SET sort_order = ? WHERE id = ?",
+            (int(a["sort_order"]), int(b["id"])),
+        )
+        await self.conn.commit()
+        return True
 
 
 db = Database()

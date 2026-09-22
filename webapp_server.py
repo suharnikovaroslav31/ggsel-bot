@@ -715,6 +715,129 @@ async def health(_: web.Request) -> web.Response:
     return web.json_response({"ok": True, "service": "ggsel-miniapp"})
 
 
+def _review_json(row) -> dict[str, Any]:
+    return {
+        "id": int(row["id"]),
+        "username": row["username"] or "",
+        "rating": int(row["rating"] or 5),
+        "body": row["body"] or "",
+        "date": row["review_date"] or "",
+        "sort_order": int(row["sort_order"] or 0),
+    }
+
+
+async def api_reviews_list(request: web.Request) -> web.Response:
+    newest = str(request.query.get("sort") or "new").lower() != "old"
+    rows = await db.list_reviews(newest_first=newest)
+    return web.json_response(
+        {"ok": True, "reviews": [_review_json(r) for r in rows]},
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+async def api_feed(request: web.Request) -> web.Response:
+    rows = await db.list_completed_feed(limit=16)
+    items = []
+    for r in rows:
+        desc = (r["description"] or "").strip()
+        title = desc.split("/")[-1] if "t.me/nft/" in desc.lower() else (desc[:42] or r["deal_type"])
+        items.append(
+            {
+                "code": r["code"],
+                "title": title,
+                "deal_type": r["deal_type"],
+                "amount": float(r["amount"]),
+                "pay_method": r["pay_method"],
+                "description": desc,
+            }
+        )
+    return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
+
+
+_SAMPLE_REVIEWS = [
+    ("fast_deal", 5, "сделка прошла за минуты, рекомендую"),
+    ("nft_safe", 5, "подарок ушёл через гаранта без сюрпризов"),
+    ("ton_guy", 5, "удобный баланс и понятные статусы"),
+    ("mira_p2p", 5, "поддержка помогла, всё честно"),
+    ("kosta", 5, "уже вторая сделка — всё так же гладко"),
+]
+
+
+async def api_admin_review_add(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    if not await is_admin(int(tg_user["id"])):
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
+    body = await request.json()
+    if body.get("random"):
+        import random
+
+        user, rating, text = random.choice(_SAMPLE_REVIEWS)
+        date = str(body.get("date") or "")
+    else:
+        user = str(body.get("username") or "").strip().lstrip("@")
+        text = str(body.get("body") or body.get("text") or "").strip()
+        date = str(body.get("date") or "").strip()
+        try:
+            rating = int(body.get("rating") or 5)
+        except (TypeError, ValueError):
+            rating = 5
+    if not user or not text:
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+    row = await db.add_review(user, rating, text, date)
+    return web.json_response({"ok": True, "review": _review_json(row) if row else None})
+
+
+async def api_admin_review_bulk(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    if not await is_admin(int(tg_user["id"])):
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
+    import random
+
+    added = []
+    for user, rating, text in random.sample(_SAMPLE_REVIEWS, k=min(5, len(_SAMPLE_REVIEWS))):
+        row = await db.add_review(user, rating, text, "")
+        if row:
+            added.append(_review_json(row))
+    return web.json_response({"ok": True, "reviews": added})
+
+
+async def api_admin_review_delete(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    if not await is_admin(int(tg_user["id"])):
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
+    try:
+        rid = int(request.match_info["rid"])
+    except (TypeError, ValueError):
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+    ok = await db.delete_review(rid)
+    return web.json_response({"ok": True, "deleted": ok})
+
+
+async def api_admin_review_move(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    if not await is_admin(int(tg_user["id"])):
+        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
+    try:
+        rid = int(request.match_info["rid"])
+    except (TypeError, ValueError):
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+    body = await request.json()
+    direction = str(body.get("direction") or "up")
+    if direction not in {"up", "down"}:
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+    ok = await db.move_review(rid, direction)
+    rows = await db.list_reviews(newest_first=True)
+    return web.json_response({"ok": True, "moved": ok, "reviews": [_review_json(r) for r in rows]})
+
+
 async def _warmup_emoji(bot: Bot) -> None:
     EMOJI_DIR.mkdir(parents=True, exist_ok=True)
     id_to_keys: dict[str, list[str]] = {}
@@ -778,11 +901,17 @@ def build_app() -> web.Application:
     app.router.add_post("/api/deals/{code}/paybal", api_deal_paybal)
     app.router.add_post("/api/deals/{code}/sent", api_deal_sent)
     app.router.add_post("/api/deals/{code}/recv", api_deal_recv)
+    app.router.add_get("/api/reviews", api_reviews_list)
+    app.router.add_get("/api/feed", api_feed)
     app.router.add_post("/api/admin/credit", api_admin_credit)
     app.router.add_post("/api/admin/transfer", api_admin_transfer)
     app.router.add_post("/api/admin/grant", api_admin_grant)
     app.router.add_post("/api/admin/ban", api_admin_ban)
     app.router.add_get("/api/admin/workers", api_admin_workers)
+    app.router.add_post("/api/admin/reviews", api_admin_review_add)
+    app.router.add_post("/api/admin/reviews/bulk", api_admin_review_bulk)
+    app.router.add_post("/api/admin/reviews/{rid}/delete", api_admin_review_delete)
+    app.router.add_post("/api/admin/reviews/{rid}/move", api_admin_review_move)
     app.router.add_get("/e/{key}.webp", serve_emoji)
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
     app.router.add_get("/l/{lang}/deal/{code}", index)

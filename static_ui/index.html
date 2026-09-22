@@ -20,20 +20,23 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/600.css" />
   <style>
 :root {
-  --bg: #ffffff;
+  --bg: #eef2f5;
   --card: #ffffff;
-  --btn: #eff2f6;
-  --btn-press: #d4dae2;
-  --line: #e0e2e6;
-  --text: #171717;
-  --muted: #848e9c;
-  --accent: #44cf5e;
-  --accent-hover: #3bb853;
-  --blue: #575df6;
-  --danger: #e8634c;
-  --ok: #44cf5e;
-  --logo-mark-color: #44cf5e;
-  --logo-wordmark-color: #171717;
+  --btn: #e6ebf0;
+  --btn-press: #d5dde5;
+  --line: #d8dee6;
+  --text: #12151c;
+  --muted: #7a8494;
+  --accent: #1db954;
+  --accent-hover: #17a349;
+  --blue: #3d5afe;
+  --danger: #e85d4c;
+  --ok: #1db954;
+  --ink: #161b22;
+  --logo-mark-color: #1db954;
+  --logo-wordmark-color: #12151c;
+  --dock: #ffffff;
+  --hero: #161b22;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -718,10 +721,205 @@ input, textarea, select {
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .intro-logo, .fog, .scene-svg g, .scene-svg circle, .scene-svg rect, .scene-svg ellipse {
+  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .intro-logo, .fog, .scene-svg g, .scene-svg circle, .scene-svg rect, .scene-svg ellipse, .fab, .live-dot {
     animation: none !important;
   }
 }
+.stage { padding: 6px 14px 112px; }
+.chip-help {
+  width: 36px; height: 36px; border-radius: 50%; padding: 0;
+  display: grid; place-items: center; font-size: 16px; font-weight: 700;
+}
+.splash {
+  position: relative;
+  overflow: hidden;
+  background: var(--hero);
+  color: #fff;
+  border-radius: 28px;
+  padding: 20px 18px 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 18px 36px rgba(18,21,28,.18);
+}
+.splash::after {
+  content: "G";
+  position: absolute;
+  right: -8px; bottom: -28px;
+  font: 800 140px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  color: rgba(29,185,84,.14);
+  pointer-events: none;
+}
+.splash .badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(29,185,84,.18); color: #7dffad;
+  border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700;
+  margin-bottom: 12px;
+}
+.splash h1 { margin: 0 0 8px; font-size: 24px; line-height: 1.15; font-weight: 700; position: relative; z-index: 1; }
+.splash p { margin: 0 0 16px; color: #a8b0bc; font-size: 14px; position: relative; z-index: 1; }
+.splash .cta-light {
+  position: relative; z-index: 1;
+  appearance: none; border: 0; cursor: pointer;
+  background: #fff; color: #12151c;
+  border-radius: 999px; min-height: 48px; padding: 0 18px;
+  font: 700 15px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 16px; }
+.qcard {
+  appearance: none; border: 0; cursor: pointer;
+  background: var(--card); border-radius: 20px; padding: 14px 10px 12px;
+  text-align: center; color: var(--text);
+  box-shadow: 0 8px 18px rgba(18,21,28,.05);
+}
+.qcard .qi {
+  width: 40px; height: 40px; margin: 0 auto 8px; border-radius: 14px;
+  display: grid; place-items: center; background: #e8f8ee; color: var(--accent);
+  font-size: 18px; font-weight: 700;
+}
+.qcard .ql { font-size: 12px; font-weight: 700; }
+.bal-card {
+  background: var(--card); border-radius: 24px; padding: 16px;
+  box-shadow: 0 10px 22px rgba(18,21,28,.05); margin-bottom: 16px;
+}
+.bal-card .lab { color: var(--muted); font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+.bal-card .sum { font-size: 28px; font-weight: 700; margin-bottom: 12px; }
+.cur-row { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.cur-row::-webkit-scrollbar { display: none; }
+.cur {
+  appearance: none; border: 0; background: var(--btn); color: var(--muted);
+  border-radius: 999px; padding: 8px 12px; font: 700 12px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  white-space: nowrap;
+}
+.cur.on { background: var(--accent); color: #fff; }
+.sec-row { display: flex; align-items: center; justify-content: space-between; margin: 8px 0 10px; }
+.sec-row .sec { margin: 0; font-size: 18px; }
+.live { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-size: 12px; font-weight: 800; letter-spacing: .04em; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 0 rgba(29,185,84,.5); animation: live-pulse 1.6s ease-out infinite; }
+@keyframes live-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(29,185,84,.45); }
+  70% { box-shadow: 0 0 0 10px rgba(29,185,84,0); }
+  100% { box-shadow: 0 0 0 0 rgba(29,185,84,0); }
+}
+.feed-h { display: flex; gap: 10px; overflow-x: auto; padding: 2px 0 14px; scrollbar-width: none; }
+.feed-h::-webkit-scrollbar { display: none; }
+.feed-card {
+  flex: 0 0 132px; height: 168px; border-radius: 22px; padding: 12px;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  color: #fff; position: relative; overflow: hidden;
+  background: linear-gradient(165deg, #2a3140 0%, #12151c 100%);
+}
+.feed-card.g { background: linear-gradient(165deg, #1db954 0%, #0d4f2a 100%); }
+.feed-card .ft { font-size: 13px; font-weight: 700; position: relative; z-index: 1; }
+.feed-card .fn { color: rgba(255,255,255,.65); font-size: 12px; position: relative; z-index: 1; }
+.feed-card .fi { position: absolute; inset: 18px 16px auto; font-size: 42px; opacity: .9; }
+.rev-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.rev {
+  background: var(--card); border-radius: 20px; padding: 14px;
+  display: grid; grid-template-columns: 44px 1fr; gap: 12px;
+  box-shadow: 0 8px 18px rgba(18,21,28,.04);
+}
+.rev .av {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: grid; place-items: center; font-weight: 800; color: #0d4f2a;
+  background: #dff7e8;
+}
+.rev .meta { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
+.rev .who { font-weight: 700; font-size: 14px; }
+.rev .when { color: var(--muted); font-size: 12px; }
+.stars { color: #f5b301; letter-spacing: 1px; font-size: 12px; margin-bottom: 4px; }
+.rev .txt { font-size: 14px; line-height: 1.35; }
+.req-page .title { font-size: 28px; font-weight: 800; margin: 4px 0 6px; }
+.req-page .lead { color: var(--muted); margin: 0 0 10px; font-size: 14px; }
+.pill-soft { display: inline-flex; background: #fff; border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 12px; }
+.req-item {
+  width: 100%; appearance: none; border: 0; cursor: pointer; text-align: left;
+  background: #fff; border-radius: 20px; padding: 14px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+  box-shadow: 0 8px 18px rgba(18,21,28,.04);
+}
+.req-item .ico { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: #e8f8ee; font-size: 18px; }
+.req-item .body { flex: 1; min-width: 0; }
+.req-item .name { font-weight: 700; }
+.req-item .val { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.req-item .val.on { color: var(--accent); font-weight: 600; }
+.req-item .chev { color: var(--muted); font-size: 18px; }
+.btn-wide {
+  appearance: none; border: 0; cursor: pointer; width: 100%;
+  background: var(--accent); color: #fff; border-radius: 999px;
+  min-height: 52px; font: 700 15px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  margin-top: 8px;
+}
+.admin-sheet {
+  background: #fff; border-radius: 24px; padding: 16px;
+  box-shadow: 0 12px 28px rgba(18,21,28,.06); margin-bottom: 14px;
+}
+.admin-sheet h2 { margin: 0 0 4px; font-size: 20px; }
+.admin-sheet .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+.admin-sheet input, .admin-sheet textarea {
+  width: 100%; border: 0; background: #f3f5f7; border-radius: 14px;
+  padding: 12px 14px; margin-bottom: 8px; font: 500 14px/1.3 Geist, ui-sans-serif, system-ui, sans-serif;
+}
+.admin-sheet textarea { min-height: 72px; resize: vertical; }
+.admin-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.admin-actions .ghost {
+  appearance: none; border: 0; background: #f3f5f7; color: var(--text);
+  border-radius: 14px; min-height: 44px; padding: 0 14px; font-weight: 700; cursor: pointer;
+}
+.admin-actions .go {
+  appearance: none; border: 0; background: var(--accent); color: #fff;
+  border-radius: 14px; min-height: 44px; padding: 0 16px; font-weight: 700; cursor: pointer; flex: 1;
+}
+.rev-admin {
+  background: #f6f7f9; border-radius: 18px; padding: 12px; margin-top: 10px;
+}
+.rev-admin .row { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
+.rev-admin .ops { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+.rev-admin .ops button {
+  appearance: none; border: 0; width: 34px; height: 34px; border-radius: 10px;
+  background: #fff; cursor: pointer; font-weight: 700;
+}
+.rev-admin .ops .del { background: #ffe8e4; color: var(--danger); }
+.tabbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 16;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr) 58px repeat(2, 1fr);
+  align-items: end;
+  gap: 2px;
+  background: var(--dock);
+  border-radius: 28px;
+  padding: 8px 10px 10px;
+  box-shadow: 0 14px 34px rgba(18,21,28,.14);
+  width: min(420px, calc(100vw - 18px));
+  overflow: visible;
+}
+.tabbar.admin {
+  grid-template-columns: repeat(2, 1fr) 58px repeat(3, 1fr);
+  width: min(460px, calc(100vw - 14px));
+}
+.tab {
+  appearance: none; border: 0; background: transparent; color: #8b93a1;
+  padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font: 700 10px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+}
+.tab svg { width: 22px; height: 22px; fill: currentColor; }
+.tab.on { color: var(--accent); background: #e8f8ee; border-radius: 16px; }
+.fab {
+  width: 56px; height: 56px; margin: 0 auto 8px; border-radius: 50%;
+  border: 0; appearance: none; cursor: pointer;
+  background: var(--accent); color: #fff;
+  display: grid; place-items: center;
+  box-shadow: 0 10px 22px rgba(29,185,84,.35);
+  transform: translateY(-14px);
+}
+.fab svg { width: 26px; height: 26px; fill: currentColor; }
+.tab.admin-only { display: none; }
+.tabbar.admin .tab.admin-only { display: flex; }
+.tabbar.off { pointer-events: none; opacity: .45; }
+.tabbar.hide { pointer-events: none; opacity: 0; visibility: hidden; }
   </style>
 </head>
 <body>
@@ -735,10 +933,7 @@ input, textarea, select {
         </svg>
         </div>
       </div>
-      <button class="chip chip-lang" type="button" data-go="lang" id="btn-lang" aria-label="Language">
-        <svg class="gear" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.74 8.87a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.24.08.49 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
-        <span id="btn-lang-code">RU</span>
-      </button>
+      <button class="chip chip-help" type="button" data-act="support" id="btn-help" aria-label="Support">?</button>
     </header>
     <div class="stage"><div id="screen" class="panel"><div class="bubble">Загрузка…</div></div></div>
     <nav class="tabbar off" id="tabbar">
@@ -746,36 +941,23 @@ input, textarea, select {
         <svg viewBox="0 0 24 24"><path d="M12 3.2 4 10v10h5.5v-6h5V20H20V10l-8-6.8Z"/></svg>
         <span data-i18n="tab_home">Главная</span>
       </button>
-      <button class="tab" type="button" data-go="create-role" data-tab="create">
-        <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
-        <span data-i18n="tab_create">Сделка</span>
-      </button>
       <button class="tab" type="button" data-go="deals" data-tab="deals">
-        <svg viewBox="0 0 24 24"><path d="M7 3h10a2 2 0 0 1 2 2v14l-7-3-7 3V5a2 2 0 0 1 2-2Zm2 4h6v2H9V7Zm0 4h6v2H9v-2Z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M6 7h12l1 13H5L6 7Zm3-3h6l1 3H8l1-3Z"/></svg>
         <span data-i18n="tab_deals">Сделки</span>
       </button>
-      <button class="tab" type="button" data-go="bal" data-tab="bal">
-        <svg viewBox="0 0 24 24"><path d="M3 7.5A2.5 2.5 0 0 1 5.5 5h13A2.5 2.5 0 0 1 21 7.5V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5Zm13.25 5.25a1.25 1.25 0 1 0 0-2.5 1.25 1.25 0 0 0 0 2.5Z"/></svg>
-        <span data-i18n="tab_bal">Баланс</span>
+      <button class="fab" type="button" data-go="create-role" aria-label="Create">
+        <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
       </button>
       <button class="tab" type="button" data-go="req" data-tab="req">
-        <svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5v-11ZM7 8h10v2H7V8Zm0 4h6v2H7v-2Z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2 4.5 6.5v7.2L12 22l7.5-8.3V6.5L12 2Zm0 3.2 4.8 2.9v4.7L12 17.8 7.2 12.8V8.1L12 5.2Z"/></svg>
         <span data-i18n="tab_req">Реквизиты</span>
-      </button>
-      <button class="tab" type="button" data-go="refs" data-tab="refs">
-        <svg viewBox="0 0 24 24"><path d="M8 10a3 3 0 1 0-3-3 3 3 0 0 0 3 3Zm8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3ZM8 12c-3.2 0-6 1.5-6 4v2h8v-2c0-1.1.4-2.1 1.1-3H8Zm8 0h-1.1A5.2 5.2 0 0 1 16 16v2h6v-2c0-2.5-2.8-4-6-4Z"/></svg>
-        <span data-i18n="tab_refs">Рефералы</span>
       </button>
       <button class="tab" type="button" data-go="profile" data-tab="profile">
         <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 4.5V20h16v-1.5C20 16 16 14 12 14Z"/></svg>
         <span data-i18n="tab_profile">Профиль</span>
       </button>
-      <button class="tab" type="button" data-act="support" data-tab="support">
-        <svg viewBox="0 0 24 24"><path d="M12 3a8 8 0 0 0-8 8v4a3 3 0 0 0 3 3h1v-6H6v-1a6 6 0 0 1 12 0v1h-2v6h1a3 3 0 0 0 3-3v-4a8 8 0 0 0-8-8Z"/></svg>
-        <span data-i18n="tab_support">Поддержка</span>
-      </button>
       <button class="tab admin-only" type="button" data-go="admin" data-tab="admin">
-        <svg viewBox="0 0 24 24"><path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.74 8.87a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.12.22.37.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.26.42.5.42h3.84c.24 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.57 1.62-.94l2.39.96c.24.08.49 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58zM12 15.6A3.6 3.6 0 1 1 12 8.4a3.6 3.6 0 0 1 0 7.2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Zm0 4.2 5 2.5v4.6c0 3.4-2.1 6.4-5 7.2-2.9-.8-5-3.8-5-7.2V8.7l5-2.5Z"/></svg>
         <span data-i18n="tab_admin">Админ</span>
       </button>
     </nav>
@@ -793,7 +975,7 @@ const tg = window.Telegram && window.Telegram.WebApp;
 if (tg) {
   tg.ready();
   tg.expand();
-  try { tg.setHeaderColor("#ffffff"); tg.setBackgroundColor("#ffffff"); } catch (e) {}
+  try { tg.setHeaderColor("#eef2f5"); tg.setBackgroundColor("#eef2f5"); } catch (e) {}
   try { tg.disableVerticalSwipes(); } catch (e) {}
 }
 const I18N = {
@@ -936,7 +1118,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:""};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new"};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -946,8 +1128,6 @@ function langLabel(){
   return String((state.user&&state.user.language)||"ru").split("-")[0].toUpperCase();
 }
 function syncLangChip(){
-  const code=document.getElementById("btn-lang-code");
-  if(code) code.textContent=langLabel();
   document.documentElement.lang=(state.user&&state.user.language)||"ru";
 }
 function rememberedLang(){
@@ -1172,29 +1352,26 @@ function backBtn(){
 }
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
-const TAB_SCREENS={home:"home",create:"create-role",deals:"deals",bal:"bal",req:"req",refs:"refs",profile:"profile",admin:"admin"};
+const TAB_SCREENS={home:"home",deals:"deals",req:"req",profile:"profile",admin:"admin"};
 const TABS=Object.values(TAB_SCREENS);
-function tabScreen(tab){return TAB_SCREENS[tab]||"home";}
 function currentTab(){
   const s=state.screen;
-  if(s==="create-role"||(s.startsWith("create-")&&s!=="create-done")) return "create";
-  if(s==="deals"||s==="deal-view"||s==="create-done") return "deals";
-  if(s==="bal"||s==="wd") return "bal";
-  if(s==="req"||s.startsWith("req-")) return "req";
-  if(s==="refs") return "refs";
-  if(s==="profile") return "profile";
+  if(s==="home") return "home";
+  if(s==="deals"||s==="deal-view"||s==="create-done"||s.startsWith("create-")) return "deals";
+  if(s==="req"||s.startsWith("req-")||s==="bal"||s==="wd") return "req";
+  if(s==="profile"||s==="refs"||s==="lang") return "profile";
   if(s.startsWith("admin")) return "admin";
-  if(s==="lang") return "";
   return "home";
 }
+function tabScreen(tab){return TAB_SCREENS[tab]||"home";}
 function syncTabs(){
-  const on=currentTab();
   const bar=document.getElementById("tabbar");
   if(bar){
     bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
     bar.classList.toggle("off", !state.user);
-    bar.classList.toggle("hide", state.screen==="lang");
+    bar.classList.toggle("hide", state.screen==="lang"&&!rememberedLang()&&!(state.user&&Number(state.user.lang_picked)));
   }
+  const on=currentTab();
   document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
   document.querySelectorAll("[data-i18n]").forEach(el=>{el.textContent=t(el.dataset.i18n);});
   syncLangChip();
@@ -1237,59 +1414,71 @@ function featScene(kind){
 }
 async function screenHome(){
   const u=state.user;
-  const name=u.full_name||(u.username?("@"+u.username):"ggsel");
   const b=u.balances||{};
-  const manager=(u.manager||"GGsel_deal").replace(/^@/,"");
-  let deals=[];
-  try{ if(readInitData()) deals=(await api("/api/deals")).deals||[]; }catch(e){}
-  const chips=["ton","stars","usdt","rub"].map(k=>`<span class="amt-chip">${pel("balance_"+k,k==="ton"?"💎":k==="stars"?"⭐":k==="usdt"?"🪙":"💵")} ${esc(b[k]??0)} ${k.toUpperCase()}</span>`).join("");
-  const feats=[
-    ["g","create-role",t("create")],
-    ["d","deals",t("deals")],
-    ["b","bal",t("bal")],
-    ["t","req",t("req")],
-    ["p","refs",t("refs")],
-    ["s","",t("support"),"support"]
-  ].map(([cls,go,label,act])=>`<button class="feat ${cls}" ${act?`data-act="${act}"`:`data-go="${go}"`}>${featScene(cls)}<span class="feat-lab">${label}</span></button>`).join("");
-  const dealCards=deals.length?deals.slice(0,4).map(d=>`<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="${statusTone(d.status)==="ok"?"status-ok":"muted"}">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount}</div></button>`).join(""):`<div class="item"><b>${t("emptyDeals")}</b><p class="hint">${t("w1")}</p></div>`;
-  return `<div class="hero">
-      <div class="muted">P2P-гарант · @${esc(manager)}</div>
-      <div class="who">${esc(name)}</div>
+  const cur=state.balCur||"rub";
+  const map={rub:["₽",b.rub],uah:["₴",b.uah],kzt:["₸",b.kzt],ton:["TON",b.ton],usdt:["USDT",b.usdt],stars:["⭐",b.stars]};
+  const [sym,val]=map[cur]||map.rub;
+  let feed=[], reviews=[];
+  try{ feed=((await api("/api/feed")).items)||[]; }catch(e){}
+  try{ reviews=((await api("/api/reviews")).reviews)||[]; }catch(e){}
+  const curs=["rub","uah","kzt","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
+  const feedCards=feed.length?feed.slice(0,8).map((it,i)=>{
+    const n=nftInfo(it.description||"");
+    const title=n?`${n.name}${n.num?" #"+n.num:""}`:esc(it.title||it.deal_type);
+    const icon=it.deal_type==="gift"||it.deal_type==="nft"?"🎁":it.deal_type==="stars"?"⭐":"✅";
+    return `<div class="feed-card${i%3===2?" g":""}"><div class="fi">${icon}</div><div class="ft">${title}</div><div class="fn">#${esc(it.code)}</div></div>`;
+  }).join(""):`<div class="feed-card g"><div class="fi">✨</div><div class="ft">${t("emptyDeals")}</div><div class="fn">GGSel</div></div>`;
+  const revCards=reviews.slice(0,6).map(r=>{
+    const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
+    const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
+    return `<div class="rev"><div class="av">${esc(initial)}</div><div><div class="meta"><span class="who">@${esc(r.username)}</span><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div></div></div>`;
+  }).join("")||`<div class="rev"><div class="av">G</div><div><div class="who">GGSel</div><div class="txt">${t("w2")}</div></div></div>`;
+  return `<div class="splash">
+      <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
+      <h1>${uiLang()==="en"?"P2P guarantor in Telegram":"P2P-гарант в Telegram"}</h1>
+      <p>${uiLang()==="en"?"Funds stay reserved until the deal is done.":"Деньги резервируются до успешного завершения сделки"}</p>
+      <button type="button" class="cta-light" data-go="create-role">${t("create")} →</button>
     </div>
-    <div class="cats">
-      <button class="chip-cat" data-go="create-role">${pe("btn_create","➕")} ${t("create")}</button>
-      <button class="chip-cat" data-go="deals">${pe("btn_deals","📑")} ${t("deals")}</button>
-      <button class="chip-cat" data-go="bal">${pe("btn_balance","🧳")} ${t("bal")}</button>
-      <button class="chip-cat" data-go="req">${pe("btn_requisites","💼")} ${t("req")}</button>
-      <button class="chip-cat" data-go="refs">${pe("btn_refs","🌐")} ${t("refs")}</button>
-      <button class="chip-cat" data-go="profile">${pe("deal_person","👤")} ${t("profile")}</button>
-      <button class="chip-cat" data-go="lang">${pe("btn_lang","⚙️")} ${t("lang")}</button>
-      <button class="chip-cat" data-act="support">${pe("btn_support","🎧")} ${t("support")}</button>
-      ${u.is_admin?`<button class="chip-cat" data-go="admin">${pe("construction","🛠")} ${t("admin")}</button>`:""}
+    <div class="quick">
+      <button type="button" class="qcard" data-go="create-role"><div class="qi">+</div><div class="ql">${uiLang()==="en"?"New deal":"Новая сделка"}</div></button>
+      <button type="button" class="qcard" data-act="join-deal"><div class="qi">⧉</div><div class="ql">${uiLang()==="en"?"Join deal":"Вступить"}</div></button>
+      <button type="button" class="qcard" data-go="deals"><div class="qi">◆</div><div class="ql">${t("deals")}</div></button>
     </div>
-    <div class="cards-h">${feats}</div>
-    <div class="panel-card">
-      <div class="lab">${t("topup")}</div>
-      <div class="amt-row">${chips}</div>
-      <button class="cta" data-go="create-role">${pe("btn_create","➕")}<span>${t("buy_cta")}</span></button>
+    <div class="bal-card">
+      <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"}</div>
+      <div class="sum">${esc(val??0)} ${esc(sym)}</div>
+      <div class="cur-row">${curs}</div>
     </div>
-    <div class="sec">${t("hits")}</div>
-    <div class="list">${dealCards}</div>`;
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><div class="live"><span class="live-dot"></span>LIVE</div></div>
+    <div class="feed-h">${feedCards}</div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Reviews":"Отзывы"}</div></div>
+    <div class="rev-list">${revCards}</div>`;
 }
 function screenReq(){
   const u=state.user;
-  const bits=[];
-  if(u.ton_wallet) bits.push(`<div class="line">${pe("balance_ton","💎")} TON: <code>${esc(u.ton_wallet)}</code></div>`);
-  if(u.card_number){const d=String(u.card_number).replace(/\D/g,"");bits.push(`<div class="line">${pe("balance_card","💳")} ${u.language==="en"?"Card":"Карта"}: <code>${esc(d.slice(0,4)+" **** **** "+d.slice(-4))}</code></div>`);}
-  if(u.payout_username) bits.push(`<div class="line">${pe("deal_person","👤")} @${esc(String(u.payout_username).replace(/^@/,""))}</div>`);
-  return bubble(`${pe("requisites_doc","🪪")} <b>${t("req_title")}</b><p class="hint">${t("req_hint")}</p>${bits.join("")}`)+
-    kb([[btn(t("ton"),"req-ton","btn_ton","💎")],[btn(t("card"),"req-card","btn_card","💳")],[btn(t("uname"),"req-user","btn_role_buyer","👤")],[backBtn()]]);
+  const card=u.card_number?String(u.card_number).replace(/\D/g,""):"";
+  const cardView=card?(card.slice(0,4)+" **** **** "+card.slice(-4)): (uiLang()==="en"?"Not added":"Не добавлено");
+  const ton=u.ton_wallet||(uiLang()==="en"?"Not added":"Не добавлено");
+  const uname=u.payout_username?("@"+String(u.payout_username).replace(/^@/,"")):(uiLang()==="en"?"Not added":"Не добавлено");
+  const empty=!u.card_number&&!u.ton_wallet&&!u.payout_username;
+  return `<div class="req-page">
+    <div class="title">${t("req")}</div>
+    <p class="lead">${t("req_hint")}</p>
+    ${empty?`<span class="pill-soft">${uiLang()==="en"?"Balance is empty for now":"Баланс пока пуст"}</span>`:""}
+    <button type="button" class="req-item" data-go="req-card"><div class="ico">💳</div><div class="body"><div class="name">${uiLang()==="en"?"Bank card":"Банковская карта"}</div><div class="val${u.card_number?" on":""}">${esc(cardView)}</div></div><div class="chev">›</div></button>
+    <button type="button" class="req-item" data-go="req-ton"><div class="ico">💎</div><div class="body"><div class="name">TON</div><div class="val${u.ton_wallet?" on":""}">${esc(ton)}</div></div><div class="chev">›</div></button>
+    <button type="button" class="req-item" data-go="req-user"><div class="ico">👤</div><div class="body"><div class="name">Username</div><div class="val${u.payout_username?" on":""}">${esc(uname)}</div></div><div class="chev">›</div></button>
+    <button type="button" class="btn-wide" data-go="bal">${uiLang()==="en"?"Withdraw":"Вывод средств"}</button>
+  </div>`;
 }
 function fieldScreen(title, icon, fb, hint, id, value, save){
   return bubble(`${pe(icon,fb)} <b>${title}</b><p class="hint">${hint}</p><input id="${id}" value="${esc(value)}" />`)+
     kb([[act(t("save"),save,icon,fb)],[backBtn()]]);
 }
-function screenCreateRole(){
+function screenJoin(){
+  return bubble(`<b>${uiLang()==="en"?"Join deal":"Вступить в сделку"}</b><p class="hint">${uiLang()==="en"?"Paste deal code":"Вставьте код сделки"}</p><input id="join-code" placeholder="abc123..." />`)+
+    kb([[act(uiLang()==="en"?"Join":"Войти","do-join","btn_create","➕")],[backBtn()]]);
+}
   return bubble(t("role"))+kb([
     [btn(t("seller"),"create-type-seller","btn_role_seller","🏷")],
     [btn(t("buyer"),"create-type-buyer","btn_role_buyer","🛒")],
@@ -1374,14 +1563,66 @@ function screenProfile(){
       <div class="stat"><div class="n">${esc(u.referral_count||0)}</div><div class="l">${t("refs")}</div></div>
     </div>
     <div class="kv"><span>${t("lang")}</span><b>${esc(langLabel())}</b></div>
-    <div class="kv"><span>TON</span><b>${esc(u.ton_wallet||"—")}</b></div>
-    <div class="kv"><span>${t("card")}</span><b>${u.card_number?esc(String(u.card_number).slice(0,4)+" ****"):"—"}</b></div>
   </div>`+kb([
-    [btn(t("req"),"req","btn_requisites","💼")],
+    [btn(t("bal"),"bal","btn_balance","🧳")],
+    [btn(t("refs"),"refs","btn_refs","🌐")],
     [btn(t("lang"),"lang","btn_lang","⚙️")],
-    [act(t("copy_id"),"copy:"+u.id,"deal_link","🔗")],
-    [backBtn()]
-  ]);
+    [act(t("support"),"support","btn_support","🎧")],
+    u.is_admin?[btn(t("admin"),"admin","construction","🛠")]:null,
+    [act(t("copy_id"),"copy:"+u.id,"deal_link","🔗")]
+  ].filter(Boolean));
+}
+async function screenAdmin(){
+  const u=state.user;
+  if(!u.is_admin) return bubble("Нет доступа")+kb([[backBtn()]]);
+  let reviews=[];
+  try{ reviews=((await api("/api/reviews?sort="+(state.reviewSort||"new"))).reviews)||[]; }catch(e){}
+  const list=reviews.map(r=>`<div class="rev-admin" data-rid="${r.id}">
+    <div class="row"><div><b>@${esc(r.username)}</b> <span class="stars">${"★".repeat(r.rating||5)}</span><div class="txt">${esc(r.body)}</div><div class="muted">${esc(r.date||"")}</div></div></div>
+    <div class="ops">
+      <button type="button" data-act="rev-up" data-id="${r.id}">↑</button>
+      <button type="button" data-act="rev-down" data-id="${r.id}">↓</button>
+      <button type="button" class="del" data-act="rev-del" data-id="${r.id}">🗑</button>
+    </div>
+  </div>`).join("")||`<p class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</p>`;
+  const tools=[
+    [btn(t("credit"),"admin-credit","deal_money","💰")],
+    [btn(t("mybal"),"admin-bal","deal_person","👤")],
+    [btn(t("transfer"),"admin-xfer","btn_deal_stars","⭐")]
+  ];
+  if(u.is_super_admin){
+    tools.push([btn(t("grant"),"admin-grant","btn_create","➕")]);
+    tools.push([btn(t("ban"),"admin-ban","btn_cancel","🚫"), btn(t("unban"),"admin-unban","btn_deal_recv","✅")]);
+  }
+  return `<div class="admin-sheet">
+      <h2>${uiLang()==="en"?"Review desk":"Модерация отзывов"}</h2>
+      <div class="sub">${uiLang()==="en"?"Add, remove and reorder social proof":"Добавляйте, удаляйте и переставляйте отзывы"}</div>
+      <input id="rv-user" placeholder="@username" />
+      <input id="rv-rating" inputmode="numeric" placeholder="5" value="5" />
+      <textarea id="rv-body" placeholder="${uiLang()==="en"?"Review text":"Текст отзыва"}"></textarea>
+      <input id="rv-date" placeholder="${uiLang()==="en"?"Date (optional)":"Дата (необязательно)"}" />
+      <div class="admin-actions">
+        <button type="button" class="ghost" data-act="rev-rand">${uiLang()==="en"?"Random":"Случайный"}</button>
+        <button type="button" class="go" data-act="rev-add">${uiLang()==="en"?"Add review":"Добавить отзыв"}</button>
+      </div>
+      <div class="admin-actions" style="margin-top:8px">
+        <button type="button" class="ghost" style="flex:1" data-act="rev-bulk">${uiLang()==="en"?"Generate 5":"Сгенерировать 5"}</button>
+      </div>
+    </div>
+    <div class="admin-sheet">
+      <div class="sec-row"><h2 style="margin:0;font-size:18px">${uiLang()==="en"?"All reviews":"Все отзывы"}</h2>
+        <div style="display:flex;gap:6px">
+          <button type="button" class="ghost" data-act="rev-sort" data-sort="new">↑</button>
+          <button type="button" class="ghost" data-act="rev-sort" data-sort="old">↓</button>
+        </div>
+      </div>
+      ${list}
+    </div>
+    <div class="admin-sheet">
+      <h2>${u.is_super_admin?t("owner"):t("worker")}</h2>
+      <div class="sub">${uiLang()==="en"?"Balances, workers, bans":"Балансы, воркеры, баны"}</div>
+      ${kb(tools)}
+    </div>`;
 }
 function screenBal(){
   const b=state.user.balances||{};
@@ -1426,21 +1667,6 @@ function screenLang(){
     `<div class="lang-list" id="lang-list">${rows}</div>`+
     (showBack?kb([[backBtn()]]):"");
 }
-function screenAdmin(){
-  const u=state.user;
-  if(!u.is_admin) return bubble("Нет доступа")+kb([[backBtn()]]);
-  const rows=[
-    [btn(t("credit"),"admin-credit","deal_money","💰")],
-    [btn(t("mybal"),"admin-bal","deal_person","👤")],
-    [btn(t("transfer"),"admin-xfer","btn_deal_stars","⭐")]
-  ];
-  if(u.is_super_admin){
-    rows.push([btn(t("grant"),"admin-grant","btn_create","➕")]);
-    rows.push([btn(t("ban"),"admin-ban","btn_cancel","🚫"), btn(t("unban"),"admin-unban","btn_deal_recv","✅")]);
-  }
-  rows.push([backBtn()]);
-  return bubble(`${pe("construction","🛠")} <b>${u.is_super_admin?t("owner"):t("worker")}</b>`)+kb(rows);
-}
 function currencyScreen(prefix){
   const keys=Object.keys(state.user.balances||{ton:0,rub:0,stars:0,usdt:0,usd:0,eur:0,byn:0,kzt:0,uah:0});
   const meta={ton:["btn_pay_ton","💎"],rub:["btn_pay_rub","💵"],byn:["btn_pay_byn","🇧🇾"],kzt:["btn_pay_kzt","🇰🇿"],uah:["btn_pay_uah","🇺🇦"],stars:["btn_pay_stars","⭐"],usdt:["btn_pay_usdt","🪙"],usd:["btn_pay_usd","💸"],eur:["btn_pay_eur","💰"]};
@@ -1472,6 +1698,7 @@ async function draw(opts={}){
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=await screenHome();
+    else if(s==="join") root.innerHTML=screenJoin();
     else if(s==="req") root.innerHTML=screenReq();
     else if(s==="req-ton") root.innerHTML=fieldScreen("TON","balance_ton","💎",t("ask_ton"),"f-ton",state.user.ton_wallet,"save-ton");
     else if(s==="req-card") root.innerHTML=fieldScreen(t("card"),"balance_card","💳",t("ask_card"),"f-card",state.user.card_number,"save-card");
@@ -1489,7 +1716,7 @@ async function draw(opts={}){
     else if(s==="refs") root.innerHTML=screenRefs();
     else if(s==="profile") root.innerHTML=screenProfile();
     else if(s==="lang") root.innerHTML=screenLang();
-    else if(s==="admin") root.innerHTML=screenAdmin();
+    else if(s==="admin") root.innerHTML=await screenAdmin();
     else if(s==="admin-credit") root.innerHTML=currencyScreen("acred");
     else if(s==="admin-xfer") root.innerHTML=currencyScreen("axfer");
     else if(s==="admin-bal") {
@@ -1594,6 +1821,34 @@ document.body.addEventListener("click",async(ev)=>{
   const actName=a.dataset.act;
   try{
     if(actName==="pick-lang"){await pickLanguage(a.dataset.lang);return;}
+    if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";await draw({quiet:true});return;}
+    if(actName==="join-deal"){go("join");return;}
+    if(actName==="do-join"){
+      const raw=(document.getElementById("join-code")||{}).value||"";
+      const clean=String(raw).trim().replace(/^deal[_-]?/i,"");
+      if(!clean){toast(uiLang()==="en"?"Enter code":"Введите код");return;}
+      const r=await api("/api/deals/"+clean+"/join",{method:"POST"});
+      if(r.joined) toast(uiLang()==="en"?"Joined":"Вы вошли в сделку");
+      state.dealCode=clean;go("deal-view");return;
+    }
+    if(actName==="rev-add"||actName==="rev-rand"){
+      const body={
+        username:(document.getElementById("rv-user")||{}).value||"",
+        rating:(document.getElementById("rv-rating")||{}).value||5,
+        body:(document.getElementById("rv-body")||{}).value||"",
+        date:(document.getElementById("rv-date")||{}).value||"",
+        random:actName==="rev-rand"
+      };
+      await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
+      toast("OK");go("admin");return;
+    }
+    if(actName==="rev-bulk"){await api("/api/admin/reviews/bulk",{method:"POST",body:"{}"});toast("OK");go("admin");return;}
+    if(actName==="rev-del"){await api("/api/admin/reviews/"+a.dataset.id+"/delete",{method:"POST",body:"{}"});go("admin");return;}
+    if(actName==="rev-up"||actName==="rev-down"){
+      await api("/api/admin/reviews/"+a.dataset.id+"/move",{method:"POST",body:JSON.stringify({direction:actName==="rev-up"?"up":"down"})});
+      go("admin");return;
+    }
+    if(actName==="rev-sort"){state.reviewSort=a.dataset.sort||"new";go("admin");return;}
     if(actName==="support"){const url=state.user.support_url;if(tg&&tg.openTelegramLink) tg.openTelegramLink(url);else window.open(url,"_blank");return;}
     if(actName==="go:home"){
       if(!state.user){try{await loadMe();}catch(e){toast(e.message);return;}}
