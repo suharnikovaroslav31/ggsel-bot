@@ -1490,18 +1490,16 @@ async function screenHome(){
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
-    const listing=it.listing==="buy"?"buy":"sell";
-    const cta=mine?(uiLang()==="en"?"Your lot":"Ваш лот"):(listing==="buy"?(uiLang()==="en"?"Sell":"Продать"):(uiLang()==="en"?"Buy":"Купить"));
     return `<button type="button" class="mcard" data-act="open-market" data-code="${esc(it.code)}">
       <div class="shot">${nftImgHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
         <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
-        <div class="by">${it.seller?"@"+esc(it.seller):("ID "+esc(it.owner_id||it.seller_id||"—"))}</div>
-        <div class="cta-mini">${esc(cta)}</div>
+        <div class="by">${uiLang()==="en"?"Listed by":"От"} ${it.seller?"@"+esc(it.seller):("ID "+esc(it.owner_id||it.seller_id||"—"))}</div>
+        <div class="cta-mini">${mine?(uiLang()==="en"?"Your listing":"Ваш лот"):(uiLang()==="en"?"For sale":"На продаже")}</div>
       </div>
     </button>`;
-  }).join(""):`<div class="hint">${uiLang()==="en"?"Market fills automatically when someone creates a gift/NFT deal.":"Маркет заполняется сам: как только создают сделку с подарком/NFT."}</div>`;
+  }).join(""):`<div class="hint">${uiLang()==="en"?"No listings yet. Create a gift/NFT deal as seller — it appears here.":"Пока пусто. Создай сделку с подарком/NFT как продавец — лот появится здесь."}</div>`;
   const revCards=reviews.length?reviews.slice(0,8).map(r=>{
     const n=nftInfo(r.nft_url||"");
     const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
@@ -1528,9 +1526,9 @@ async function screenHome(){
       <div class="sum">${esc(val??0)} ${esc(sym)}</div>
       <div class="cur-row">${curs}</div>
     </div>
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"NFT market":"Маркет NFT"}</div><div class="live"><span class="live-dot"></span>LIVE</div></div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"NFT market":"Маркет NFT"}</div></div>
     <div class="market-grid">${marketCards}</div>
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><div class="live"><span class="live-dot"></span>LIVE</div></div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div></div>
     <div class="feed-h">${feedCards||`<div class="hint">${uiLang()==="en"?"Feed fills when admin posts a review with NFT link":"Лента появится, когда в отзыве будет ссылка на NFT"}</div>`}</div>
     <div class="sec-row"><div class="sec">${uiLang()==="en"?"Reviews":"Отзывы"}</div></div>
     <div class="rev-list">${revCards}</div>`;
@@ -1545,7 +1543,7 @@ async function screenMarketView(){
   }catch(e){}
   if(!it){
     state.dealCode=code;
-    return bubble(`<b>${uiLang()==="en"?"Listing closed":"Лот уже закрыт"}</b><p class="hint">${uiLang()==="en"?"You can still open the deal if you are a party.":"Если ты участник — открой сделку."}</p>`)+kb([
+    return bubble(`<b>${uiLang()==="en"?"Listing closed":"Лот уже снят с продажи"}</b><p class="hint">${uiLang()==="en"?"Someone bought it or the deal was cancelled.":"Его купили или сделку отменили."}</p>`)+kb([
       [`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open deal":"Открыть сделку"}</span></button>`],
       [backBtn()]
     ]);
@@ -1554,20 +1552,21 @@ async function screenMarketView(){
   const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
   const me=Number(state.user&&state.user.id)||0;
   const mine=me && Number(it.owner_id||it.seller_id||0)===me;
-  const listing=it.listing==="buy"?"buy":"sell";
-  const action=mine?"mine":(listing==="buy"?"sell":"buy");
-  const cta=action==="mine"?(uiLang()==="en"?"Open my deal":"Открыть мой лот"):(action==="sell"?(uiLang()==="en"?"Sell this NFT":"Продать этот NFT"):(uiLang()==="en"?"Buy this NFT":"Купить этот NFT"));
-  const primary=action==="mine"
-    ?`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${esc(cta)}</span></button>`
-    :`<button class="kbtn primary" data-act="buy-market" data-code="${esc(code)}">${pe("deal_money","💰")}<span>${esc(cta)}</span></button>`;
-  const nftBtn=n.url?`<button class="kbtn" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${t("open_nft")}</span></button>`:"";
+  const who=it.seller?("@"+it.seller):("ID "+(it.owner_id||"—"));
+  const primary=mine
+    ?`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open my listing":"Открыть мой лот"}</span></button>`
+    :`<button class="kbtn primary" data-act="buy-market" data-code="${esc(code)}">${pe("deal_money","💰")}<span>${uiLang()==="en"?"Buy via guarantor":"Купить через гаранта"}</span></button>`;
+  const nftBtn=n.url?`<button class="kbtn" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${uiLang()==="en"?"Open in Telegram":"Открыть NFT в Telegram"}</span></button>`:"";
   return `<div class="buy-sheet bubble">
     <div class="hero-nft">${nftImgHtml(n)}</div>
+    <div style="margin:0 0 8px"><span class="status-pill ok">${uiLang()==="en"?"Listed for sale":"Выставлено на продажу"}</span></div>
     <b style="font-size:20px">${esc(title)}</b>
     <div class="kv"><span>${uiLang()==="en"?"Price":"Цена"}</span><b>${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</b></div>
-    <div class="kv"><span>${listing==="buy"?(uiLang()==="en"?"Buyer":"Покупатель"):(uiLang()==="en"?"Seller":"Продавец")}</span><b>${it.seller?"@"+esc(it.seller):("ID "+esc(it.owner_id||"—"))}</b></div>
-    <div class="kv"><span>${uiLang()==="en"?"Type":"Тип"}</span><b>${esc(typeLabel(it.deal_type))}</b></div>
-    <p class="hint">${uiLang()==="en"?"Safe P2P: join the deal, pay from balance, gift goes via guarantor.":"Безопасная покупка: входишь в сделку, платишь с баланса, подарок через гаранта."}</p>
+    <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${esc(who)}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Gift":"Подарок"}</span><b>${esc(typeLabel(it.deal_type))}</b></div>
+    <p class="hint">${uiLang()==="en"
+      ?"This NFT was listed by the seller. Open the real gift in Telegram, then buy safely through the guarantor."
+      :"Этот NFT выставил продавец. Можно открыть настоящий подарок в Telegram, а купить — безопасно через гаранта."}</p>
   </div>`+kb([[primary], nftBtn?[nftBtn]:null, [backBtn()]].filter(Boolean));
 }
 async function screenFeedView(){
@@ -1937,10 +1936,9 @@ function watchDeal(){
   clearInterval(dealWatch);
   dealWatch=null;
   const s=state.screen;
+  // Статусы сделки — да; маркет обновляется только при заходе на главную / возврате в приложение
   if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,2000);
   else if(s==="deals") dealWatch=setInterval(refreshDealsList,2500);
-  else if(s==="home") dealWatch=setInterval(refreshHomeLive,3000);
-  else if(s==="market-view") dealWatch=setInterval(refreshMarketView,4000);
 }
 async function refreshHomeLive(){
   if(state.screen!=="home") return;
@@ -2187,7 +2185,6 @@ document.addEventListener("visibilitychange",()=>{
   if(state.screen==="deal-view") refreshOpenDeal();
   else if(state.screen==="deals") refreshDealsList();
   else if(state.screen==="home") refreshHomeLive();
-  else if(state.screen==="market-view") refreshMarketView();
 });
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){

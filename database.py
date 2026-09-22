@@ -538,8 +538,11 @@ class Database:
             """
             SELECT code, deal_type, pay_method, amount, description, seller_id, buyer_id, status, created_at
             FROM deals
-            WHERE status = 'open'
+            // На витрине только лоты продавца (реальная «продажа» NFT)
+    WHERE status = 'open'
               AND deal_type IN ('gift', 'nft')
+              AND seller_id IS NOT NULL
+              AND seller_id != 0
               AND (
                 lower(description) LIKE '%t.me/nft/%'
                 OR lower(description) LIKE '%telegram.me/nft/%'
