@@ -2186,6 +2186,8 @@ document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible") return;
   if(state.screen==="deal-view") refreshOpenDeal();
   else if(state.screen==="deals") refreshDealsList();
+  else if(state.screen==="home") refreshHomeLive();
+  else if(state.screen==="market-view") refreshMarketView();
 });
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){
