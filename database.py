@@ -97,9 +97,11 @@ class Database:
             );
             """
         )
+        await self._ensure_column("nft_url", "TEXT DEFAULT ''", table="reviews")
+        await self._ensure_column("deal_code", "TEXT DEFAULT ''", table="reviews")
         await self.conn.commit()
         await self._seed_env_admins()
-        await self._seed_demo_reviews()
+        await self._purge_demo_reviews()
 
     async def _seed_env_admins(self) -> None:
         from config import ADMIN_IDS, SUPER_ADMIN_ID
@@ -530,31 +532,57 @@ class Database:
         )
         return await cur.fetchall()
 
-    async def _seed_demo_reviews(self) -> None:
-        cur = await self.conn.execute("SELECT COUNT(*) AS c FROM reviews")
-        row = await cur.fetchone()
-        if row and int(row["c"] or 0) > 0:
+    async def list_market_nfts(self, limit: int = 24) -> list[aiosqlite.Row]:
+        """Открытые NFT/подарки, пока второй участник не вошёл."""
+        cur = await self.conn.execute(
+            """
+            SELECT code, deal_type, pay_method, amount, description, seller_id, buyer_id, status, created_at
+            FROM deals
+            WHERE status = 'open'
+              AND deal_type IN ('gift', 'nft')
+              AND description LIKE '%t.me/nft/%'
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
+        return await cur.fetchall()
+
+    async def _purge_demo_reviews(self) -> None:
+        cur = await self.conn.execute(
+            "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
+            ("purge_demo_reviews_v1",),
+        )
+        if await cur.fetchone() is not None:
             return
-        demos = [
-            ("chupayl", 5, "хороший сервис все отлично работает", "20 сент."),
-            ("denchik", 5, "гарант отвечает быстро, сделка без нервов", "17 сент."),
-            ("vika_nft", 5, "перевела подарок через гаранта — всё ок", "15 сент."),
-            ("lextrade", 5, "комиссия нормальная, UI понятный", "12 сент."),
-            ("rarebrod", 5, "все четко, 1 проц комсы", "21 сент."),
-        ]
-        for i, (user, rating, body, date) in enumerate(demos):
-            await self.conn.execute(
-                """
-                INSERT INTO reviews (username, rating, body, review_date, sort_order)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (user, rating, body, date, i),
-            )
+        await self.conn.execute(
+            """
+            DELETE FROM reviews
+            WHERE username IN ('chupayl','denchik','vika_nft','lextrade','rarebrod','fast_deal','nft_safe','ton_guy','mira_p2p','kosta')
+               OR (nft_url IS NULL OR nft_url = '')
+            """
+        )
+        await self.conn.execute(
+            "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
+            ("purge_demo_reviews_v1", "1"),
+        )
         await self.conn.commit()
 
     async def list_reviews(self, *, newest_first: bool = True) -> list[aiosqlite.Row]:
         order = "sort_order ASC, id DESC" if newest_first else "sort_order DESC, id ASC"
         cur = await self.conn.execute(f"SELECT * FROM reviews ORDER BY {order}")
+        return await cur.fetchall()
+
+    async def list_feed_reviews(self, limit: int = 24) -> list[aiosqlite.Row]:
+        cur = await self.conn.execute(
+            """
+            SELECT * FROM reviews
+            WHERE nft_url IS NOT NULL AND trim(nft_url) != ''
+            ORDER BY sort_order ASC, id DESC
+            LIMIT ?
+            """,
+            (limit,),
+        )
         return await cur.fetchall()
 
     async def add_review(
@@ -563,16 +591,27 @@ class Database:
         rating: int,
         body: str,
         review_date: str = "",
+        *,
+        nft_url: str = "",
+        deal_code: str = "",
     ) -> aiosqlite.Row | None:
         cur = await self.conn.execute("SELECT COALESCE(MIN(sort_order), 0) AS m FROM reviews")
         row = await cur.fetchone()
         sort_order = int(row["m"] or 0) - 1
         cur = await self.conn.execute(
             """
-            INSERT INTO reviews (username, rating, body, review_date, sort_order)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO reviews (username, rating, body, review_date, sort_order, nft_url, deal_code)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
-            (username.lstrip("@"), max(1, min(5, int(rating))), body.strip(), review_date.strip(), sort_order),
+            (
+                username.lstrip("@"),
+                max(1, min(5, int(rating))),
+                body.strip(),
+                review_date.strip(),
+                sort_order,
+                (nft_url or "").strip(),
+                (deal_code or "").strip(),
+            ),
         )
         await self.conn.commit()
         return await self.get_review(int(cur.lastrowid))

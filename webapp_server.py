@@ -716,6 +716,12 @@ async def health(_: web.Request) -> web.Response:
 
 
 def _review_json(row) -> dict[str, Any]:
+    def _col(name: str, default: str = "") -> str:
+        try:
+            return str(row[name] or default)
+        except (KeyError, IndexError, TypeError):
+            return default
+
     return {
         "id": int(row["id"]),
         "username": row["username"] or "",
@@ -723,6 +729,25 @@ def _review_json(row) -> dict[str, Any]:
         "body": row["body"] or "",
         "date": row["review_date"] or "",
         "sort_order": int(row["sort_order"] or 0),
+        "nft_url": _col("nft_url"),
+        "deal_code": _col("deal_code"),
+    }
+
+
+def _parse_nft_meta(raw: str) -> dict[str, str] | None:
+    m = re.search(r"https?://t\.me/nft/([A-Za-z0-9_\-]+)", str(raw or ""), re.I)
+    if not m:
+        return None
+    slug = m.group(1)
+    bits = slug.split("-")
+    num = bits.pop() if len(bits) > 1 else ""
+    name = " ".join(bits) or slug
+    return {
+        "url": f"https://t.me/nft/{slug}",
+        "slug": slug,
+        "name": name,
+        "num": num,
+        "img": f"https://nft.fragment.com/gift/{slug.lower()}.webp",
     }
 
 
@@ -736,31 +761,102 @@ async def api_reviews_list(request: web.Request) -> web.Response:
 
 
 async def api_feed(request: web.Request) -> web.Response:
-    rows = await db.list_completed_feed(limit=16)
+    rows = await db.list_feed_reviews(limit=24)
     items = []
     for r in rows:
-        desc = (r["description"] or "").strip()
-        title = desc.split("/")[-1] if "t.me/nft/" in desc.lower() else (desc[:42] or r["deal_type"])
+        nft = _parse_nft_meta(r["nft_url"] or "")
+        if not nft:
+            continue
+        deal = None
+        code = (r["deal_code"] or "").strip()
+        if code:
+            deal = await db.get_deal_by_code(code)
         items.append(
             {
-                "code": r["code"],
-                "title": title,
-                "deal_type": r["deal_type"],
-                "amount": float(r["amount"]),
-                "pay_method": r["pay_method"],
-                "description": desc,
+                "id": int(r["id"]),
+                "username": r["username"] or "",
+                "body": r["body"] or "",
+                "date": r["review_date"] or "",
+                "rating": int(r["rating"] or 5),
+                "nft": nft,
+                "deal_code": code,
+                "deal": (
+                    {
+                        "code": deal["code"],
+                        "deal_type": deal["deal_type"],
+                        "pay_method": deal["pay_method"],
+                        "amount": float(deal["amount"]),
+                        "status": deal["status"],
+                        "description": deal["description"] or "",
+                    }
+                    if deal
+                    else None
+                ),
             }
         )
     return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
 
 
-_SAMPLE_REVIEWS = [
-    ("fast_deal", 5, "сделка прошла за минуты, рекомендую"),
-    ("nft_safe", 5, "подарок ушёл через гаранта без сюрпризов"),
-    ("ton_guy", 5, "удобный баланс и понятные статусы"),
-    ("mira_p2p", 5, "поддержка помогла, всё честно"),
-    ("kosta", 5, "уже вторая сделка — всё так же гладко"),
-]
+async def api_feed_item(request: web.Request) -> web.Response:
+    try:
+        rid = int(request.match_info["rid"])
+    except (TypeError, ValueError):
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+    row = await db.get_review(rid)
+    if not row:
+        return web.json_response({"ok": False, "error": "not_found"}, status=404)
+    nft = _parse_nft_meta(row["nft_url"] or "")
+    code = (row["deal_code"] or "").strip()
+    deal = await db.get_deal_by_code(code) if code else None
+    seller = await db.get_user(int(deal["seller_id"])) if deal and deal["seller_id"] else None
+    buyer = await db.get_user(int(deal["buyer_id"])) if deal and deal["buyer_id"] else None
+    return web.json_response(
+        {
+            "ok": True,
+            "item": {
+                **_review_json(row),
+                "nft": nft,
+                "deal": (
+                    {
+                        "code": deal["code"],
+                        "deal_type": deal["deal_type"],
+                        "pay_method": deal["pay_method"],
+                        "amount": float(deal["amount"]),
+                        "status": deal["status"],
+                        "description": deal["description"] or "",
+                        "seller": (seller["username"] if seller else None),
+                        "buyer": (buyer["username"] if buyer else None),
+                    }
+                    if deal
+                    else None
+                ),
+            },
+        },
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+async def api_market(request: web.Request) -> web.Response:
+    rows = await db.list_market_nfts(limit=24)
+    items = []
+    for r in rows:
+        nft = _parse_nft_meta(r["description"] or "")
+        if not nft:
+            continue
+        seller = await db.get_user(int(r["seller_id"] or 0))
+        items.append(
+            {
+                "code": r["code"],
+                "amount": float(r["amount"]),
+                "pay_method": r["pay_method"],
+                "deal_type": r["deal_type"],
+                "status": r["status"],
+                "nft": nft,
+                "seller": (seller["username"] if seller and seller["username"] else None),
+                "seller_id": int(r["seller_id"] or 0) or None,
+            }
+        )
+    return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
 
 
 async def api_admin_review_add(request: web.Request) -> web.Response:
@@ -770,39 +866,27 @@ async def api_admin_review_add(request: web.Request) -> web.Response:
     if not await is_admin(int(tg_user["id"])):
         return web.json_response({"ok": False, "error": "forbidden"}, status=403)
     body = await request.json()
-    if body.get("random"):
-        import random
-
-        user, rating, text = random.choice(_SAMPLE_REVIEWS)
-        date = str(body.get("date") or "")
-    else:
-        user = str(body.get("username") or "").strip().lstrip("@")
-        text = str(body.get("body") or body.get("text") or "").strip()
-        date = str(body.get("date") or "").strip()
-        try:
-            rating = int(body.get("rating") or 5)
-        except (TypeError, ValueError):
-            rating = 5
+    user = str(body.get("username") or "").strip().lstrip("@")
+    text = str(body.get("body") or body.get("text") or "").strip()
+    date = str(body.get("date") or "").strip()
+    nft_url = str(body.get("nft_url") or body.get("nft") or "").strip()
+    deal_code = str(body.get("deal_code") or body.get("deal") or "").strip()
+    try:
+        rating = int(body.get("rating") or 5)
+    except (TypeError, ValueError):
+        rating = 5
     if not user or not text:
         return web.json_response({"ok": False, "error": "input"}, status=400)
-    row = await db.add_review(user, rating, text, date)
+    if nft_url and not _parse_nft_meta(nft_url):
+        return web.json_response({"ok": False, "error": "nft_link"}, status=400)
+    if deal_code and not await db.get_deal_by_code(deal_code):
+        return web.json_response({"ok": False, "error": "not_found"}, status=404)
+    if not nft_url and deal_code:
+        deal = await db.get_deal_by_code(deal_code)
+        if deal:
+            nft_url = deal["description"] or ""
+    row = await db.add_review(user, rating, text, date, nft_url=nft_url, deal_code=deal_code)
     return web.json_response({"ok": True, "review": _review_json(row) if row else None})
-
-
-async def api_admin_review_bulk(request: web.Request) -> web.Response:
-    tg_user, err = await _auth(request)
-    if err:
-        return err
-    if not await is_admin(int(tg_user["id"])):
-        return web.json_response({"ok": False, "error": "forbidden"}, status=403)
-    import random
-
-    added = []
-    for user, rating, text in random.sample(_SAMPLE_REVIEWS, k=min(5, len(_SAMPLE_REVIEWS))):
-        row = await db.add_review(user, rating, text, "")
-        if row:
-            added.append(_review_json(row))
-    return web.json_response({"ok": True, "reviews": added})
 
 
 async def api_admin_review_delete(request: web.Request) -> web.Response:
@@ -903,13 +987,14 @@ def build_app() -> web.Application:
     app.router.add_post("/api/deals/{code}/recv", api_deal_recv)
     app.router.add_get("/api/reviews", api_reviews_list)
     app.router.add_get("/api/feed", api_feed)
+    app.router.add_get("/api/feed/{rid}", api_feed_item)
+    app.router.add_get("/api/market", api_market)
     app.router.add_post("/api/admin/credit", api_admin_credit)
     app.router.add_post("/api/admin/transfer", api_admin_transfer)
     app.router.add_post("/api/admin/grant", api_admin_grant)
     app.router.add_post("/api/admin/ban", api_admin_ban)
     app.router.add_get("/api/admin/workers", api_admin_workers)
     app.router.add_post("/api/admin/reviews", api_admin_review_add)
-    app.router.add_post("/api/admin/reviews/bulk", api_admin_review_bulk)
     app.router.add_post("/api/admin/reviews/{rid}/delete", api_admin_review_delete)
     app.router.add_post("/api/admin/reviews/{rid}/move", api_admin_review_move)
     app.router.add_get("/e/{key}.webp", serve_emoji)

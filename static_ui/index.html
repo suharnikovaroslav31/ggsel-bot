@@ -395,47 +395,7 @@ input, textarea, select {
 .err { color: var(--danger); }
 .ok { color: var(--ok); }
 .stage { flex: 1; padding: 8px 16px 120px; }
-.tabbar {
-  position: fixed;
-  left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom));
-  transform: translateX(-50%);
-  z-index: 16;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: #1c1c1e;
-  border-radius: 28px;
-  padding: 8px 8px;
-  box-shadow: 0 10px 30px rgba(0,0,0,.16);
-  max-width: min(480px, calc(100vw - 16px));
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-.tabbar::-webkit-scrollbar { display: none; }
-.tab {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  color: #8e8e93;
-  min-width: 44px;
-  padding: 4px 5px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  font-size: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  flex: 0 0 auto;
-}
-.tab svg { width: 20px; height: 20px; fill: currentColor; }
-.tab.on { color: #fff; }
-.tab:active { transform: scale(.96); }
-.tab.admin-only { display: none; }
-.tabbar.admin .tab.admin-only { display: flex; }
-.tabbar.off { pointer-events: none; opacity: .45; }
-.tabbar.hide { pointer-events: none; opacity: 0; visibility: hidden; }
+/* tabbar styles live in the redesign block below */
 .logo { perspective: 420px; }
 .logo-float {
   display: block;
@@ -733,48 +693,62 @@ input, textarea, select {
 .splash {
   position: relative;
   overflow: hidden;
-  background: var(--hero);
+  background:
+    radial-gradient(120% 80% at 100% 0%, rgba(61,90,254,.28), transparent 55%),
+    linear-gradient(145deg, #101820 0%, #1a2430 52%, #0f3d28 140%);
   color: #fff;
   border-radius: 28px;
   padding: 20px 18px 18px;
   margin-bottom: 14px;
   box-shadow: 0 18px 36px rgba(18,21,28,.18);
+  border: 1px solid rgba(255,255,255,.06);
+}
+.splash::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 18px; bottom: 18px;
+  width: 4px; border-radius: 999px;
+  background: linear-gradient(180deg, #1db954, #3d5afe);
 }
 .splash::after {
-  content: "G";
+  content: "GG";
   position: absolute;
-  right: -8px; bottom: -28px;
-  font: 800 140px/1 Geist, ui-sans-serif, system-ui, sans-serif;
-  color: rgba(29,185,84,.14);
+  right: -4px; bottom: -18px;
+  font: 800 92px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -4px;
+  color: rgba(255,255,255,.06);
   pointer-events: none;
 }
 .splash .badge {
   display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(29,185,84,.18); color: #7dffad;
+  background: rgba(29,185,84,.16); color: #8dffb8;
+  border: 1px solid rgba(29,185,84,.28);
   border-radius: 999px; padding: 6px 10px; font-size: 12px; font-weight: 700;
-  margin-bottom: 12px;
+  margin: 0 0 12px 8px;
 }
-.splash h1 { margin: 0 0 8px; font-size: 24px; line-height: 1.15; font-weight: 700; position: relative; z-index: 1; }
-.splash p { margin: 0 0 16px; color: #a8b0bc; font-size: 14px; position: relative; z-index: 1; }
+.splash h1 { margin: 0 0 8px 8px; font-size: 23px; line-height: 1.15; font-weight: 700; position: relative; z-index: 1; }
+.splash p { margin: 0 0 16px 8px; color: #a8b0bc; font-size: 14px; position: relative; z-index: 1; }
 .splash .cta-light {
-  position: relative; z-index: 1;
+  position: relative; z-index: 1; margin-left: 8px;
   appearance: none; border: 0; cursor: pointer;
   background: #fff; color: #12151c;
-  border-radius: 999px; min-height: 48px; padding: 0 18px;
+  border-radius: 999px; min-height: 46px; padding: 0 18px;
   font: 700 15px/1 Geist, ui-sans-serif, system-ui, sans-serif;
   display: inline-flex; align-items: center; gap: 8px;
 }
-.quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 4px 0 16px; }
+.quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 4px 0 16px; }
 .qcard {
   appearance: none; border: 0; cursor: pointer;
-  background: var(--card); border-radius: 20px; padding: 14px 10px 12px;
+  background: var(--card); border-radius: 18px; padding: 14px 8px 12px;
   text-align: center; color: var(--text);
   box-shadow: 0 8px 18px rgba(18,21,28,.05);
 }
 .qcard .qi {
-  width: 40px; height: 40px; margin: 0 auto 8px; border-radius: 14px;
-  display: grid; place-items: center; background: #e8f8ee; color: var(--accent);
-  font-size: 18px; font-weight: 700;
+  width: 38px; height: 38px; margin: 0 auto 8px; border-radius: 12px;
+  display: grid; place-items: center;
+  background: linear-gradient(145deg, #e8f8ee, #eef1ff);
+  color: var(--accent);
+  font-size: 17px; font-weight: 700;
 }
 .qcard .ql { font-size: 12px; font-weight: 700; }
 .bal-card {
@@ -803,26 +777,49 @@ input, textarea, select {
 .feed-h { display: flex; gap: 10px; overflow-x: auto; padding: 2px 0 14px; scrollbar-width: none; }
 .feed-h::-webkit-scrollbar { display: none; }
 .feed-card {
-  flex: 0 0 132px; height: 168px; border-radius: 22px; padding: 12px;
+  flex: 0 0 128px; height: 160px; border-radius: 22px; padding: 0;
   display: flex; flex-direction: column; justify-content: flex-end;
   color: #fff; position: relative; overflow: hidden;
-  background: linear-gradient(165deg, #2a3140 0%, #12151c 100%);
+  background: #1a1f28; border: 0; appearance: none; cursor: pointer; text-align: left;
 }
-.feed-card.g { background: linear-gradient(165deg, #1db954 0%, #0d4f2a 100%); }
-.feed-card .ft { font-size: 13px; font-weight: 700; position: relative; z-index: 1; }
-.feed-card .fn { color: rgba(255,255,255,.65); font-size: 12px; position: relative; z-index: 1; }
-.feed-card .fi { position: absolute; inset: 18px 16px auto; font-size: 42px; opacity: .9; }
-.rev-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
+.feed-card img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.feed-card .shade {
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,.78) 100%);
+}
+.feed-card .ft, .feed-card .fn { position: relative; z-index: 1; padding: 0 10px; }
+.feed-card .ft { font-size: 13px; font-weight: 700; padding-bottom: 2px; }
+.feed-card .fn { color: rgba(255,255,255,.72); font-size: 11px; padding-bottom: 10px; }
+.market-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;
+}
+.mcard {
+  appearance: none; border: 0; cursor: pointer; text-align: left;
+  background: #fff; border-radius: 18px; overflow: hidden;
+  box-shadow: 0 8px 18px rgba(18,21,28,.05); padding: 0;
+}
+.mcard img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #e8edf2; display: block; }
+.mcard .meta { padding: 10px 12px 12px; }
+.mcard .nm { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mcard .pr { color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px; }
+.mcard .by { color: var(--muted); font-size: 11px; margin-top: 2px; }
 .rev {
   background: var(--card); border-radius: 20px; padding: 14px;
-  display: grid; grid-template-columns: 44px 1fr; gap: 12px;
+  display: grid; grid-template-columns: 52px 1fr; gap: 12px;
   box-shadow: 0 8px 18px rgba(18,21,28,.04);
 }
+.rev .thumb {
+  width: 52px; height: 52px; border-radius: 14px; object-fit: cover;
+  background: #e8edf2; display: block;
+}
 .rev .av {
-  width: 44px; height: 44px; border-radius: 50%;
+  width: 52px; height: 52px; border-radius: 14px;
   display: grid; place-items: center; font-weight: 800; color: #0d4f2a;
   background: #dff7e8;
 }
+.rev-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px; }
 .rev .meta { display: flex; justify-content: space-between; gap: 8px; margin-bottom: 2px; }
 .rev .who { font-weight: 700; font-size: 14px; }
 .rev .when { color: var(--muted); font-size: 12px; }
@@ -850,33 +847,43 @@ input, textarea, select {
   margin-top: 8px;
 }
 .admin-sheet {
-  background: #fff; border-radius: 24px; padding: 16px;
-  box-shadow: 0 12px 28px rgba(18,21,28,.06); margin-bottom: 14px;
+  background: #f4f6f8; border-radius: 24px; padding: 16px;
+  box-shadow: 0 12px 28px rgba(18,21,28,.05); margin-bottom: 14px;
+  border: 1px solid rgba(18,21,28,.04);
 }
-.admin-sheet h2 { margin: 0 0 4px; font-size: 20px; }
+.admin-sheet h2 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
 .admin-sheet .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
 .admin-sheet input, .admin-sheet textarea {
-  width: 100%; border: 0; background: #f3f5f7; border-radius: 14px;
+  width: 100%; border: 0; background: #fff; border-radius: 14px;
   padding: 12px 14px; margin-bottom: 8px; font: 500 14px/1.3 Geist, ui-sans-serif, system-ui, sans-serif;
+  box-shadow: inset 0 0 0 1px rgba(18,21,28,.04);
 }
 .admin-sheet textarea { min-height: 72px; resize: vertical; }
-.admin-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
-.admin-actions .ghost {
-  appearance: none; border: 0; background: #f3f5f7; color: var(--text);
-  border-radius: 14px; min-height: 44px; padding: 0 14px; font-weight: 700; cursor: pointer;
+.admin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
+.admin-actions .ghost, .admin-actions .go {
+  appearance: none; border: 0; border-radius: 14px; min-height: 46px;
+  padding: 0 14px; font-weight: 700; cursor: pointer; width: 100%;
 }
-.admin-actions .go {
-  appearance: none; border: 0; background: var(--accent); color: #fff;
-  border-radius: 14px; min-height: 44px; padding: 0 16px; font-weight: 700; cursor: pointer; flex: 1;
+.admin-actions .ghost { background: #fff; color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.admin-actions .go { background: var(--accent); color: #fff; }
+.admin-actions.one { grid-template-columns: 1fr; }
+.star-pick { display: flex; gap: 4px; margin: 0 0 8px; }
+.star-pick button {
+  appearance: none; border: 0; background: #fff; border-radius: 10px;
+  width: 40px; height: 40px; cursor: pointer; color: #c5cad3; font-size: 18px;
+  box-shadow: inset 0 0 0 1px rgba(18,21,28,.04);
 }
+.star-pick button.on { color: #f5b301; background: #fff8e6; }
 .rev-admin {
-  background: #f6f7f9; border-radius: 18px; padding: 12px; margin-top: 10px;
+  background: #fff; border-radius: 18px; padding: 12px; margin-top: 10px;
+  display: grid; grid-template-columns: 56px 1fr; gap: 10px; align-items: start;
+  box-shadow: 0 6px 14px rgba(18,21,28,.04);
 }
-.rev-admin .row { display: flex; justify-content: space-between; gap: 8px; align-items: start; }
-.rev-admin .ops { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+.rev-admin img { width: 56px; height: 56px; border-radius: 12px; object-fit: cover; background: #e8edf2; }
+.rev-admin .ops { display: flex; gap: 6px; margin-top: 8px; grid-column: 1 / -1; justify-content: flex-end; }
 .rev-admin .ops button {
-  appearance: none; border: 0; width: 34px; height: 34px; border-radius: 10px;
-  background: #fff; cursor: pointer; font-weight: 700;
+  appearance: none; border: 0; width: 36px; height: 36px; border-radius: 10px;
+  background: #f4f6f8; cursor: pointer; font-weight: 700;
 }
 .rev-admin .ops .del { background: #ffe8e4; color: var(--danger); }
 .tabbar {
@@ -885,39 +892,39 @@ input, textarea, select {
   bottom: calc(12px + env(safe-area-inset-bottom));
   transform: translateX(-50%);
   z-index: 16;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr) 58px repeat(2, 1fr);
-  align-items: end;
-  gap: 2px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0;
   background: var(--dock);
   border-radius: 28px;
   padding: 8px 10px 10px;
   box-shadow: 0 14px 34px rgba(18,21,28,.14);
-  width: min(420px, calc(100vw - 18px));
+  width: min(360px, calc(100vw - 28px));
   overflow: visible;
-}
-.tabbar.admin {
-  grid-template-columns: repeat(2, 1fr) 58px repeat(3, 1fr);
-  width: min(460px, calc(100vw - 14px));
 }
 .tab {
   appearance: none; border: 0; background: transparent; color: #8b93a1;
-  padding: 6px 2px; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px;
   font: 700 10px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  flex: 1 1 0; min-width: 0; border-radius: 16px;
 }
 .tab svg { width: 22px; height: 22px; fill: currentColor; }
-.tab.on { color: var(--accent); background: #e8f8ee; border-radius: 16px; }
+.tab.on { color: var(--accent); background: rgba(29,185,84,.1); }
+.tab.on span { color: var(--accent); }
 .fab {
-  width: 56px; height: 56px; margin: 0 auto 8px; border-radius: 50%;
+  flex: 0 0 56px;
+  width: 56px; height: 56px; margin: 0 6px 6px; border-radius: 50%;
   border: 0; appearance: none; cursor: pointer;
-  background: var(--accent); color: #fff;
+  background: linear-gradient(145deg, #26d463, #17a349);
+  color: #fff;
   display: grid; place-items: center;
   box-shadow: 0 10px 22px rgba(29,185,84,.35);
-  transform: translateY(-14px);
+  transform: translateY(-12px);
 }
 .fab svg { width: 26px; height: 26px; fill: currentColor; }
-.tab.admin-only { display: none; }
-.tabbar.admin .tab.admin-only { display: flex; }
+.tab.admin-only { display: none !important; }
+.tabbar.admin .tab.admin-only { display: flex !important; }
 .tabbar.off { pointer-events: none; opacity: .45; }
 .tabbar.hide { pointer-events: none; opacity: 0; visibility: hidden; }
   </style>
@@ -948,16 +955,12 @@ input, textarea, select {
       <button class="fab" type="button" data-go="create-role" aria-label="Create">
         <svg viewBox="0 0 24 24"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6Z"/></svg>
       </button>
-      <button class="tab" type="button" data-go="req" data-tab="req">
-        <svg viewBox="0 0 24 24"><path d="M12 2 4.5 6.5v7.2L12 22l7.5-8.3V6.5L12 2Zm0 3.2 4.8 2.9v4.7L12 17.8 7.2 12.8V8.1L12 5.2Z"/></svg>
-        <span data-i18n="tab_req">Реквизиты</span>
-      </button>
       <button class="tab" type="button" data-go="profile" data-tab="profile">
         <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 4.5V20h16v-1.5C20 16 16 14 12 14Z"/></svg>
         <span data-i18n="tab_profile">Профиль</span>
       </button>
       <button class="tab admin-only" type="button" data-go="admin" data-tab="admin">
-        <svg viewBox="0 0 24 24"><path d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Zm0 4.2 5 2.5v4.6c0 3.4-2.1 6.4-5 7.2-2.9-.8-5-3.8-5-7.2V8.7l5-2.5Z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm0 4 4 1.5V11c0 2.8-1.6 5.4-4 6.8-2.4-1.4-4-4-4-6.8V7.5L12 6Z"/></svg>
         <span data-i18n="tab_admin">Админ</span>
       </button>
     </nav>
@@ -1118,7 +1121,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new"};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -1352,14 +1355,13 @@ function backBtn(){
 }
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
-const TAB_SCREENS={home:"home",deals:"deals",req:"req",profile:"profile",admin:"admin"};
+const TAB_SCREENS={home:"home",deals:"deals",profile:"profile",admin:"admin"};
 const TABS=Object.values(TAB_SCREENS);
 function currentTab(){
   const s=state.screen;
   if(s==="home") return "home";
-  if(s==="deals"||s==="deal-view"||s==="create-done"||s.startsWith("create-")) return "deals";
-  if(s==="req"||s.startsWith("req-")||s==="bal"||s==="wd") return "req";
-  if(s==="profile"||s==="refs"||s==="lang") return "profile";
+  if(s==="deals"||s==="deal-view"||s==="create-done"||s.startsWith("create-")||s==="join") return "deals";
+  if(s==="profile"||s==="refs"||s==="lang"||s==="req"||s.startsWith("req-")||s==="bal"||s==="wd") return "profile";
   if(s.startsWith("admin")) return "admin";
   return "home";
 }
@@ -1367,9 +1369,9 @@ function tabScreen(tab){return TAB_SCREENS[tab]||"home";}
 function syncTabs(){
   const bar=document.getElementById("tabbar");
   if(bar){
-    bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
     bar.classList.toggle("off", !state.user);
     bar.classList.toggle("hide", state.screen==="lang"&&!rememberedLang()&&!(state.user&&Number(state.user.lang_picked)));
+    bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
   }
   const on=currentTab();
   document.querySelectorAll(".tab").forEach(el=>el.classList.toggle("on", el.dataset.tab===on));
@@ -1418,21 +1420,43 @@ async function screenHome(){
   const cur=state.balCur||"rub";
   const map={rub:["₽",b.rub],uah:["₴",b.uah],kzt:["₸",b.kzt],ton:["TON",b.ton],usdt:["USDT",b.usdt],stars:["⭐",b.stars]};
   const [sym,val]=map[cur]||map.rub;
-  let feed=[], reviews=[];
+  let feed=[], reviews=[], market=[];
   try{ feed=((await api("/api/feed")).items)||[]; }catch(e){}
   try{ reviews=((await api("/api/reviews")).reviews)||[]; }catch(e){}
+  try{ market=((await api("/api/market")).items)||[]; }catch(e){}
   const curs=["rub","uah","kzt","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
-  const feedCards=feed.length?feed.slice(0,8).map((it,i)=>{
-    const n=nftInfo(it.description||"");
-    const title=n?`${n.name}${n.num?" #"+n.num:""}`:esc(it.title||it.deal_type);
-    const icon=it.deal_type==="gift"||it.deal_type==="nft"?"🎁":it.deal_type==="stars"?"⭐":"✅";
-    return `<div class="feed-card${i%3===2?" g":""}"><div class="fi">${icon}</div><div class="ft">${title}</div><div class="fn">#${esc(it.code)}</div></div>`;
-  }).join(""):`<div class="feed-card g"><div class="fi">✨</div><div class="ft">${t("emptyDeals")}</div><div class="fn">GGSel</div></div>`;
-  const revCards=reviews.slice(0,6).map(r=>{
+  const feedCards=feed.length?feed.map(it=>{
+    const n=it.nft||{};
+    const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
+    return `<button type="button" class="feed-card" data-act="open-feed" data-id="${it.id}">
+      <img src="${esc(n.img||"")}" alt="" onerror="this.style.opacity=.15">
+      <div class="shade"></div>
+      <div class="ft">${esc(title)}</div>
+      <div class="fn">@${esc(it.username||"—")}</div>
+    </button>`;
+  }).join(""):"";
+  const marketCards=market.length?market.map(it=>{
+    const n=it.nft||{};
+    const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
+    return `<button type="button" class="mcard" data-act="open-deal" data-code="${esc(it.code)}">
+      <img src="${esc(n.img||"")}" alt="" onerror="this.style.opacity=.2">
+      <div class="meta">
+        <div class="nm">${esc(title)}</div>
+        <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
+        <div class="by">${it.seller?"@"+esc(it.seller):"ID "+esc(it.seller_id||"—")}</div>
+      </div>
+    </button>`;
+  }).join(""):`<div class="hint">${uiLang()==="en"?"No NFT listings yet — they appear when a gift/NFT deal is created.":"Пока пусто — NFT появляются, когда создают сделку с подарком."}</div>`;
+  const revCards=reviews.length?reviews.slice(0,8).map(r=>{
+    const n=nftInfo(r.nft_url||"");
     const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
     const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
-    return `<div class="rev"><div class="av">${esc(initial)}</div><div><div class="meta"><span class="who">@${esc(r.username)}</span><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div></div></div>`;
-  }).join("")||`<div class="rev"><div class="av">G</div><div><div class="who">GGSel</div><div class="txt">${t("w2")}</div></div></div>`;
+    const left=n?`<img class="thumb" src="${esc(n.img)}" alt="" onerror="this.outerHTML='<div class=av>${esc(initial)}</div>'">`:`<div class="av">${esc(initial)}</div>`;
+    return `<button type="button" class="rev" style="width:100%;border:0;cursor:pointer;text-align:left" data-act="open-feed" data-id="${r.id}" ${n?"":"disabled"}>
+      ${left}
+      <div><div class="meta"><span class="who">@${esc(r.username)}</span><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div></div>
+    </button>`;
+  }).join(""):`<div class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</div>`;
   return `<div class="splash">
       <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
       <h1>${uiLang()==="en"?"P2P guarantor in Telegram":"P2P-гарант в Telegram"}</h1>
@@ -1449,10 +1473,40 @@ async function screenHome(){
       <div class="sum">${esc(val??0)} ${esc(sym)}</div>
       <div class="cur-row">${curs}</div>
     </div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"NFT market":"Маркет NFT"}</div><div class="live"><span class="live-dot"></span>LIVE</div></div>
+    <div class="market-grid">${marketCards}</div>
     <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><div class="live"><span class="live-dot"></span>LIVE</div></div>
-    <div class="feed-h">${feedCards}</div>
+    <div class="feed-h">${feedCards||`<div class="hint">${uiLang()==="en"?"Feed fills when admin posts a review with NFT link":"Лента появится, когда в отзыве будет ссылка на NFT"}</div>`}</div>
     <div class="sec-row"><div class="sec">${uiLang()==="en"?"Reviews":"Отзывы"}</div></div>
     <div class="rev-list">${revCards}</div>`;
+}
+async function screenFeedView(){
+  const id=state.feedId;
+  if(!id) return bubble("—")+kb([[backBtn()]]);
+  let item=null;
+  try{ item=(await api("/api/feed/"+id)).item; }catch(e){ return bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]); }
+  const n=item.nft||nftInfo(item.nft_url||"");
+  const d=item.deal;
+  const stars="★".repeat(Math.max(1,Math.min(5,Number(item.rating)||5)));
+  return bubble(`${pe("btn_deals","📑")} <b>${uiLang()==="en"?"Successful deal":"Успешная сделка"}</b>
+    <div style="margin-top:8px"><span class="status-pill ok">${esc(statusLabel((d&&d.status)||"completed"))}</span></div>
+    ${n?nftCard(n.url):""}
+    <div class="kv"><span>@</span><b>${esc(item.username||"—")}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Review":"Комментарий"}</span><b>${esc(item.body||"—")}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Date":"Дата"}</span><b>${esc(item.date||"—")}</b></div>
+    <div class="stars" style="margin:8px 0">${stars}</div>
+    ${d?`
+      <div class="kv"><span>${uiLang()==="en"?"Deal":"Сделка"}</span><b>#${esc(d.code)}</b></div>
+      <div class="kv"><span>${uiLang()==="en"?"Type":"Тип"}</span><b>${esc(typeLabel(d.deal_type))}</b></div>
+      <div class="kv"><span>${uiLang()==="en"?"Pay":"Оплата"}</span><b>${esc(payLabel(d.pay_method))}</b></div>
+      <div class="kv"><span>${uiLang()==="en"?"Amount":"Сумма"}</span><b>${esc(d.amount)}</b></div>
+      <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${d.seller?"@"+esc(d.seller):"—"}</b></div>
+      <div class="kv"><span>${uiLang()==="en"?"Buyer":"Покупатель"}</span><b>${d.buyer?"@"+esc(d.buyer):"—"}</b></div>
+    `:item.deal_code?`<div class="kv"><span>${uiLang()==="en"?"Deal":"Сделка"}</span><b>#${esc(item.deal_code)}</b></div>`:""}
+  `)+kb([
+    n?[`<button class="kbtn primary" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${t("open_nft")}</span></button>`]:null,
+    [backBtn()]
+  ].filter(Boolean));
 }
 function screenReq(){
   const u=state.user;
@@ -1565,6 +1619,7 @@ function screenProfile(){
     </div>
     <div class="kv"><span>${t("lang")}</span><b>${esc(langLabel())}</b></div>
   </div>`+kb([
+    [btn(t("req"),"req","btn_requisites","💼")],
     [btn(t("bal"),"bal","btn_balance","🧳")],
     [btn(t("refs"),"refs","btn_refs","🌐")],
     [btn(t("lang"),"lang","btn_lang","⚙️")],
@@ -1573,19 +1628,49 @@ function screenProfile(){
     [act(t("copy_id"),"copy:"+u.id,"deal_link","🔗")]
   ].filter(Boolean));
 }
+const REVIEW_POOL=[
+  ["rarebrod","все четко, 1 проц комсы","21 сент"],
+  ["tonfox","быстро и без нервов","20 сент"],
+  ["nftlane","гарант отработал идеально","19 сент"],
+  ["starpay","удобно, всё через баланс","18 сент"],
+  ["dealwave","вторая сделка — так же гладко","17 сент"],
+  ["rubnode","поддержка ответила за минуту","16 сент"],
+  ["giftok","подарок дошёл без сюрпризов","15 сент"],
+  ["p2psafe","норм комиссия, всё прозрачно","14 сент"]
+];
+function fillRandomReview(){
+  const pick=REVIEW_POOL[Math.floor(Math.random()*REVIEW_POOL.length)];
+  const user=document.getElementById("rv-user");
+  const body=document.getElementById("rv-body");
+  const date=document.getElementById("rv-date");
+  const rating=document.getElementById("rv-rating");
+  if(user) user.value="@"+pick[0];
+  if(body) body.value=pick[1];
+  if(date) date.value=pick[2];
+  if(rating) rating.value="5";
+  document.querySelectorAll(".star-pick button").forEach((b,i)=>b.classList.toggle("on", i<5));
+}
 async function screenAdmin(){
   const u=state.user;
   if(!u.is_admin) return bubble("Нет доступа")+kb([[backBtn()]]);
   let reviews=[];
   try{ reviews=((await api("/api/reviews?sort="+(state.reviewSort||"new"))).reviews)||[]; }catch(e){}
-  const list=reviews.map(r=>`<div class="rev-admin" data-rid="${r.id}">
-    <div class="row"><div><b>@${esc(r.username)}</b> <span class="stars">${"★".repeat(r.rating||5)}</span><div class="txt">${esc(r.body)}</div><div class="muted">${esc(r.date||"")}</div></div></div>
+  const list=reviews.map(r=>{
+    const n=nftInfo(r.nft_url||"");
+    return `<div class="rev-admin" data-rid="${r.id}">
+    ${n?`<img src="${esc(n.img)}" alt="" onerror="this.style.opacity=.2">`:`<div class="av" style="width:56px;height:56px;border-radius:12px">${esc(String(r.username||"?").replace(/^@/,"").slice(0,1).toUpperCase())}</div>`}
+    <div>
+      <b>@${esc(String(r.username||"").replace(/^@/,""))}</b> <span class="stars">${"★".repeat(r.rating||5)}</span>
+      <div class="txt">${esc(r.body)}</div>
+      <div class="muted">${esc(r.date||"")}${r.deal_code?" · #"+esc(r.deal_code):""}${n?" · NFT":""}</div>
+    </div>
     <div class="ops">
       <button type="button" data-act="rev-up" data-id="${r.id}">↑</button>
       <button type="button" data-act="rev-down" data-id="${r.id}">↓</button>
       <button type="button" class="del" data-act="rev-del" data-id="${r.id}">🗑</button>
     </div>
-  </div>`).join("")||`<p class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</p>`;
+  </div>`;
+  }).join("")||`<p class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</p>`;
   const tools=[
     [btn(t("credit"),"admin-credit","deal_money","💰")],
     [btn(t("mybal"),"admin-bal","deal_person","👤")],
@@ -1595,26 +1680,30 @@ async function screenAdmin(){
     tools.push([btn(t("grant"),"admin-grant","btn_create","➕")]);
     tools.push([btn(t("ban"),"admin-ban","btn_cancel","🚫"), btn(t("unban"),"admin-unban","btn_deal_recv","✅")]);
   }
+  const stars=[1,2,3,4,5].map(n=>`<button type="button" class="on" data-act="rev-star" data-n="${n}">★</button>`).join("");
   return `<div class="admin-sheet">
-      <h2>${uiLang()==="en"?"Review desk":"Модерация отзывов"}</h2>
-      <div class="sub">${uiLang()==="en"?"Add, remove and reorder social proof":"Добавляйте, удаляйте и переставляйте отзывы"}</div>
+      <h2>✦ ${uiLang()==="en"?"Review desk":"Модерация отзывов"}</h2>
+      <div class="sub">${uiLang()==="en"?"Add, reorder and drop reviews. NFT link feeds the live strip.":"Добавляй, сортируй и удаляй. Ссылка NFT попадает в живую ленту."}</div>
       <input id="rv-user" placeholder="@username" />
-      <input id="rv-rating" inputmode="numeric" placeholder="5" value="5" />
+      <div class="star-pick">${stars}</div>
+      <input id="rv-rating" type="hidden" value="5" />
       <textarea id="rv-body" placeholder="${uiLang()==="en"?"Review text":"Текст отзыва"}"></textarea>
+      <input id="rv-nft" placeholder="https://t.me/nft/Name-123" />
+      <input id="rv-deal" placeholder="${uiLang()==="en"?"Deal code (optional)":"Код сделки (необязательно)"}" />
       <input id="rv-date" placeholder="${uiLang()==="en"?"Date (optional)":"Дата (необязательно)"}" />
       <div class="admin-actions">
         <button type="button" class="ghost" data-act="rev-rand">${uiLang()==="en"?"Random":"Случайный"}</button>
         <button type="button" class="go" data-act="rev-add">${uiLang()==="en"?"Add review":"Добавить отзыв"}</button>
       </div>
-      <div class="admin-actions" style="margin-top:8px">
-        <button type="button" class="ghost" style="flex:1" data-act="rev-bulk">${uiLang()==="en"?"Generate 5":"Сгенерировать 5"}</button>
+      <div class="admin-actions one" style="margin-top:8px">
+        <button type="button" class="ghost" data-act="rev-bulk">${uiLang()==="en"?"Generate 5 reviews":"Сгенерировать сразу 5 отзывов"}</button>
       </div>
     </div>
     <div class="admin-sheet">
       <div class="sec-row"><h2 style="margin:0;font-size:18px">${uiLang()==="en"?"All reviews":"Все отзывы"}</h2>
         <div style="display:flex;gap:6px">
-          <button type="button" class="ghost" data-act="rev-sort" data-sort="new">↑</button>
-          <button type="button" class="ghost" data-act="rev-sort" data-sort="old">↓</button>
+          <button type="button" class="ghost" style="min-height:34px;padding:0 10px" data-act="rev-sort" data-sort="new">↑ ${uiLang()==="en"?"New":"Новые"}</button>
+          <button type="button" class="ghost" style="min-height:34px;padding:0 10px" data-act="rev-sort" data-sort="old">↓ ${uiLang()==="en"?"Old":"Старые"}</button>
         </div>
       </div>
       ${list}
@@ -1699,6 +1788,7 @@ async function draw(opts={}){
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=await screenHome();
+    else if(s==="feed-view") root.innerHTML=await screenFeedView();
     else if(s==="join") root.innerHTML=screenJoin();
     else if(s==="req") root.innerHTML=screenReq();
     else if(s==="req-ton") root.innerHTML=fieldScreen("TON","balance_ton","💎",t("ask_ton"),"f-ton",state.user.ton_wallet,"save-ton");
@@ -1752,6 +1842,7 @@ function watchDeal(){
   const s=state.screen;
   if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,2000);
   else if(s==="deals") dealWatch=setInterval(refreshDealsList,2500);
+  else if(s==="home") dealWatch=setInterval(()=>draw({quiet:true}),4000);
 }
 async function refreshOpenDeal(){
   if(state.screen!=="deal-view"||!state.dealCode) return;
@@ -1823,6 +1914,11 @@ document.body.addEventListener("click",async(ev)=>{
   try{
     if(actName==="pick-lang"){await pickLanguage(a.dataset.lang);return;}
     if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";await draw({quiet:true});return;}
+    if(actName==="open-feed"){
+      state.feedId=Number(a.dataset.id)||null;
+      if(!state.feedId) return;
+      go("feed-view");return;
+    }
     if(actName==="join-deal"){go("join");return;}
     if(actName==="do-join"){
       const raw=(document.getElementById("join-code")||{}).value||"";
@@ -1832,24 +1928,40 @@ document.body.addEventListener("click",async(ev)=>{
       if(r.joined) toast(uiLang()==="en"?"Joined":"Вы вошли в сделку");
       state.dealCode=clean;go("deal-view");return;
     }
-    if(actName==="rev-add"||actName==="rev-rand"){
+    if(actName==="rev-add"){
       const body={
         username:(document.getElementById("rv-user")||{}).value||"",
         rating:(document.getElementById("rv-rating")||{}).value||5,
         body:(document.getElementById("rv-body")||{}).value||"",
-        date:(document.getElementById("rv-date")||{}).value||"",
-        random:actName==="rev-rand"
+        nft_url:(document.getElementById("rv-nft")||{}).value||"",
+        deal_code:(document.getElementById("rv-deal")||{}).value||"",
+        date:(document.getElementById("rv-date")||{}).value||""
       };
       await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
       toast("OK");go("admin");return;
     }
-    if(actName==="rev-bulk"){await api("/api/admin/reviews/bulk",{method:"POST",body:"{}"});toast("OK");go("admin");return;}
     if(actName==="rev-del"){await api("/api/admin/reviews/"+a.dataset.id+"/delete",{method:"POST",body:"{}"});go("admin");return;}
     if(actName==="rev-up"||actName==="rev-down"){
       await api("/api/admin/reviews/"+a.dataset.id+"/move",{method:"POST",body:JSON.stringify({direction:actName==="rev-up"?"up":"down"})});
       go("admin");return;
     }
     if(actName==="rev-sort"){state.reviewSort=a.dataset.sort||"new";go("admin");return;}
+    if(actName==="rev-star"){
+      const n=Math.max(1,Math.min(5,Number(a.dataset.n)||5));
+      const rating=document.getElementById("rv-rating");
+      if(rating) rating.value=String(n);
+      document.querySelectorAll(".star-pick button").forEach((b,i)=>b.classList.toggle("on", i<n));
+      return;
+    }
+    if(actName==="rev-rand"){fillRandomReview();haptic();return;}
+    if(actName==="rev-bulk"){
+      for(let i=0;i<5;i++){
+        const pick=REVIEW_POOL[(Math.floor(Math.random()*REVIEW_POOL.length)+i)%REVIEW_POOL.length];
+        await api("/api/admin/reviews",{method:"POST",body:JSON.stringify({username:pick[0],rating:5,body:pick[1],date:pick[2]})});
+      }
+      toast(uiLang()==="en"?"5 reviews added":"Добавлено 5 отзывов");
+      go("admin");return;
+    }
     if(actName==="support"){const url=state.user.support_url;if(tg&&tg.openTelegramLink) tg.openTelegramLink(url);else window.open(url,"_blank");return;}
     if(actName==="go:home"){
       if(!state.user){try{await loadMe();}catch(e){toast(e.message);return;}}
