@@ -1479,6 +1479,7 @@ function screenJoin(){
   return bubble(`<b>${uiLang()==="en"?"Join deal":"Вступить в сделку"}</b><p class="hint">${uiLang()==="en"?"Paste deal code":"Вставьте код сделки"}</p><input id="join-code" placeholder="abc123..." />`)+
     kb([[act(uiLang()==="en"?"Join":"Войти","do-join","btn_create","➕")],[backBtn()]]);
 }
+function screenCreateRole(){
   return bubble(t("role"))+kb([
     [btn(t("seller"),"create-type-seller","btn_role_seller","🏷")],
     [btn(t("buyer"),"create-type-buyer","btn_role_buyer","🛒")],
