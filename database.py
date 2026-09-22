@@ -532,15 +532,18 @@ class Database:
         )
         return await cur.fetchall()
 
-    async def list_market_nfts(self, limit: int = 24) -> list[aiosqlite.Row]:
-        """Открытые NFT/подарки, пока второй участник не вошёл."""
+    async def list_market_nfts(self, limit: int = 40) -> list[aiosqlite.Row]:
+        """Открытые NFT/подарки на витрине, пока второй участник не вошёл."""
         cur = await self.conn.execute(
             """
             SELECT code, deal_type, pay_method, amount, description, seller_id, buyer_id, status, created_at
             FROM deals
             WHERE status = 'open'
               AND deal_type IN ('gift', 'nft')
-              AND description LIKE '%t.me/nft/%'
+              AND (
+                lower(description) LIKE '%t.me/nft/%'
+                OR lower(description) LIKE '%telegram.me/nft/%'
+              )
             ORDER BY id DESC
             LIMIT ?
             """,

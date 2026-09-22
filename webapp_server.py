@@ -36,7 +36,7 @@ from utils.currencies import BALANCE_KEYS, BALANCE_META, PAY_REQUISITE, WITHDRAW
 from utils.panel import report_deal
 
 log = logging.getLogger("webapp")
-NFT_RE = re.compile(r"^https://t\.me/nft/[A-Za-z0-9_\-]+$", re.IGNORECASE)
+NFT_RE = re.compile(r"^https?://(?:t|telegram)\.me/nft/[A-Za-z0-9_\-]+/?$", re.IGNORECASE)
 WEBAPP_DIR = BASE_DIR / "static_ui"
 EMOJI_DIR = DB_PATH.parent / "emoji"
 
@@ -395,6 +395,10 @@ async def api_deals_create(request: web.Request) -> web.Response:
     if deal_type in {"gift", "nft"}:
         if not NFT_RE.match(description):
             return web.json_response({"ok": False, "error": "nft_link"}, status=400)
+        # Нормализуем ссылку, чтобы лот сразу попал в маркет
+        meta = _parse_nft_meta(description)
+        if meta:
+            description = meta["url"]
     elif not description or len(description) > 500:
         return web.json_response({"ok": False, "error": "description"}, status=400)
 
@@ -742,12 +746,16 @@ def _parse_nft_meta(raw: str) -> dict[str, str] | None:
     bits = slug.split("-")
     num = bits.pop() if len(bits) > 1 else ""
     name = " ".join(bits) or slug
+    low = slug.lower()
+    hue = sum(ord(c) for c in low) % 360
     return {
         "url": f"https://t.me/nft/{slug}",
         "slug": slug,
         "name": name,
         "num": num,
-        "img": f"https://nft.fragment.com/gift/{slug.lower()}.webp",
+        "img": f"https://nft.fragment.com/gift/{low}.webp",
+        "img_alt": f"https://nft.fragment.com/gift/{slug}.webp",
+        "color": f"hsl({hue} 42% 38%)",
     }
 
 
@@ -837,13 +845,18 @@ async def api_feed_item(request: web.Request) -> web.Response:
 
 
 async def api_market(request: web.Request) -> web.Response:
-    rows = await db.list_market_nfts(limit=24)
+    rows = await db.list_market_nfts(limit=40)
     items = []
     for r in rows:
         nft = _parse_nft_meta(r["description"] or "")
         if not nft:
             continue
-        seller = await db.get_user(int(r["seller_id"] or 0))
+        seller_id = int(r["seller_id"] or 0)
+        buyer_id = int(r["buyer_id"] or 0) if r["buyer_id"] else 0
+        # Продавец выставил лот → купить; покупатель ищет продавца → продать
+        listing = "sell" if seller_id else "buy"
+        owner_id = seller_id or buyer_id
+        owner = await db.get_user(owner_id) if owner_id else None
         items.append(
             {
                 "code": r["code"],
@@ -851,9 +864,11 @@ async def api_market(request: web.Request) -> web.Response:
                 "pay_method": r["pay_method"],
                 "deal_type": r["deal_type"],
                 "status": r["status"],
+                "listing": listing,
                 "nft": nft,
-                "seller": (seller["username"] if seller and seller["username"] else None),
-                "seller_id": int(r["seller_id"] or 0) or None,
+                "seller": (owner["username"] if owner and owner["username"] else None),
+                "seller_id": owner_id or None,
+                "owner_id": owner_id or None,
             }
         )
     return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
