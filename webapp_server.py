@@ -7,6 +7,7 @@ import hashlib
 import hmac
 import json
 import logging
+import random
 import re
 import secrets
 import string
@@ -47,6 +48,92 @@ NFT_RE = re.compile(
 WEBAPP_DIR = BASE_DIR / "static_ui"
 EMOJI_DIR = DB_PATH.parent / "emoji"
 NFT_IMG_DIR = DB_PATH.parent / "nft_img"
+
+# Живая витрина: ротация раз в 2 минуты (плюс реальные лоты продавцов)
+_MARKET_ROTATE_SEC = 120
+_SHOWCASE_NFTS = (
+    "PlushPepe-128",
+    "DurovsCap-7",
+    "LolPop-4421",
+    "PreciousPeach-88",
+    "PerfumeBottle-203",
+    "ToyBear-915",
+    "SwissWatch-44",
+    "DiamondRing-301",
+    "SignetRing-77",
+    "ScaredCat-1204",
+    "MagicPotion-56",
+    "GenieLamp-19",
+    "EternalRose-333",
+    "LootBag-812",
+    "NekoHelmet-45",
+    "ElectricSkull-67",
+    "SpyAgaric-902",
+    "VintageCigar-14",
+    "MiniOscar-3",
+    "AstralShard-221",
+)
+_SHOWCASE_SELLERS = (
+    "tonfox",
+    "nftlane",
+    "giftok",
+    "dealwave",
+    "starpay",
+    "rarebrod",
+    "rubnode",
+    "p2psafe",
+    "pepe_hub",
+    "cap_trade",
+)
+_SHOWCASE_PAYS = ("stars", "ton", "usdt", "rub")
+_SHOWCASE_AMOUNTS = (49, 79, 99, 120, 150, 199, 250, 320, 450, 680, 900, 1200)
+
+
+def _market_seed() -> int:
+    return int(time.time()) // _MARKET_ROTATE_SEC
+
+
+def _market_rotate_in() -> int:
+    return max(1, _MARKET_ROTATE_SEC - int(time.time()) % _MARKET_ROTATE_SEC)
+
+
+def _showcase_market_items(limit: int = 10) -> list[dict[str, Any]]:
+    """Детерминированная витрина на окно 2 мин — всегда «живая»."""
+    seed = _market_seed()
+    rng = random.Random(seed)
+    nfts = list(_SHOWCASE_NFTS)
+    rng.shuffle(nfts)
+    sellers = list(_SHOWCASE_SELLERS)
+    rng.shuffle(sellers)
+    items: list[dict[str, Any]] = []
+    for i, slug in enumerate(nfts[:limit]):
+        meta = _parse_nft_meta(f"https://t.me/nft/{slug}")
+        if not meta:
+            continue
+        seller = sellers[i % len(sellers)]
+        pay = rng.choice(_SHOWCASE_PAYS)
+        amount = float(rng.choice(_SHOWCASE_AMOUNTS))
+        if pay == "ton":
+            amount = round(amount / 200, 2) or 0.5
+        elif pay == "usdt":
+            amount = round(amount / 90, 2) or 1.0
+        items.append(
+            {
+                "code": f"v{seed}_{i}",
+                "amount": amount,
+                "pay_method": pay,
+                "deal_type": "gift",
+                "status": "open",
+                "listing": "sell",
+                "nft": meta,
+                "seller": seller,
+                "seller_id": None,
+                "owner_id": None,
+                "demo": True,
+            }
+        )
+    return items
+
 
 _bot: Bot | None = None
 _bot_username = ""
@@ -909,19 +996,23 @@ async def api_feed_item(request: web.Request) -> web.Response:
 
 
 async def api_market(request: web.Request) -> web.Response:
+    items: list[dict[str, Any]] = []
+    seen_nft: set[str] = set()
     try:
         rows = await db.list_market_nfts(limit=40)
     except Exception as exc:
         log.exception("market list failed: %s", exc)
-        return web.json_response({"ok": True, "items": []}, headers={"Cache-Control": "no-store"})
-    items = []
+        rows = []
+
     for r in rows:
         nft = _parse_nft_meta(r["description"] or "")
         if not nft:
             continue
+        slug = (nft.get("slug") or "").lower()
+        if slug:
+            seen_nft.add(slug)
         seller_id = int(r["seller_id"] or 0)
         buyer_id = int(r["buyer_id"] or 0) if r["buyer_id"] else 0
-        # Продавец выставил лот → купить; покупатель ищет продавца → продать
         listing = "sell" if seller_id else "buy"
         owner_id = seller_id or buyer_id
         owner = await db.get_user(owner_id) if owner_id else None
@@ -937,9 +1028,30 @@ async def api_market(request: web.Request) -> web.Response:
                 "seller": (owner["username"] if owner and owner["username"] else None),
                 "seller_id": owner_id or None,
                 "owner_id": owner_id or None,
+                "demo": False,
             }
         )
-    return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
+
+    # Добиваем витрину «живыми» лотами — ротация каждые 2 минуты
+    for demo in _showcase_market_items(12):
+        slug = ((demo.get("nft") or {}).get("slug") or "").lower()
+        if slug and slug in seen_nft:
+            continue
+        if slug:
+            seen_nft.add(slug)
+        items.append(demo)
+        if len(items) >= 16:
+            break
+
+    return web.json_response(
+        {
+            "ok": True,
+            "items": items,
+            "seed": _market_seed(),
+            "rotate_in": _market_rotate_in(),
+        },
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 async def api_admin_review_add(request: web.Request) -> web.Response:

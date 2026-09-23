@@ -1224,7 +1224,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],feed:[],reviews:[]};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:120,feed:[],reviews:[]};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -1555,12 +1555,18 @@ async function screenHome(){
   const cur=state.balCur||"rub";
   const map={rub:["₽",b.rub],uah:["₴",b.uah],kzt:["₸",b.kzt],ton:["TON",b.ton],usdt:["USDT",b.usdt],stars:["⭐",b.stars]};
   const [sym,val]=map[cur]||map.rub;
-  let feed=[], reviews=[], market=[];
-  try{ feed=((await api("/api/feed")).items)||[]; }catch(e){}
-  try{ reviews=((await api("/api/reviews")).reviews)||[]; }catch(e){}
-  try{ market=((await api("/api/market")).items)||[]; }catch(e){}
+  let feed=state.feed||[], reviews=state.reviews||[], market=state.market||[];
+  try{ const r=await api("/api/feed"); feed=r.items||feed; }catch(e){}
+  try{ const r=await api("/api/reviews"); reviews=r.reviews||reviews; }catch(e){}
+  try{
+    const r=await api("/api/market");
+    const next=r.items||[];
+    if(next.length || !market.length) market=next;
+    state.marketSeed=r.seed||state.marketSeed||0;
+    state.marketRotateIn=r.rotate_in||state.marketRotateIn||120;
+  }catch(e){}
   state.feed=feed; state.reviews=reviews; state.market=market;
-  state.homeSig=homeFingerprint(market,feed,reviews,cur,val);
+  state.homeSig=homeFingerprint(market,feed,reviews,cur,val,state.marketSeed);
   const curs=["rub","uah","kzt","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
   const feedCards=feed.length?feed.map(it=>{
     const n=it.nft||{};
@@ -1577,7 +1583,8 @@ async function screenHome(){
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
-    return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}">
+    const demo=!!it.demo;
+    return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
       <div class="shot">${nftImgHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
@@ -1586,7 +1593,7 @@ async function screenHome(){
         <div class="cta-mini">${mine?(uiLang()==="en"?"Your listing":"Ваш лот"):(uiLang()==="en"?"For sale":"На продаже")}</div>
       </div>
     </div>`;
-  }).join(""):`<div class="hint">${uiLang()==="en"?"No listings yet. Create a gift/NFT deal as seller — it appears here.":"Пока пусто. Создай сделку с подарком/NFT как продавец — лот появится здесь."}</div>`;
+  }).join(""):`<div class="hint">${uiLang()==="en"?"Loading market…":"Загружаем маркет…"}</div>`;
   const revCards=reviews.length?reviews.slice(0,8).map(r=>{
     const n=nftInfo(r.nft_url||"");
     const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
@@ -1627,26 +1634,27 @@ async function screenHome(){
 async function screenMarketView(){
   const code=state.marketCode;
   if(!code) return bubble("—")+kb([[backBtn()]]);
-  let it=null;
+  let it=(state.market||[]).find(x=>x.code===code)||null;
   try{
-    const list=((await api("/api/market")).items)||[];
-    it=list.find(x=>x.code===code)||null;
+    const r=await api("/api/market");
+    const list=r.items||[];
+    if(list.length){ state.market=list; state.marketSeed=r.seed||state.marketSeed; state.marketRotateIn=r.rotate_in||state.marketRotateIn; }
+    it=list.find(x=>x.code===code)||it;
   }catch(e){}
   if(!it){
-    state.dealCode=code;
-    return bubble(`<b>${uiLang()==="en"?"Listing closed":"Лот уже снят с продажи"}</b><p class="hint">${uiLang()==="en"?"Someone bought it or the deal was cancelled.":"Его купили или сделку отменили."}</p>`)+kb([
-      [`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open deal":"Открыть сделку"}</span></button>`],
+    const isDemo=String(code).startsWith("v");
+    return bubble(`<b>${uiLang()==="en"?"Listing closed":"Лот уже снят с продажи"}</b><p class="hint">${uiLang()==="en"?"Someone bought it — new lots appear every 2 minutes.":"Его купили — новые лоты появляются каждые 2 минуты."}</p>`)+kb([
+      isDemo?null:[`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open deal":"Открыть сделку"}</span></button>`],
       [backBtn()]
-    ]);
+    ].filter(Boolean));
   }
   const n=it.nft||{};
   const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
   const me=Number(state.user&&state.user.id)||0;
-  const mine=me && Number(it.owner_id||it.seller_id||0)===me;
-  const who=it.seller?("@"+it.seller):("ID "+(it.owner_id||"—"));
+  const mine=!it.demo && me && Number(it.owner_id||it.seller_id||0)===me;
   const primary=mine
     ?`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open my listing":"Открыть мой лот"}</span></button>`
-    :`<button class="kbtn primary" data-act="buy-market" data-code="${esc(code)}">${pe("deal_money","💰")}<span>${uiLang()==="en"?"Buy via guarantor":"Купить через гаранта"}</span></button>`;
+    :`<button class="kbtn primary" data-act="buy-market" data-code="${esc(code)}" data-demo="${it.demo?"1":"0"}">${pe("deal_money","💰")}<span>${uiLang()==="en"?"Buy via guarantor":"Купить через гаранта"}</span></button>`;
   const nftBtn=n.url?`<button class="kbtn" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${uiLang()==="en"?"Open in Telegram":"Открыть NFT в Telegram"}</span></button>`:"";
   return `<div class="buy-sheet bubble">
     <div class="hero-nft">${nftImgHtml(n)}</div>
@@ -1656,8 +1664,8 @@ async function screenMarketView(){
     <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${unameLink(it.seller,it.owner_id||it.seller_id)}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Gift":"Подарок"}</span><b>${esc(typeLabel(it.deal_type))}</b></div>
     <p class="hint">${uiLang()==="en"
-      ?"This NFT was listed by the seller. Open the real gift in Telegram, then buy safely through the guarantor."
-      :"Этот NFT выставил продавец. Можно открыть настоящий подарок в Telegram, а купить — безопасно через гаранта."}</p>
+      ?"Open the gift in Telegram, then buy safely through the guarantor. Showcase lots refresh every 2 minutes."
+      :"Открой подарок в Telegram и купи через гаранта. Витрина обновляется каждые 2 минуты."}</p>
   </div>`+kb([[primary], nftBtn?[nftBtn]:null, [backBtn()]].filter(Boolean));
 }
 async function screenFeedView(){
@@ -1763,10 +1771,14 @@ function screenDealViewFallback(){
 async function screenDealView(){
   const code=state.dealCode;
   if(!code) return screenDealViewFallback();
-  let d=null;
-  try{ d=(await api("/api/deals/"+code)).deal; }catch(e){ return bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]); }
-  state.deal=d;
-  state.dealSig=dealFingerprint(d);
+  let d=state.deal&&state.deal.code===code?state.deal:null;
+  try{
+    d=(await api("/api/deals/"+code)).deal;
+    state.deal=d;
+    state.dealSig=dealFingerprint(d);
+  }catch(e){
+    if(!d) return bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);
+  }
   state.link=d.link||dealLink(d.code);
   const link=state.link;
   const manager=String((state.user&&state.user.manager)||"").replace(/^@/,"");
@@ -2027,9 +2039,15 @@ function screenWd(){
     kb([[act(t("withdraw"),"do-withdraw","deal_money","💰")],[backBtn()]]);
 }
 async function screenDeals(){
-  const {deals}=await api("/api/deals");
-  state.deals=deals;
-  state.dealsSig=dealsFingerprint(deals);
+  let deals=state.deals||[];
+  try{
+    const r=await api("/api/deals");
+    deals=r.deals||[];
+    state.deals=deals;
+    state.dealsSig=dealsFingerprint(deals);
+  }catch(e){
+    if(!deals.length) throw e;
+  }
   if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
   const cards=deals.map(d=>{
     const n=nftInfo(d.description);
@@ -2142,19 +2160,20 @@ function dealsFingerprint(list){
   return (list||[]).map(d=>[d.code,d.status,d.role||""].join(":")).join(",");
 }
 let dealWatch=null;
-function homeFingerprint(market,feed,reviews,cur,val){
-  const m=(market||[]).map(x=>[x.code,x.status,x.amount,x.owner_id||x.seller_id||""].join(":")).join(",");
+function homeFingerprint(market,feed,reviews,cur,val,seed){
+  const m=(market||[]).map(x=>[x.code,x.status,x.amount,x.owner_id||x.seller_id||"",x.demo?1:0].join(":")).join(",");
   const f=(feed||[]).map(x=>x.id).join(",");
   const r=(reviews||[]).map(x=>x.id).join(",");
-  return [m,f,r,cur,val].join("|");
+  return [m,f,r,cur,val,seed||0].join("|");
 }
 function watchDeal(){
   clearInterval(dealWatch);
   dealWatch=null;
   const s=state.screen;
-  // Статусы сделки — да; маркет обновляется только при заходе на главную / возврате в приложение
   if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,2000);
-  else if(s==="deals") dealWatch=setInterval(refreshDealsList,2500);
+  else if(s==="deals") dealWatch=setInterval(refreshDealsList,4000);
+  else if(s==="home") dealWatch=setInterval(refreshHomeLive,12000);
+  else if(s==="market-view") dealWatch=setInterval(refreshMarketView,8000);
 }
 async function refreshHomeLive(){
   if(state.screen!=="home") return;
@@ -2162,12 +2181,23 @@ async function refreshHomeLive(){
     const cur=state.balCur||"rub";
     const b=(state.user&&state.user.balances)||{};
     const val=b[cur];
-    const [market,feed,reviews]=await Promise.all([
-      api("/api/market").then(r=>r.items||[]).catch(()=>state.market||[]),
-      api("/api/feed").then(r=>r.items||[]).catch(()=>state.feed||[]),
-      api("/api/reviews").then(r=>r.reviews||[]).catch(()=>state.reviews||[]),
+    const [marketRes,feedRes,reviewsRes]=await Promise.all([
+      api("/api/market").catch(()=>null),
+      api("/api/feed").catch(()=>null),
+      api("/api/reviews").catch(()=>null),
     ]);
-    const fp=homeFingerprint(market,feed,reviews,cur,val);
+    let market=state.market||[];
+    let feed=state.feed||[];
+    let reviews=state.reviews||[];
+    if(marketRes){
+      const next=marketRes.items||[];
+      if(next.length || !market.length) market=next;
+      state.marketSeed=marketRes.seed||state.marketSeed||0;
+      state.marketRotateIn=marketRes.rotate_in||state.marketRotateIn||120;
+    }
+    if(feedRes) feed=feedRes.items||feed;
+    if(reviewsRes) reviews=reviewsRes.reviews||reviews;
+    const fp=homeFingerprint(market,feed,reviews,cur,val,state.marketSeed);
     if(fp===state.homeSig) return;
     state.market=market; state.feed=feed; state.reviews=reviews; state.homeSig=fp;
     await draw({quiet:true});
@@ -2176,8 +2206,14 @@ async function refreshHomeLive(){
 async function refreshMarketView(){
   if(state.screen!=="market-view"||!state.marketCode) return;
   try{
-    const list=((await api("/api/market")).items)||[];
-    const still=list.some(x=>x.code===state.marketCode);
+    const r=await api("/api/market");
+    const list=r.items||[];
+    if(list.length){
+      state.market=list;
+      state.marketSeed=r.seed||state.marketSeed;
+      state.marketRotateIn=r.rotate_in||state.marketRotateIn;
+    }
+    const still=list.some(x=>x.code===state.marketCode)||(state.market||[]).some(x=>x.code===state.marketCode);
     if(!still) await draw({quiet:true});
   }catch(e){}
 }
@@ -2198,7 +2234,7 @@ async function refreshDealsList(){
     const {deals}=await api("/api/deals");
     const fp=dealsFingerprint(deals);
     if(fp===state.dealsSig) return;
-    state.deals=deals;
+    state.deals=deals||[];
     state.dealsSig=fp;
     await draw({quiet:true});
   }catch(e){}
@@ -2381,6 +2417,15 @@ document.body.addEventListener("click",async(ev)=>{
     if(actName==="buy-market"){
       const code=a.dataset.code||state.marketCode||"";
       if(!code) return;
+      const demo=a.dataset.demo==="1"||String(code).startsWith("v")||!!((state.market||[]).find(x=>x.code===code&&x.demo));
+      if(demo){
+        toast(uiLang()==="en"?"Just sold — new lots in ~2 min":"Только что купили — новые лоты через ~2 мин");
+        try{
+          const r=await api("/api/market");
+          if((r.items||[]).length){ state.market=r.items; state.marketSeed=r.seed||0; state.marketRotateIn=r.rotate_in||120; }
+        }catch(e){}
+        go("home");return;
+      }
       try{
         const r=await api("/api/deals/"+code+"/join",{method:"POST"});
         if(r.joined) toast(uiLang()==="en"?"Joined deal":"Вы вошли в сделку");
