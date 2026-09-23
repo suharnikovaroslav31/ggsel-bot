@@ -99,6 +99,14 @@ class Database:
         )
         await self._ensure_column("nft_url", "TEXT DEFAULT ''", table="reviews")
         await self._ensure_column("deal_code", "TEXT DEFAULT ''", table="reviews")
+        await self._ensure_column("seller_username", "TEXT DEFAULT ''", table="reviews")
+        await self._ensure_column("buyer_username", "TEXT DEFAULT ''", table="reviews")
+        await self._ensure_column("seller_id", "INTEGER", table="reviews")
+        await self._ensure_column("buyer_id", "INTEGER", table="reviews")
+        await self._ensure_column("author_role", "TEXT DEFAULT 'buyer'", table="reviews")
+        await self._ensure_column("amount", "REAL DEFAULT 0", table="reviews")
+        await self._ensure_column("pay_method", "TEXT DEFAULT ''", table="reviews")
+        await self._ensure_column("deal_type", "TEXT DEFAULT 'gift'", table="reviews")
         await self.conn.commit()
         await self._seed_env_admins()
         await self._purge_demo_reviews()
@@ -247,6 +255,127 @@ class Database:
     async def get_user(self, user_id: int) -> aiosqlite.Row | None:
         cur = await self.conn.execute("SELECT * FROM users WHERE user_id = ?", (user_id,))
         return await cur.fetchone()
+
+    async def find_user_by_username(self, username: str) -> aiosqlite.Row | None:
+        uname = str(username or "").strip().lstrip("@").lower()
+        if not uname:
+            return None
+        cur = await self.conn.execute(
+            "SELECT * FROM users WHERE lower(username) = ? LIMIT 1",
+            (uname,),
+        )
+        return await cur.fetchone()
+
+    async def ensure_named_user(self, username: str, *, prefer_id: int | None = None) -> int:
+        """Находит юзера по @username или создаёт «теневой» аккаунт (отрицательный id)."""
+        uname = str(username or "").strip().lstrip("@")
+        if prefer_id:
+            await self.ensure_user(prefer_id)
+            row = await self.get_user(prefer_id)
+            if row and not (row["username"] or "").strip() and uname:
+                await self.conn.execute(
+                    "UPDATE users SET username = ? WHERE user_id = ?",
+                    (uname, prefer_id),
+                )
+                await self.conn.commit()
+            return int(prefer_id)
+        if uname:
+            found = await self.find_user_by_username(uname)
+            if found:
+                return int(found["user_id"])
+        cur = await self.conn.execute(
+            "SELECT COALESCE(MIN(user_id), 0) AS m FROM users WHERE user_id < 0"
+        )
+        row = await cur.fetchone()
+        next_id = int(row["m"] or 0) - 1 if row and int(row["m"] or 0) < 0 else -1
+        await self.conn.execute(
+            """
+            INSERT INTO users (user_id, username, full_name)
+            VALUES (?, ?, ?)
+            """,
+            (next_id, uname or None, uname or str(next_id)),
+        )
+        await self.conn.commit()
+        return next_id
+
+    async def create_completed_deal(
+        self,
+        *,
+        code: str,
+        seller_id: int,
+        buyer_id: int,
+        deal_type: str,
+        pay_method: str,
+        amount: float,
+        description: str = "",
+    ) -> None:
+        await self.conn.execute(
+            """
+            INSERT INTO deals (code, seller_id, buyer_id, deal_type, pay_method, amount, description, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'completed')
+            """,
+            (code, seller_id, buyer_id, deal_type, pay_method, amount, description),
+        )
+        await self.conn.commit()
+
+    async def list_user_completed_deals(self, user_id: int, limit: int = 20) -> list[aiosqlite.Row]:
+        cur = await self.conn.execute(
+            """
+            SELECT * FROM deals
+            WHERE (seller_id = ? OR buyer_id = ?) AND status = 'completed'
+            ORDER BY id DESC
+            LIMIT ?
+            """,
+            (user_id, user_id, limit),
+        )
+        return await cur.fetchall()
+
+    async def list_user_reviews(self, user_id: int, username: str = "", limit: int = 30) -> list[aiosqlite.Row]:
+        uname = str(username or "").strip().lstrip("@").lower()
+        # Только по нику (витрина без аккаунта) — не матчим seller_id=0
+        if uname and not user_id:
+            cur = await self.conn.execute(
+                """
+                SELECT * FROM reviews
+                WHERE lower(seller_username) = ?
+                   OR lower(buyer_username) = ?
+                   OR lower(username) = ?
+                ORDER BY sort_order ASC, id DESC
+                LIMIT ?
+                """,
+                (uname, uname, uname, limit),
+            )
+        elif uname:
+            cur = await self.conn.execute(
+                """
+                SELECT * FROM reviews
+                WHERE seller_id = ? OR buyer_id = ?
+                   OR lower(seller_username) = ?
+                   OR lower(buyer_username) = ?
+                   OR lower(username) = ?
+                ORDER BY sort_order ASC, id DESC
+                LIMIT ?
+                """,
+                (user_id, user_id, uname, uname, uname, limit),
+            )
+        else:
+            cur = await self.conn.execute(
+                """
+                SELECT * FROM reviews
+                WHERE seller_id = ? OR buyer_id = ?
+                ORDER BY sort_order ASC, id DESC
+                LIMIT ?
+                """,
+                (user_id, user_id, limit),
+            )
+        return await cur.fetchall()
+
+    async def user_rating(self, user_id: int, username: str = "") -> tuple[float, int]:
+        rows = await self.list_user_reviews(user_id, username, limit=200)
+        if not rows:
+            return 0.0, 0
+        total = sum(int(r["rating"] or 5) for r in rows)
+        return round(total / len(rows), 1), len(rows)
 
     async def get_last_welcome_msg_id(self, user_id: int) -> int | None:
         user = await self.get_user(user_id)
@@ -533,13 +662,12 @@ class Database:
         return await cur.fetchall()
 
     async def list_market_nfts(self, limit: int = 40) -> list[aiosqlite.Row]:
-        """Открытые NFT/подарки на витрине, пока второй участник не вошёл."""
+        """Открытые NFT/подарки на витрине — только лоты продавца."""
         cur = await self.conn.execute(
             """
             SELECT code, deal_type, pay_method, amount, description, seller_id, buyer_id, status, created_at
             FROM deals
-            // На витрине только лоты продавца (реальная «продажа» NFT)
-    WHERE status = 'open'
+            WHERE status = 'open'
               AND deal_type IN ('gift', 'nft')
               AND seller_id IS NOT NULL
               AND seller_id != 0
@@ -565,7 +693,6 @@ class Database:
             """
             DELETE FROM reviews
             WHERE username IN ('chupayl','denchik','vika_nft','lextrade','rarebrod','fast_deal','nft_safe','ton_guy','mira_p2p','kosta')
-               OR (nft_url IS NULL OR nft_url = '')
             """
         )
         await self.conn.execute(
@@ -600,14 +727,26 @@ class Database:
         *,
         nft_url: str = "",
         deal_code: str = "",
+        seller_username: str = "",
+        buyer_username: str = "",
+        seller_id: int | None = None,
+        buyer_id: int | None = None,
+        author_role: str = "buyer",
+        amount: float = 0,
+        pay_method: str = "",
+        deal_type: str = "gift",
     ) -> aiosqlite.Row | None:
         cur = await self.conn.execute("SELECT COALESCE(MIN(sort_order), 0) AS m FROM reviews")
         row = await cur.fetchone()
         sort_order = int(row["m"] or 0) - 1
         cur = await self.conn.execute(
             """
-            INSERT INTO reviews (username, rating, body, review_date, sort_order, nft_url, deal_code)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO reviews (
+                username, rating, body, review_date, sort_order, nft_url, deal_code,
+                seller_username, buyer_username, seller_id, buyer_id, author_role,
+                amount, pay_method, deal_type
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 username.lstrip("@"),
@@ -617,6 +756,14 @@ class Database:
                 sort_order,
                 (nft_url or "").strip(),
                 (deal_code or "").strip(),
+                (seller_username or "").strip().lstrip("@"),
+                (buyer_username or "").strip().lstrip("@"),
+                seller_id,
+                buyer_id,
+                author_role if author_role in {"buyer", "seller"} else "buyer",
+                float(amount or 0),
+                (pay_method or "").strip().lower(),
+                (deal_type or "gift").strip().lower(),
             ),
         )
         await self.conn.commit()

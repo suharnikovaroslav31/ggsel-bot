@@ -38,7 +38,11 @@ from utils.panel import report_deal
 
 router = Router()
 
-NFT_RE = re.compile(r"^https://t\.me/nft/[A-Za-z0-9_\-]+$", re.IGNORECASE)
+NFT_LINK_RE = re.compile(
+    r"https?://(?:t|telegram)\.me/nft/([A-Za-z0-9_\-]+)/?",
+    re.IGNORECASE,
+)
+NFT_RE = re.compile(r"^https?://(?:t|telegram)\.me/nft/[A-Za-z0-9_\-]+/?$", re.IGNORECASE)
 
 
 def _deal_code(length: int = 10) -> str:
@@ -204,7 +208,8 @@ async def save_description(message: Message, state: FSMContext) -> None:
     creator_role = data.get("creator_role")
 
     if deal_type in {"gift", "nft"}:
-        if not NFT_RE.match(description):
+        m = NFT_LINK_RE.search(description.strip())
+        if not m:
             await reply_ui(
                 message,
                 "❌ Нужна ссылка на NFT вида:\n"
@@ -212,6 +217,7 @@ async def save_description(message: Message, state: FSMContext) -> None:
                 cancel_deal_menu(lang),
             )
             return
+        description = f"https://t.me/nft/{m.group(1)}"
     elif len(description) > 500:
         await reply_ui(
             message,

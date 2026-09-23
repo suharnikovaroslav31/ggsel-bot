@@ -36,9 +36,17 @@ from utils.currencies import BALANCE_KEYS, BALANCE_META, PAY_REQUISITE, WITHDRAW
 from utils.panel import report_deal
 
 log = logging.getLogger("webapp")
-NFT_RE = re.compile(r"^https?://(?:t|telegram)\.me/nft/[A-Za-z0-9_\-]+/?$", re.IGNORECASE)
+NFT_LINK_RE = re.compile(
+    r"https?://(?:t|telegram)\.me/nft/([A-Za-z0-9_\-]+)/?",
+    re.IGNORECASE,
+)
+NFT_RE = re.compile(
+    r"^https?://(?:t|telegram)\.me/nft/[A-Za-z0-9_\-]+/?$",
+    re.IGNORECASE,
+)
 WEBAPP_DIR = BASE_DIR / "static_ui"
 EMOJI_DIR = DB_PATH.parent / "emoji"
+NFT_IMG_DIR = DB_PATH.parent / "nft_img"
 
 _bot: Bot | None = None
 _bot_username = ""
@@ -231,6 +239,10 @@ async def api_me(request: web.Request) -> web.Response:
     payload["is_admin"] = await is_admin(uid)
     payload["completed_deals"] = await db.count_completed_deals(uid)
     payload["referral_count"] = await db.referral_count(uid)
+    uname = (row["username"] if row else "") or ""
+    avg, cnt = await db.user_rating(uid, uname)
+    payload["rating"] = avg
+    payload["rating_count"] = cnt
     return web.json_response({"ok": True, "user": payload})
 
 
@@ -393,12 +405,10 @@ async def api_deals_create(request: web.Request) -> web.Response:
     if amount <= 0 or amount > 10_000_000:
         return web.json_response({"ok": False, "error": "amount"}, status=400)
     if deal_type in {"gift", "nft"}:
-        if not NFT_RE.match(description):
+        normalized = _normalize_nft_description(description)
+        if not normalized:
             return web.json_response({"ok": False, "error": "nft_link"}, status=400)
-        # Нормализуем ссылку, чтобы лот сразу попал в маркет
-        meta = _parse_nft_meta(description)
-        if meta:
-            description = meta["url"]
+        description = normalized
     elif not description or len(description) > 500:
         return web.json_response({"ok": False, "error": "description"}, status=400)
 
@@ -726,6 +736,24 @@ def _review_json(row) -> dict[str, Any]:
         except (KeyError, IndexError, TypeError):
             return default
 
+    def _int(name: str) -> int | None:
+        try:
+            v = row[name]
+        except (KeyError, IndexError, TypeError):
+            return None
+        if v is None or v == "":
+            return None
+        try:
+            return int(v)
+        except (TypeError, ValueError):
+            return None
+
+    amount = 0.0
+    try:
+        amount = float(row["amount"] or 0)
+    except (KeyError, IndexError, TypeError, ValueError):
+        amount = 0.0
+
     return {
         "id": int(row["id"]),
         "username": row["username"] or "",
@@ -735,28 +763,53 @@ def _review_json(row) -> dict[str, Any]:
         "sort_order": int(row["sort_order"] or 0),
         "nft_url": _col("nft_url"),
         "deal_code": _col("deal_code"),
+        "seller_username": _col("seller_username"),
+        "buyer_username": _col("buyer_username"),
+        "seller_id": _int("seller_id"),
+        "buyer_id": _int("buyer_id"),
+        "author_role": _col("author_role", "buyer") or "buyer",
+        "amount": amount,
+        "pay_method": _col("pay_method"),
+        "deal_type": _col("deal_type", "gift") or "gift",
     }
 
 
+def _extract_nft_slug(raw: str) -> str | None:
+    m = NFT_LINK_RE.search(str(raw or "").strip())
+    return m.group(1) if m else None
+
+
 def _parse_nft_meta(raw: str) -> dict[str, str] | None:
-    m = re.search(r"https?://t\.me/nft/([A-Za-z0-9_\-]+)", str(raw or ""), re.I)
-    if not m:
+    slug = _extract_nft_slug(raw)
+    if not slug:
         return None
-    slug = m.group(1)
     bits = slug.split("-")
     num = bits.pop() if len(bits) > 1 else ""
     name = " ".join(bits) or slug
     low = slug.lower()
     hue = sum(ord(c) for c in low) % 360
+    # Proxied first — Telegram WebView иногда режет hotlink с fragment.com
     return {
         "url": f"https://t.me/nft/{slug}",
         "slug": slug,
         "name": name,
         "num": num,
-        "img": f"https://nft.fragment.com/gift/{low}.webp",
-        "img_alt": f"https://nft.fragment.com/gift/{slug}.webp",
+        "img": f"/n/{low}.jpg",
+        "img_alt": f"https://nft.fragment.com/gift/{low}.medium.jpg",
+        "img_fallbacks": [
+            f"https://nft.fragment.com/gift/{low}.medium.jpg",
+            f"https://nft.fragment.com/gift/{low}.webp",
+            f"https://nft.fragment.com/gift/{slug}.medium.jpg",
+            f"https://nft.fragment.com/gift/{low}.large.jpg",
+        ],
         "color": f"hsl({hue} 42% 38%)",
     }
+
+
+def _normalize_nft_description(raw: str) -> str | None:
+    meta = _parse_nft_meta(raw)
+    return meta["url"] if meta else None
+
 
 
 async def api_reviews_list(request: web.Request) -> web.Response:
@@ -818,11 +871,22 @@ async def api_feed_item(request: web.Request) -> web.Response:
     deal = await db.get_deal_by_code(code) if code else None
     seller = await db.get_user(int(deal["seller_id"])) if deal and deal["seller_id"] else None
     buyer = await db.get_user(int(deal["buyer_id"])) if deal and deal["buyer_id"] else None
+    rev = _review_json(row)
+    seller_name = (
+        (seller["username"] if seller and seller["username"] else None)
+        or rev.get("seller_username")
+        or None
+    )
+    buyer_name = (
+        (buyer["username"] if buyer and buyer["username"] else None)
+        or rev.get("buyer_username")
+        or None
+    )
     return web.json_response(
         {
             "ok": True,
             "item": {
-                **_review_json(row),
+                **rev,
                 "nft": nft,
                 "deal": (
                     {
@@ -832,8 +896,8 @@ async def api_feed_item(request: web.Request) -> web.Response:
                         "amount": float(deal["amount"]),
                         "status": deal["status"],
                         "description": deal["description"] or "",
-                        "seller": (seller["username"] if seller else None),
-                        "buyer": (buyer["username"] if buyer else None),
+                        "seller": seller_name,
+                        "buyer": buyer_name,
                     }
                     if deal
                     else None
@@ -845,7 +909,11 @@ async def api_feed_item(request: web.Request) -> web.Response:
 
 
 async def api_market(request: web.Request) -> web.Response:
-    rows = await db.list_market_nfts(limit=40)
+    try:
+        rows = await db.list_market_nfts(limit=40)
+    except Exception as exc:
+        log.exception("market list failed: %s", exc)
+        return web.json_response({"ok": True, "items": []}, headers={"Cache-Control": "no-store"})
     items = []
     for r in rows:
         nft = _parse_nft_meta(r["description"] or "")
@@ -878,30 +946,222 @@ async def api_admin_review_add(request: web.Request) -> web.Response:
     tg_user, err = await _auth(request)
     if err:
         return err
-    if not await is_admin(int(tg_user["id"])):
+    admin_uid = int(tg_user["id"])
+    if not await is_admin(admin_uid):
         return web.json_response({"ok": False, "error": "forbidden"}, status=403)
     body = await request.json()
-    user = str(body.get("username") or "").strip().lstrip("@")
+    author = str(body.get("username") or body.get("author") or "").strip().lstrip("@")
+    seller_u = str(body.get("seller") or body.get("seller_username") or "").strip().lstrip("@")
+    buyer_u = str(body.get("buyer") or body.get("buyer_username") or "").strip().lstrip("@")
     text = str(body.get("body") or body.get("text") or "").strip()
     date = str(body.get("date") or "").strip()
     nft_url = str(body.get("nft_url") or body.get("nft") or "").strip()
     deal_code = str(body.get("deal_code") or body.get("deal") or "").strip()
+    pay_method = str(body.get("pay_method") or body.get("pay") or "stars").strip().lower()
+    deal_type = str(body.get("deal_type") or body.get("type") or "gift").strip().lower()
+    author_role = str(body.get("author_role") or body.get("role") or "buyer").strip().lower()
+    if author_role not in {"buyer", "seller"}:
+        author_role = "buyer"
+    if deal_type not in {"gift", "channel", "stars", "nft"}:
+        deal_type = "gift"
+    if pay_method not in PAY_REQUISITE and pay_method != "stars":
+        pay_method = "stars"
     try:
         rating = int(body.get("rating") or 5)
     except (TypeError, ValueError):
         rating = 5
-    if not user or not text:
+    try:
+        amount = float(str(body.get("amount") or "0").replace(",", ".").replace(" ", ""))
+    except (TypeError, ValueError):
+        amount = 0.0
+    if amount < 0:
+        amount = 0.0
+
+    admin_user = await db.get_user(admin_uid)
+    admin_uname = (
+        (admin_user["username"] if admin_user else None) or tg_user.get("username") or ""
+    ).lstrip("@")
+    me_aliases = {"me", "я", "self"}
+    if admin_uname:
+        me_aliases.add(admin_uname.lower())
+    me_aliases.add(str(admin_uid))
+
+    def _is_me(name: str) -> bool:
+        n = str(name or "").strip().lstrip("@").lower()
+        return bool(n) and n in me_aliases
+
+    await db.ensure_user(admin_uid)
+    if _is_me(author) or not author:
+        author = admin_uname or str(admin_uid)
+        author_id = admin_uid
+        if admin_uname:
+            row = await db.get_user(admin_uid)
+            if row and not (row["username"] or "").strip():
+                await db.conn.execute(
+                    "UPDATE users SET username = ? WHERE user_id = ?",
+                    (admin_uname, admin_uid),
+                )
+                await db.conn.commit()
+    else:
+        author_id = await db.ensure_named_user(author)
+
+    if author_role == "buyer":
+        buyer_u = buyer_u or author
+        if not seller_u:
+            return web.json_response({"ok": False, "error": "seller"}, status=400)
+    else:
+        seller_u = seller_u or author
+        if not buyer_u:
+            return web.json_response({"ok": False, "error": "buyer"}, status=400)
+
+    if not author or not text:
         return web.json_response({"ok": False, "error": "input"}, status=400)
     if nft_url and not _parse_nft_meta(nft_url):
         return web.json_response({"ok": False, "error": "nft_link"}, status=400)
-    if deal_code and not await db.get_deal_by_code(deal_code):
-        return web.json_response({"ok": False, "error": "not_found"}, status=404)
-    if not nft_url and deal_code:
+
+    async def _party(name: str, *, prefer_author: bool = False) -> tuple[str, int]:
+        n = str(name or "").strip().lstrip("@")
+        if _is_me(n):
+            return admin_uname or n, admin_uid
+        if prefer_author and n.lower() == author.lower():
+            return author, author_id
+        return n, await db.ensure_named_user(n)
+
+    if author_role == "buyer":
+        buyer_u, buyer_id = await _party(buyer_u, prefer_author=True)
+        seller_u, seller_id = await _party(seller_u)
+    else:
+        seller_u, seller_id = await _party(seller_u, prefer_author=True)
+        buyer_u, buyer_id = await _party(buyer_u)
+
+    if deal_code:
         deal = await db.get_deal_by_code(deal_code)
-        if deal:
+        if not deal:
+            return web.json_response({"ok": False, "error": "not_found"}, status=404)
+        if not nft_url:
             nft_url = deal["description"] or ""
-    row = await db.add_review(user, rating, text, date, nft_url=nft_url, deal_code=deal_code)
-    return web.json_response({"ok": True, "review": _review_json(row) if row else None})
+        if not amount:
+            amount = float(deal["amount"] or 0)
+        pay_method = deal["pay_method"] or pay_method
+        deal_type = deal["deal_type"] or deal_type
+    else:
+        if seller_id == buyer_id:
+            return web.json_response({"ok": False, "error": "same_party"}, status=400)
+        deal_code = _deal_code()
+        desc = nft_url or f"review:{author}"
+        await db.create_completed_deal(
+            code=deal_code,
+            seller_id=seller_id,
+            buyer_id=buyer_id,
+            deal_type=deal_type,
+            pay_method=pay_method,
+            amount=amount or 1.0,
+            description=desc,
+        )
+        report_deal(deal_code, "completed", actor_id=admin_uid)
+
+    row = await db.add_review(
+        author,
+        rating,
+        text,
+        date,
+        nft_url=nft_url,
+        deal_code=deal_code,
+        seller_username=seller_u,
+        buyer_username=buyer_u,
+        seller_id=seller_id,
+        buyer_id=buyer_id,
+        author_role=author_role,
+        amount=amount or 1.0,
+        pay_method=pay_method,
+        deal_type=deal_type,
+    )
+    return web.json_response(
+        {"ok": True, "review": _review_json(row) if row else None, "deal_code": deal_code}
+    )
+
+
+async def api_public_profile(request: web.Request) -> web.Response:
+    tg_user, err = await _auth(request)
+    if err:
+        return err
+    key = str(request.match_info.get("key") or "").strip().lstrip("@")
+    if not key:
+        return web.json_response({"ok": False, "error": "input"}, status=400)
+
+    viewer = int(tg_user["id"])
+    user = None
+    uid: int | None = None
+    if key.lstrip("-").isdigit():
+        uid = int(key)
+        user = await db.get_user(uid)
+    if not user:
+        user = await db.find_user_by_username(key)
+        if user:
+            uid = int(user["user_id"])
+
+    if user and uid is not None:
+        uname = (user["username"] or "").lstrip("@")
+        full_name = user["full_name"] or uname or str(uid)
+    else:
+        # Ник есть в отзывах, но аккаунта ещё нет — показываем витрину по нику
+        uname = key
+        full_name = key
+        uid = 0
+        avg, cnt = await db.user_rating(0, uname)
+        reviews = [_review_json(r) for r in await db.list_user_reviews(0, uname, limit=40)]
+        return web.json_response(
+            {
+                "ok": True,
+                "profile": {
+                    "user_id": None,
+                    "username": uname,
+                    "full_name": full_name,
+                    "rating": avg,
+                    "rating_count": cnt,
+                    "completed_deals": 0,
+                    "is_self": False,
+                    "deals": [],
+                    "reviews": reviews,
+                },
+            },
+            headers={"Cache-Control": "no-store"},
+        )
+
+    avg, cnt = await db.user_rating(uid, uname)
+    completed = await db.count_completed_deals(uid)
+    deals_raw = await db.list_user_completed_deals(uid, limit=30)
+    out_deals = []
+    for raw in deals_raw:
+        d = _deal_json(raw, viewer)
+        sid = int(raw["seller_id"] or 0)
+        bid = int(raw["buyer_id"] or 0) if raw["buyer_id"] else 0
+        su = await db.get_user(sid) if sid else None
+        bu = await db.get_user(bid) if bid else None
+        item = dict(d)
+        item["seller_username"] = ((su["username"] if su else None) or "").lstrip("@")
+        item["buyer_username"] = ((bu["username"] if bu else None) or "").lstrip("@")
+        item["my_role"] = "seller" if sid == uid else "buyer" if bid == uid else ""
+        out_deals.append(item)
+
+    reviews = [_review_json(r) for r in await db.list_user_reviews(uid, uname, limit=40)]
+    return web.json_response(
+        {
+            "ok": True,
+            "profile": {
+                "user_id": uid,
+                "username": uname,
+                "full_name": full_name,
+                "rating": avg,
+                "rating_count": cnt,
+                "completed_deals": completed,
+                "is_self": uid == viewer,
+                "deals": out_deals,
+                "reviews": reviews,
+            },
+        },
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 async def api_admin_review_delete(request: web.Request) -> web.Response:
@@ -985,10 +1245,74 @@ async def serve_emoji(request: web.Request) -> web.StreamResponse:
     )
 
 
+async def serve_nft_img(request: web.Request) -> web.StreamResponse:
+    """Прокси картинок Fragment — стабильно в Mini App WebView."""
+    raw = str(request.match_info.get("slug") or "")
+    slug = raw.rsplit(".", 1)[0] if "." in raw else raw
+    if not re.fullmatch(r"[A-Za-z0-9_\-]{1,80}", slug):
+        raise web.HTTPNotFound()
+    low = slug.lower()
+    NFT_IMG_DIR.mkdir(parents=True, exist_ok=True)
+    cached = NFT_IMG_DIR / f"{low}.jpg"
+    if cached.is_file() and cached.stat().st_size > 200:
+        return web.FileResponse(
+            cached,
+            headers={"Cache-Control": "public, max-age=604800"},
+        )
+
+    candidates = [
+        f"https://nft.fragment.com/gift/{low}.medium.jpg",
+        f"https://nft.fragment.com/gift/{low}.large.jpg",
+        f"https://nft.fragment.com/gift/{low}.webp",
+        f"https://nft.fragment.com/gift/{slug}.medium.jpg",
+        f"https://nft.fragment.com/gift/{slug}.webp",
+    ]
+    import aiohttp
+
+    timeout = aiohttp.ClientTimeout(total=12)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; GGSelBot/1.0)",
+        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+    }
+    data: bytes | None = None
+    content_type = "image/jpeg"
+    try:
+        async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+            for url in candidates:
+                try:
+                    async with session.get(url) as resp:
+                        if resp.status != 200:
+                            continue
+                        body = await resp.read()
+                        if len(body) < 200:
+                            continue
+                        data = body
+                        content_type = resp.headers.get("Content-Type") or content_type
+                        break
+                except Exception:
+                    continue
+    except Exception as exc:
+        log.warning("nft img fetch %s: %s", low, exc)
+
+    if not data:
+        raise web.HTTPNotFound()
+
+    try:
+        cached.write_bytes(data)
+    except OSError:
+        pass
+    return web.Response(
+        body=data,
+        content_type=content_type.split(";")[0].strip() or "image/jpeg",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
 def build_app() -> web.Application:
     app = web.Application()
     app.router.add_get("/health", health)
     app.router.add_get("/api/me", api_me)
+    app.router.add_get("/api/profile/{key}", api_public_profile)
     app.router.add_post("/api/language", api_language)
     app.router.add_post("/api/requisites", api_requisites)
     app.router.add_post("/api/withdraw", api_withdraw)
@@ -1013,6 +1337,7 @@ def build_app() -> web.Application:
     app.router.add_post("/api/admin/reviews/{rid}/delete", api_admin_review_delete)
     app.router.add_post("/api/admin/reviews/{rid}/move", api_admin_review_move)
     app.router.add_get("/e/{key}.webp", serve_emoji)
+    app.router.add_get("/n/{slug}", serve_nft_img)
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
     app.router.add_get("/l/{lang}/deal/{code}", index)
     app.router.add_get("/l/{lang}", index)

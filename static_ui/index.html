@@ -375,6 +375,16 @@ button.item {
   cursor: pointer;
 }
 .item .top { display: flex; justify-content: space-between; gap: 8px; }
+.deal-row { display: flex; gap: 12px; align-items: center; }
+.deal-thumb {
+  position: relative; width: 48px; height: 48px; border-radius: 12px;
+  overflow: hidden; flex: 0 0 48px; background: #1a2430;
+}
+.deal-thumb img, .deal-thumb .ph {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.deal-thumb .ph { display: grid; place-items: center; font-size: 9px; font-weight: 800; color: #fff; text-align: center; padding: 2px; }
+.deal-body { flex: 1; min-width: 0; }
 input, textarea, select {
   width: 100%;
   margin-top: 8px;
@@ -553,6 +563,21 @@ input, textarea, select {
 }
 .nft-card b { display: block; font-size: 16px; }
 .nft-card .hint { color: #b8bec8; word-break: break-all; }
+.nft-prev {
+  display: flex; align-items: center; gap: 12px;
+  background: #111318; color: #fff; border-radius: 18px;
+  padding: 12px; margin-top: 10px; min-height: 72px;
+}
+.nft-prev .shot {
+  position: relative; width: 64px; height: 64px; border-radius: 14px;
+  overflow: hidden; flex: 0 0 64px; background: #2b2f38;
+}
+.nft-prev .shot img, .nft-prev .shot .ph {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+}
+.nft-prev .shot .ph { display: grid; place-items: center; font-size: 11px; font-weight: 800; text-align: center; padding: 4px; }
+.nft-prev-meta b { display: block; font-size: 15px; }
+.nft-prev-meta .hint { color: #b8bec8; font-size: 12px; word-break: break-all; margin-top: 2px; }
 .deal-link-box {
   background: #f4f6f8;
   border-radius: 16px;
@@ -595,7 +620,7 @@ input, textarea, select {
   font: 700 22px/1 Geist, ui-sans-serif, system-ui, sans-serif;
   margin-bottom: 12px;
 }
-.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
 .stat {
   background: #f4f6f8;
   border-radius: 16px;
@@ -875,6 +900,55 @@ input, textarea, select {
   min-height: 52px; font: 700 15px/1 Geist, ui-sans-serif, system-ui, sans-serif;
   margin-top: 8px;
 }
+
+.rv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rv-grid .full { grid-column: 1 / -1; }
+.rv-lab { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; margin: 6px 0 4px; }
+.rv-role { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+.rv-role button {
+  appearance: none; border: 0; border-radius: 14px; min-height: 44px;
+  background: #fff; color: var(--text); font-weight: 700; cursor: pointer;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.rv-role button.on { background: var(--accent); color: #fff; box-shadow: none; }
+.ulink {
+  appearance: none; border: 0; background: none; padding: 0; margin: 0;
+  color: var(--accent); font: inherit; font-weight: 700; cursor: pointer;
+  text-decoration: underline; text-underline-offset: 2px;
+}
+.pub-hero {
+  background: linear-gradient(145deg, #1a2332 0%, #2b3a4f 55%, #3d5268 100%);
+  color: #fff; border-radius: 24px; padding: 20px 18px 16px; margin-bottom: 14px;
+  position: relative; overflow: hidden;
+}
+.pub-hero::after {
+  content: ""; position: absolute; inset: auto -20% -40% 40%; height: 140%;
+  background: radial-gradient(circle, rgba(255,255,255,.12), transparent 60%);
+  pointer-events: none;
+}
+.pub-hero .avatar {
+  width: 64px; height: 64px; border-radius: 20px; background: rgba(255,255,255,.14);
+  display: grid; place-items: center; font-weight: 800; font-size: 22px; margin-bottom: 10px;
+}
+.pub-hero .who { font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.pub-hero .muted { color: rgba(255,255,255,.65); font-size: 13px; margin-top: 4px; }
+.pub-hero .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 14px; }
+.pub-hero .stat {
+  background: rgba(255,255,255,.1); border-radius: 14px; padding: 10px 8px; text-align: center;
+}
+.pub-hero .stat .n { font-size: 18px; font-weight: 800; }
+.pub-hero .stat .l { font-size: 11px; opacity: .7; margin-top: 2px; }
+.pub-sec { margin: 4px 0 10px; font-size: 15px; font-weight: 800; }
+.pub-deal, .pub-rev {
+  background: #f4f6f8; border-radius: 16px; padding: 12px 14px; margin-bottom: 8px;
+  border: 1px solid rgba(18,21,28,.04);
+}
+.pub-deal .top, .pub-rev .top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.pub-deal .amt { font-weight: 800; }
+.rate-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+.rate-row .stars { color: #f5b301; letter-spacing: 1px; }
+.me-hint { font-size: 12px; color: var(--muted); margin: -2px 0 8px; }
+
 .admin-sheet {
   background: #f4f6f8; border-radius: 24px; padding: 16px;
   box-shadow: 0 12px 28px rgba(18,21,28,.05); margin-bottom: 14px;
@@ -1150,7 +1224,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",homeSig:"",market:[],feed:[],reviews:[]};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],feed:[],reviews:[]};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -1308,8 +1382,14 @@ function nftInfo(desc){
   const hue=[...low].reduce((a,c)=>a+c.charCodeAt(0),0)%360;
   return {
     url:"https://t.me/nft/"+slug, slug, name, num,
-    img:`https://nft.fragment.com/gift/${low}.webp`,
-    img_alt:`https://nft.fragment.com/gift/${slug}.webp`,
+    img:"/n/"+low+".jpg",
+    img_alt:`https://nft.fragment.com/gift/${low}.medium.jpg`,
+    img_fallbacks:[
+      `https://nft.fragment.com/gift/${low}.medium.jpg`,
+      `https://nft.fragment.com/gift/${low}.webp`,
+      `https://nft.fragment.com/gift/${slug}.medium.jpg`,
+      `https://nft.fragment.com/gift/${low}.large.jpg`
+    ],
     color:`hsl(${hue} 42% 38%)`
   };
 }
@@ -1317,12 +1397,19 @@ function nftImgHtml(n, cls=""){
   if(!n) return `<div class="ph" style="background:#1a2430">NFT</div>`;
   const title=esc(`${n.name||"NFT"}${n.num?" #"+n.num:""}`);
   const ph=`<div class="ph" style="background:${esc(n.color||"#1a2430")}">${title}</div>`;
-  const alt=n.img_alt?` data-alt="${esc(n.img_alt)}"`:"";
-  return `${ph}<img class="${cls}" src="${esc(n.img||"")}" alt=""${alt} onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
+  const chain=[n.img,n.img_alt].concat(n.img_fallbacks||[]).filter(Boolean);
+  const uniq=[...new Set(chain)];
+  const dataChain=uniq.length?` data-chain="${esc(uniq.join("|"))}" data-ci="0"`:"";
+  return `${ph}<img class="${cls}" src="${esc(uniq[0]||"")}" alt=""${dataChain} onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
 }
 window.__nftImgFail=function(img){
-  const alt=img.getAttribute("data-alt");
-  if(alt && img.src!==alt){ img.removeAttribute("data-alt"); img.src=alt; return; }
+  const chain=String(img.getAttribute("data-chain")||"").split("|").filter(Boolean);
+  let i=Number(img.getAttribute("data-ci")||0)+1;
+  if(i<chain.length){
+    img.setAttribute("data-ci",String(i));
+    img.src=chain[i];
+    return;
+  }
   img.style.display="none";
 };
 function nftCard(desc){
@@ -1380,7 +1467,7 @@ async function api(path,opts={}){
   const res=await fetch(path,{cache:"no-store",...opts,headers:{"Content-Type":"application/json","Cache-Control":"no-cache","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
-    const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена"};
+    const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена",seller:"Укажи продавца @",buyer:"Укажи покупателя @",same_party:"Продавец и покупатель должны отличаться",input:"Заполни все поля",seller_required:"Укажи продавца",buyer_required:"Укажи покупателя"};
     throw new Error(map[data.error]||data.error||"Ошибка");
   }
   return data;
@@ -1409,7 +1496,7 @@ function currentTab(){
   const s=state.screen;
   if(s==="home") return "home";
   if(s==="deals"||s==="deal-view"||s==="create-done"||s.startsWith("create-")||s==="join"||s==="market-view") return "deals";
-  if(s==="profile"||s==="refs"||s==="lang"||s==="req"||s.startsWith("req-")||s==="bal"||s==="wd") return "profile";
+  if(s==="profile"||s==="user-profile"||s==="refs"||s==="lang"||s==="req"||s.startsWith("req-")||s==="bal"||s==="wd") return "profile";
   if(s.startsWith("admin")) return "admin";
   return "home";
 }
@@ -1490,25 +1577,29 @@ async function screenHome(){
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
-    return `<button type="button" class="mcard" data-act="open-market" data-code="${esc(it.code)}">
+    return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}">
       <div class="shot">${nftImgHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
         <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
-        <div class="by">${uiLang()==="en"?"Listed by":"От"} ${it.seller?"@"+esc(it.seller):("ID "+esc(it.owner_id||it.seller_id||"—"))}</div>
+        <div class="by">${uiLang()==="en"?"Listed by":"От"} ${it.seller?unameLink(it.seller,it.owner_id||it.seller_id):unameLink("",it.owner_id||it.seller_id)}</div>
         <div class="cta-mini">${mine?(uiLang()==="en"?"Your listing":"Ваш лот"):(uiLang()==="en"?"For sale":"На продаже")}</div>
       </div>
-    </button>`;
+    </div>`;
   }).join(""):`<div class="hint">${uiLang()==="en"?"No listings yet. Create a gift/NFT deal as seller — it appears here.":"Пока пусто. Создай сделку с подарком/NFT как продавец — лот появится здесь."}</div>`;
   const revCards=reviews.length?reviews.slice(0,8).map(r=>{
     const n=nftInfo(r.nft_url||"");
     const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
     const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
     const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftImgHtml(n)}</div>`:`<div class="av">${esc(initial)}</div>`;
-    return `<button type="button" class="rev" style="width:100%;border:0;cursor:pointer;text-align:left" data-act="open-feed" data-id="${r.id}" ${n?"":"disabled"}>
+    const whoKey=String(r.username||"").replace(/^@/,"");
+    return `<div class="rev">
       ${left}
-      <div><div class="meta"><span class="who">@${esc(r.username)}</span><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div></div>
-    </button>`;
+      <div><div class="meta"><button type="button" class="ulink who" data-act="open-profile" data-key="${esc(whoKey)}">@${esc(r.username)}</button><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div>
+      ${(r.seller_username||r.buyer_username)?`<div class="muted" style="margin-top:4px;font-size:12px">${unameLink(r.seller_username)} → ${unameLink(r.buyer_username)}${r.amount!=null&&r.amount!==""&&Number(r.amount)?` · ${esc(r.amount)}`:""}</div>`:""}
+      ${n?`<button type="button" class="ulink" style="margin-top:6px;font-size:12px" data-act="open-feed" data-id="${r.id}">${uiLang()==="en"?"Open deal":"Открыть сделку"}</button>`:""}
+      </div>
+    </div>`;
   }).join(""):`<div class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</div>`;
   return `<div class="splash">
       <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
@@ -1562,7 +1653,7 @@ async function screenMarketView(){
     <div style="margin:0 0 8px"><span class="status-pill ok">${uiLang()==="en"?"Listed for sale":"Выставлено на продажу"}</span></div>
     <b style="font-size:20px">${esc(title)}</b>
     <div class="kv"><span>${uiLang()==="en"?"Price":"Цена"}</span><b>${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</b></div>
-    <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${esc(who)}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${unameLink(it.seller,it.owner_id||it.seller_id)}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Gift":"Подарок"}</span><b>${esc(typeLabel(it.deal_type))}</b></div>
     <p class="hint">${uiLang()==="en"
       ?"This NFT was listed by the seller. Open the real gift in Telegram, then buy safely through the guarantor."
@@ -1580,7 +1671,9 @@ async function screenFeedView(){
   return bubble(`${pe("btn_deals","📑")} <b>${uiLang()==="en"?"Successful deal":"Успешная сделка"}</b>
     <div style="margin-top:8px"><span class="status-pill ok">${esc(statusLabel((d&&d.status)||"completed"))}</span></div>
     ${n?nftCard(n.url):""}
-    <div class="kv"><span>@</span><b>${esc(item.username||"—")}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Author":"Автор"}</span><b>${unameLink(item.username)}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${unameLink((d&&d.seller)||item.seller_username,item.seller_id)}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Buyer":"Покупатель"}</span><b>${unameLink((d&&d.buyer)||item.buyer_username,item.buyer_id)}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Review":"Комментарий"}</span><b>${esc(item.body||"—")}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Date":"Дата"}</span><b>${esc(item.date||"—")}</b></div>
     <div class="stars" style="margin:8px 0">${stars}</div>
@@ -1589,8 +1682,6 @@ async function screenFeedView(){
       <div class="kv"><span>${uiLang()==="en"?"Type":"Тип"}</span><b>${esc(typeLabel(d.deal_type))}</b></div>
       <div class="kv"><span>${uiLang()==="en"?"Pay":"Оплата"}</span><b>${esc(payLabel(d.pay_method))}</b></div>
       <div class="kv"><span>${uiLang()==="en"?"Amount":"Сумма"}</span><b>${esc(d.amount)}</b></div>
-      <div class="kv"><span>${uiLang()==="en"?"Seller":"Продавец"}</span><b>${d.seller?"@"+esc(d.seller):"—"}</b></div>
-      <div class="kv"><span>${uiLang()==="en"?"Buyer":"Покупатель"}</span><b>${d.buyer?"@"+esc(d.buyer):"—"}</b></div>
     `:item.deal_code?`<div class="kv"><span>${uiLang()==="en"?"Deal":"Сделка"}</span><b>#${esc(item.deal_code)}</b></div>`:""}
   `)+kb([
     n?[`<button class="kbtn primary" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${t("open_nft")}</span></button>`]:null,
@@ -1652,7 +1743,11 @@ function screenCreateAmt(){
 }
 function screenCreateDesc(){
   const nft=state.draft.deal_type==="gift"||state.draft.deal_type==="nft";
-  return bubble(`${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")} <b>${nft?t("desc_nft"):t("desc")}</b><p class="hint">${nft?"https://t.me/nft/Name-123":""}</p><textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>`)+
+  const preview=nft&&nftInfo(state.draft.description);
+  return bubble(`${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")} <b>${nft?t("desc_nft"):t("desc")}</b>
+    <p class="hint">${nft?(uiLang()==="en"?"Paste https://t.me/nft/Name-123 — preview appears below":"Вставь https://t.me/nft/Name-123 — превью появится ниже"):""}</p>
+    <textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>
+    <div id="nft-prev">${preview?`<div class="nft-prev"><div class="shot">${nftImgHtml(preview)}</div><div class="nft-prev-meta"><b>${esc(preview.name)}${preview.num?" #"+esc(preview.num):""}</b><div class="hint">${esc(preview.url)}</div></div></div>`:""}</div>`)+
     kb([[act(t("make"),"deal-make","btn_create","➕")],[cancelBtn()]]);
 }
 function screenCreateDone(){
@@ -1698,12 +1793,17 @@ function screenProfile(){
   const u=state.user;
   const name=u.full_name||(u.username?("@"+u.username):"GGSel");
   const initials=String(name).replace(/^@/,"").slice(0,2).toUpperCase();
+  const rate=Number(u.rating||0);
+  const rateN=Number(u.rating_count||0);
+  const rateLabel=rateN?(`${rate.toFixed(1)} · ${rateN}`):(uiLang()==="en"?"No rating":"Нет оценок");
   return `<div class="bubble">
     <div class="avatar">${esc(initials)}</div>
     <div class="who">${esc(name)}</div>
     <div class="muted">${u.username?"@"+esc(u.username):""} · ID ${esc(u.id)}</div>
+    <div class="rate-row"><span class="stars">${rateN?starsTxt(Math.round(rate)):"☆☆☆☆☆"}</span><span class="muted">${esc(rateLabel)}</span></div>
     <div class="stats">
       <div class="stat"><div class="n">${esc(u.completed_deals||0)}</div><div class="l">${t("stat_deals")}</div></div>
+      <div class="stat"><div class="n">${esc(rateN?rate.toFixed(1):"—")}</div><div class="l">${uiLang()==="en"?"Rating":"Рейтинг"}</div></div>
       <div class="stat"><div class="n">${esc(u.referral_count||0)}</div><div class="l">${t("refs")}</div></div>
     </div>
     <div class="kv"><span>${t("lang")}</span><b>${esc(langLabel())}</b></div>
@@ -1717,6 +1817,15 @@ function screenProfile(){
     [act(t("copy_id"),"copy:"+u.id,"deal_link","🔗")]
   ].filter(Boolean));
 }
+
+function unameLink(name, id){
+  const u=String(name||"").replace(/^@/,"").trim();
+  const key=u||(id!=null&&id!==""?String(id):"");
+  if(!key) return "—";
+  const label=u?("@"+u):("ID "+key);
+  return `<button type="button" class="ulink" data-act="open-profile" data-key="${esc(key)}">${esc(label)}</button>`;
+}
+function starsTxt(n){ return "★".repeat(Math.max(1,Math.min(5,Number(n)||5))); }
 const REVIEW_POOL=[
   ["rarebrod","все четко, 1 проц комсы","21 сент"],
   ["tonfox","быстро и без нервов","20 сент"],
@@ -1729,15 +1838,32 @@ const REVIEW_POOL=[
 ];
 function fillRandomReview(){
   const pick=REVIEW_POOL[Math.floor(Math.random()*REVIEW_POOL.length)];
-  const user=document.getElementById("rv-user");
+  const other=REVIEW_POOL[(Math.floor(Math.random()*REVIEW_POOL.length)+3)%REVIEW_POOL.length][0];
+  const roleEl=document.getElementById("rv-role");
+  const role=(roleEl&&roleEl.value)||"buyer";
+  const author=document.getElementById("rv-user");
+  const seller=document.getElementById("rv-seller");
+  const buyer=document.getElementById("rv-buyer");
   const body=document.getElementById("rv-body");
   const date=document.getElementById("rv-date");
+  const amount=document.getElementById("rv-amount");
   const rating=document.getElementById("rv-rating");
-  if(user) user.value="@"+pick[0];
+  const me=state.user&&state.user.username?("@"+state.user.username):"me";
+  if(role==="buyer"){
+    if(author) author.value=me;
+    if(buyer) buyer.value=me;
+    if(seller) seller.value="@"+other;
+  }else{
+    if(author) author.value=me;
+    if(seller) seller.value=me;
+    if(buyer) buyer.value="@"+other;
+  }
   if(body) body.value=pick[1];
   if(date) date.value=pick[2];
+  if(amount) amount.value=String(50+Math.floor(Math.random()*450));
   if(rating) rating.value="5";
   document.querySelectorAll(".star-pick button").forEach((b,i)=>b.classList.toggle("on", i<5));
+  document.querySelectorAll(".rv-role button").forEach(b=>b.classList.toggle("on", b.dataset.role===role));
 }
 async function screenAdmin(){
   const u=state.user;
@@ -1747,11 +1873,13 @@ async function screenAdmin(){
   const list=reviews.map(r=>{
     const n=nftInfo(r.nft_url||"");
     return `<div class="rev-admin" data-rid="${r.id}">
-    ${n?`<img src="${esc(n.img)}" alt="" onerror="this.style.opacity=.2">`:`<div class="av" style="width:56px;height:56px;border-radius:12px">${esc(String(r.username||"?").replace(/^@/,"").slice(0,1).toUpperCase())}</div>`}
+    ${n?`<img src="${esc(n.img)}" alt="" data-chain="${esc([n.img,n.img_alt].concat(n.img_fallbacks||[]).filter(Boolean).join("|"))}" data-ci="0" onerror="window.__nftImgFail&&window.__nftImgFail(this)">`:`<div class="av" style="width:56px;height:56px;border-radius:12px">${esc(String(r.username||"?").replace(/^@/,"").slice(0,1).toUpperCase())}</div>`}
     <div>
       <b>@${esc(String(r.username||"").replace(/^@/,""))}</b> <span class="stars">${"★".repeat(r.rating||5)}</span>
       <div class="txt">${esc(r.body)}</div>
-      <div class="muted">${esc(r.date||"")}${r.deal_code?" · #"+esc(r.deal_code):""}${n?" · NFT":""}</div>
+      <div class="muted">${esc(r.date||"")}${r.deal_code?" · #"+esc(r.deal_code):""}${n?" · NFT":""}
+        ${r.seller_username||r.buyer_username?` · ${esc(r.seller_username||"?")} → ${esc(r.buyer_username||"?")}`:""}
+        ${r.amount?` · ${esc(r.amount)}`:""}</div>
     </div>
     <div class="ops">
       <button type="button" data-act="rev-up" data-id="${r.id}">↑</button>
@@ -1770,22 +1898,52 @@ async function screenAdmin(){
     tools.push([btn(t("ban"),"admin-ban","btn_cancel","🚫"), btn(t("unban"),"admin-unban","btn_deal_recv","✅")]);
   }
   const stars=[1,2,3,4,5].map(n=>`<button type="button" class="on" data-act="rev-star" data-n="${n}">★</button>`).join("");
+  const en=uiLang()==="en";
+  const meHint=en
+    ?"Tip: put me / your @ in buyer — rating and completed deals go to you."
+    :"Подсказка: укажи me или свой @ как покупателя — рейтинг и сделки засчитаются тебе.";
   return `<div class="admin-sheet">
-      <h2>✦ ${uiLang()==="en"?"Review desk":"Модерация отзывов"}</h2>
-      <div class="sub">${uiLang()==="en"?"Add, reorder and drop reviews. NFT link feeds the live strip.":"Добавляй, сортируй и удаляй. Ссылка NFT попадает в живую ленту."}</div>
-      <input id="rv-user" placeholder="@username" />
+      <h2>✦ ${en?"Review desk":"Модерация отзывов"}</h2>
+      <div class="sub">${en?"Creates a completed deal automatically. Fill parties, amount and review.":"Автоматически создаёт завершённую сделку. Укажи стороны, сумму и текст."}</div>
+      <div class="rv-lab">${en?"You are writing as":"Автор отзыва пишет как"}</div>
+      <div class="rv-role">
+        <button type="button" class="on" data-act="rev-role" data-role="buyer">${en?"Buyer":"Покупатель"}</button>
+        <button type="button" data-act="rev-role" data-role="seller">${en?"Seller":"Продавец"}</button>
+      </div>
+      <input id="rv-role" type="hidden" value="buyer" />
+      <div class="me-hint">${meHint}</div>
+      <div class="rv-grid">
+        <div class="full"><div class="rv-lab">${en?"Author @":"Автор отзыва @"}</div>
+          <input id="rv-user" placeholder="me / @username" value="${esc(state.user.username?("@"+state.user.username):"me")}" /></div>
+        <div><div class="rv-lab">${en?"Seller":"Продавец"}</div>
+          <input id="rv-seller" placeholder="@seller" /></div>
+        <div><div class="rv-lab">${en?"Buyer":"Покупатель"}</div>
+          <input id="rv-buyer" placeholder="me / @buyer" value="me" /></div>
+        <div><div class="rv-lab">${en?"Amount":"Сумма"}</div>
+          <input id="rv-amount" inputmode="decimal" placeholder="100" /></div>
+        <div><div class="rv-lab">${en?"Pay":"Оплата"}</div>
+          <input id="rv-pay" placeholder="stars / ton / rub" value="stars" /></div>
+        <div><div class="rv-lab">${en?"Type":"Тип"}</div>
+          <input id="rv-type" placeholder="gift / nft / stars" value="gift" /></div>
+        <div><div class="rv-lab">${en?"Date":"Дата"}</div>
+          <input id="rv-date" placeholder="${en?"optional":"необязательно"}" /></div>
+      </div>
+      <div class="rv-lab">${en?"Rating":"Оценка"}</div>
       <div class="star-pick">${stars}</div>
       <input id="rv-rating" type="hidden" value="5" />
-      <textarea id="rv-body" placeholder="${uiLang()==="en"?"Review text":"Текст отзыва"}"></textarea>
+      <div class="rv-lab">${en?"Review text":"Текст отзыва"}</div>
+      <textarea id="rv-body" placeholder="${en?"Everything went smoothly":"Всё прошло гладко"}"></textarea>
+      <div class="rv-lab">NFT</div>
       <input id="rv-nft" placeholder="https://t.me/nft/Name-123" />
-      <input id="rv-deal" placeholder="${uiLang()==="en"?"Deal code (optional)":"Код сделки (необязательно)"}" />
-      <input id="rv-date" placeholder="${uiLang()==="en"?"Date (optional)":"Дата (необязательно)"}" />
+      <div id="rv-nft-prev"></div>
+      <div class="rv-lab">${en?"Existing deal code (skip auto-create)":"Код существующей сделки (без автосоздания)"}</div>
+      <input id="rv-deal" placeholder="${en?"optional":"необязательно"}" />
       <div class="admin-actions">
-        <button type="button" class="ghost" data-act="rev-rand">${uiLang()==="en"?"Random":"Случайный"}</button>
-        <button type="button" class="go" data-act="rev-add">${uiLang()==="en"?"Add review":"Добавить отзыв"}</button>
+        <button type="button" class="ghost" data-act="rev-rand">${en?"Random":"Случайный"}</button>
+        <button type="button" class="go" data-act="rev-add">${en?"Add review + deal":"Отзыв + сделка"}</button>
       </div>
       <div class="admin-actions one" style="margin-top:8px">
-        <button type="button" class="ghost" data-act="rev-bulk">${uiLang()==="en"?"Generate 5 reviews":"Сгенерировать сразу 5 отзывов"}</button>
+        <button type="button" class="ghost" data-act="rev-bulk">${en?"Generate 5 reviews":"Сгенерировать сразу 5 отзывов"}</button>
       </div>
     </div>
     <div class="admin-sheet">
@@ -1802,6 +1960,55 @@ async function screenAdmin(){
       <div class="sub">${uiLang()==="en"?"Balances, workers, bans":"Балансы, воркеры, баны"}</div>
       ${kb(tools)}
     </div>`;
+}
+
+async function screenUserProfile(){
+  const key=state.profileKey;
+  if(!key) return bubble("—")+kb([[backBtn()]]);
+  let p=null;
+  try{ p=(await api("/api/profile/"+encodeURIComponent(key))).profile; }catch(e){
+    return bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);
+  }
+  if(!p) return bubble("—")+kb([[backBtn()]]);
+  const en=uiLang()==="en";
+  const name=p.full_name||(p.username?("@"+p.username):("ID "+(p.user_id||key)));
+  const initials=String(name).replace(/^@/,"").slice(0,2).toUpperCase();
+  const rate=Number(p.rating||0);
+  const rateN=Number(p.rating_count||0);
+  const deals=(p.deals||[]).map(d=>{
+    const role=d.my_role||d.role||"";
+    const roleL=role==="seller"?(en?"Sold":"Продал"):role==="buyer"?(en?"Bought":"Купил"):"";
+    return `<div class="pub-deal">
+      <div class="top"><b>#${esc(d.code)}</b><span class="status-pill ok">${esc(statusLabel(d.status||"completed"))}</span></div>
+      <div class="muted" style="margin-top:4px">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))}${roleL?" · "+roleL:""}</div>
+      <div class="amt" style="margin-top:6px">${esc(d.amount)}</div>
+      <div class="muted" style="margin-top:4px">${en?"Seller":"Продавец"} ${unameLink(d.seller_username,d.seller_id)} · ${en?"Buyer":"Покупатель"} ${unameLink(d.buyer_username,d.buyer_id)}</div>
+    </div>`;
+  }).join("")||`<div class="hint">${en?"No completed deals":"Завершённых сделок нет"}</div>`;
+  const revs=(p.reviews||[]).map(r=>{
+    const n=nftInfo(r.nft_url||"");
+    return `<div class="pub-rev">
+      <div class="top"><b>${unameLink(r.username)}</b><span class="stars">${starsTxt(r.rating)}</span></div>
+      <div class="txt" style="margin-top:4px">${esc(r.body||"")}</div>
+      <div class="muted" style="margin-top:4px">${esc(r.date||"")}${r.deal_code?" · #"+esc(r.deal_code):""}
+        ${r.seller_username||r.buyer_username?` · ${esc(r.seller_username||"?")} → ${esc(r.buyer_username||"?")}`:""}</div>
+      ${n?`<div style="margin-top:8px;width:64px;height:64px;border-radius:12px;overflow:hidden">${nftImgHtml(n)}</div>`:""}
+    </div>`;
+  }).join("")||`<div class="hint">${en?"No reviews yet":"Отзывов пока нет"}</div>`;
+  return `<div class="pub-hero">
+      <div class="avatar">${esc(initials)}</div>
+      <div class="who">${esc(name)}</div>
+      <div class="muted">${p.username?"@"+esc(p.username):""}${p.user_id!=null?" · ID "+esc(p.user_id):""}${p.is_self?" · "+(en?"You":"Это вы"):""}</div>
+      <div class="stats">
+        <div class="stat"><div class="n">${esc(p.completed_deals||0)}</div><div class="l">${en?"Deals":"Сделки"}</div></div>
+        <div class="stat"><div class="n">${esc(rateN?rate.toFixed(1):"—")}</div><div class="l">${en?"Rating":"Рейтинг"}</div></div>
+        <div class="stat"><div class="n">${esc(rateN)}</div><div class="l">${en?"Reviews":"Отзывы"}</div></div>
+      </div>
+    </div>
+    <div class="pub-sec">${en?"Completed deals":"Совершённые сделки"}</div>
+    ${deals}
+    <div class="pub-sec">${en?"Reviews":"Отзывы"}</div>
+    ${revs}`+kb([[backBtn()]]);
 }
 function screenBal(){
   const b=state.user.balances||{};
@@ -1825,7 +2032,15 @@ async function screenDeals(){
   state.dealsSig=dealsFingerprint(deals);
   if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
   const cards=deals.map(d=>{
-    return `<button class="item" data-act="open-deal" data-code="${esc(d.code)}"><div class="top"><b>#${esc(d.code)}</b><span class="${statusTone(d.status)==="ok"?"status-ok":"muted"}">${esc(statusLabel(d.status))}</span></div><div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount} · ${esc(roleLabel(d.role))}</div>${nftInfo(d.description)?`<div class="hint">${t("gift_title")}</div>`:""}</button>`;
+    const n=nftInfo(d.description);
+    const thumb=n?`<div class="deal-thumb">${nftImgHtml(n)}</div>`:"";
+    return `<button class="item" data-act="open-deal" data-code="${esc(d.code)}">
+      <div class="deal-row">${thumb}<div class="deal-body">
+        <div class="top"><b>#${esc(d.code)}</b><span class="${statusTone(d.status)==="ok"?"status-ok":"muted"}">${esc(statusLabel(d.status))}</span></div>
+        <div class="hint">${esc(typeLabel(d.deal_type))} · ${esc(payLabel(d.pay_method))} · ${d.amount} · ${esc(roleLabel(d.role))}</div>
+        ${n?`<div class="hint">${esc(n.name)}${n.num?" #"+esc(n.num):""}</div>`:""}
+      </div></div>
+    </button>`;
   }).join("");
   return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b>`)+`<div class="list">${cards}</div>`+kb([[backBtn()]]);
 }
@@ -1896,6 +2111,7 @@ async function draw(opts={}){
     else if(s==="deals") root.innerHTML=await screenDeals();
     else if(s==="refs") root.innerHTML=screenRefs();
     else if(s==="profile") root.innerHTML=screenProfile();
+    else if(s==="user-profile") root.innerHTML=await screenUserProfile();
     else if(s==="lang") root.innerHTML=screenLang();
     else if(s==="admin") root.innerHTML=await screenAdmin();
     else if(s==="admin-credit") root.innerHTML=currencyScreen("acred");
@@ -2052,14 +2268,46 @@ document.body.addEventListener("click",async(ev)=>{
     if(actName==="rev-add"){
       const body={
         username:(document.getElementById("rv-user")||{}).value||"",
+        author_role:(document.getElementById("rv-role")||{}).value||"buyer",
+        seller:(document.getElementById("rv-seller")||{}).value||"",
+        buyer:(document.getElementById("rv-buyer")||{}).value||"",
+        amount:(document.getElementById("rv-amount")||{}).value||"",
+        pay_method:(document.getElementById("rv-pay")||{}).value||"stars",
+        deal_type:(document.getElementById("rv-type")||{}).value||"gift",
         rating:(document.getElementById("rv-rating")||{}).value||5,
         body:(document.getElementById("rv-body")||{}).value||"",
         nft_url:(document.getElementById("rv-nft")||{}).value||"",
         deal_code:(document.getElementById("rv-deal")||{}).value||"",
         date:(document.getElementById("rv-date")||{}).value||""
       };
-      await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
-      toast("OK");go("admin");return;
+      const r=await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
+      toast(r.deal_code?("OK · #"+r.deal_code):"OK");
+      await loadMe();
+      go("admin");return;
+    }
+    if(actName==="rev-role"){
+      const role=a.dataset.role||"buyer";
+      const el=document.getElementById("rv-role");
+      if(el) el.value=role;
+      document.querySelectorAll(".rv-role button").forEach(b=>b.classList.toggle("on", b.dataset.role===role));
+      const me=state.user&&state.user.username?("@"+state.user.username):"me";
+      const buyer=document.getElementById("rv-buyer");
+      const seller=document.getElementById("rv-seller");
+      const author=document.getElementById("rv-user");
+      if(role==="buyer"){
+        if(author) author.value=me;
+        if(buyer) buyer.value=me;
+      }else{
+        if(author) author.value=me;
+        if(seller) seller.value=me;
+      }
+      return;
+    }
+    if(actName==="open-profile"){
+      const key=String(a.dataset.key||"").replace(/^@/,"").trim();
+      if(!key) return;
+      state.profileKey=key;
+      go("user-profile");return;
     }
     if(actName==="rev-del"){await api("/api/admin/reviews/"+a.dataset.id+"/delete",{method:"POST",body:"{}"});go("admin");return;}
     if(actName==="rev-up"||actName==="rev-down"){
@@ -2076,11 +2324,18 @@ document.body.addEventListener("click",async(ev)=>{
     }
     if(actName==="rev-rand"){fillRandomReview();haptic();return;}
     if(actName==="rev-bulk"){
+      const me=state.user&&state.user.username?state.user.username:"me";
       for(let i=0;i<5;i++){
         const pick=REVIEW_POOL[(Math.floor(Math.random()*REVIEW_POOL.length)+i)%REVIEW_POOL.length];
-        await api("/api/admin/reviews",{method:"POST",body:JSON.stringify({username:pick[0],rating:5,body:pick[1],date:pick[2]})});
+        const other=REVIEW_POOL[(Math.floor(Math.random()*REVIEW_POOL.length)+i+2)%REVIEW_POOL.length][0];
+        await api("/api/admin/reviews",{method:"POST",body:JSON.stringify({
+          username:me, author_role:"buyer", buyer:"me", seller:other,
+          amount:50+i*25, pay_method:"stars", deal_type:"gift",
+          rating:5, body:pick[1], date:pick[2]
+        })});
       }
-      toast(uiLang()==="en"?"5 reviews added":"Добавлено 5 отзывов");
+      toast(uiLang()==="en"?"5 reviews + deals":"5 отзывов и сделок");
+      await loadMe();
       go("admin");return;
     }
     if(actName==="support"){const url=state.user.support_url;if(tg&&tg.openTelegramLink) tg.openTelegramLink(url);else window.open(url,"_blank");return;}
@@ -2102,12 +2357,20 @@ document.body.addEventListener("click",async(ev)=>{
       state.draft.amount=n;go("create-desc");return;
     }
     if(actName==="deal-make"){
-      state.draft.description=(document.getElementById("f-desc")||{}).value||"";
+      let desc=(document.getElementById("f-desc")||{}).value||"";
+      const nMeta=nftInfo(desc);
+      if(nMeta) desc=nMeta.url;
+      state.draft.description=desc;
       const n=parseAmount(state.draft.amount);
       if(n==null){toast("Введите сумму сделки");go("create-amt");return;}
-      const data=await api("/api/deals",{method:"POST",body:JSON.stringify({...state.draft,amount:n})});
+      if((state.draft.deal_type==="gift"||state.draft.deal_type==="nft")&&!nMeta){
+        toast(uiLang()==="en"?"Need https://t.me/nft/... link":"Нужна ссылка https://t.me/nft/...");
+        return;
+      }
+      const data=await api("/api/deals",{method:"POST",body:JSON.stringify({...state.draft,amount:n,description:desc})});
       state.dealCode=(data.deal&&data.deal.code)||"";
       state.link=data.link||(data.deal&&data.deal.link)||dealLink(state.dealCode);
+      await loadMe();
       go("deal-view");return;
     }
     if(actName==="open-market"){
@@ -2179,6 +2442,18 @@ document.body.addEventListener("click",async(ev)=>{
 });
 document.body.addEventListener("input",(ev)=>{
   if(ev.target&&ev.target.id==="lang-q") filterLangs();
+  if(ev.target&&ev.target.id==="f-desc"){
+    const box=document.getElementById("nft-prev");
+    if(!box) return;
+    const n=nftInfo(ev.target.value);
+    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftImgHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></div>`:"";
+  }
+  if(ev.target&&ev.target.id==="rv-nft"){
+    const box=document.getElementById("rv-nft-prev");
+    if(!box) return;
+    const n=nftInfo(ev.target.value);
+    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftImgHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b></div></div>`:"";
+  }
 });
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible") return;
