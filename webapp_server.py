@@ -50,7 +50,30 @@ EMOJI_DIR = DB_PATH.parent / "emoji"
 NFT_IMG_DIR = DB_PATH.parent / "nft_img"
 
 # Живая витрина: ротация раз в 2 минуты (плюс реальные лоты продавцов)
+# Floors ≈ Fragment snapshot (TON), источник giftswatchdata / fragment
 _MARKET_ROTATE_SEC = 120
+_SHOWCASE_FLOOR_TON: dict[str, float] = {
+    "PlushPepe": 3999.0,
+    "DurovsCap": 435.0,
+    "LolPop": 5.0,
+    "PreciousPeach": 322.0,
+    "PerfumeBottle": 80.0,
+    "ToyBear": 40.0,
+    "SwissWatch": 59.0,
+    "DiamondRing": 35.0,
+    "SignetRing": 35.0,
+    "ScaredCat": 297.0,
+    "MagicPotion": 73.0,
+    "GenieLamp": 40.0,
+    "EternalRose": 29.0,
+    "LootBag": 138.0,
+    "NekoHelmet": 40.0,
+    "ElectricSkull": 35.0,
+    "SpyAgaric": 7.0,
+    "VintageCigar": 47.0,
+    "MiniOscar": 83.0,
+    "AstralShard": 148.0,
+}
 _SHOWCASE_NFTS = (
     "PlushPepe-128",
     "DurovsCap-7",
@@ -85,8 +108,24 @@ _SHOWCASE_SELLERS = (
     "pepe_hub",
     "cap_trade",
 )
-_SHOWCASE_PAYS = ("stars", "ton", "usdt", "rub")
-_SHOWCASE_AMOUNTS = (49, 79, 99, 120, 150, 199, 250, 320, 450, 680, 900, 1200)
+
+
+def _collection_key(slug: str) -> str:
+    bits = str(slug or "").split("-")
+    return bits[0] if bits else slug
+
+
+def _realistic_ton_price(slug: str, rng: random.Random) -> float:
+    """Цена около floor Fragment: floor…floor+~12%, иногда чуть ниже."""
+    floor = float(_SHOWCASE_FLOOR_TON.get(_collection_key(slug), 25.0))
+    # Листинги обычно floor…+8–15%; иногда -2% «быстрая продажа»
+    mult = 0.98 + rng.random() * 0.14
+    price = floor * mult
+    if price >= 100:
+        return float(int(round(price)))
+    if price >= 10:
+        return round(price, 1)
+    return round(price, 2)
 
 
 def _market_seed() -> int:
@@ -98,7 +137,7 @@ def _market_rotate_in() -> int:
 
 
 def _showcase_market_items(limit: int = 10) -> list[dict[str, Any]]:
-    """Детерминированная витрина на окно 2 мин — всегда «живая»."""
+    """Детерминированная витрина на окно 2 мин — цены как на Fragment (TON)."""
     seed = _market_seed()
     rng = random.Random(seed)
     nfts = list(_SHOWCASE_NFTS)
@@ -111,17 +150,12 @@ def _showcase_market_items(limit: int = 10) -> list[dict[str, Any]]:
         if not meta:
             continue
         seller = sellers[i % len(sellers)]
-        pay = rng.choice(_SHOWCASE_PAYS)
-        amount = float(rng.choice(_SHOWCASE_AMOUNTS))
-        if pay == "ton":
-            amount = round(amount / 200, 2) or 0.5
-        elif pay == "usdt":
-            amount = round(amount / 90, 2) or 1.0
+        amount = _realistic_ton_price(slug, rng)
         items.append(
             {
                 "code": f"v{seed}_{i}",
                 "amount": amount,
-                "pay_method": pay,
+                "pay_method": "ton",
                 "deal_type": "gift",
                 "status": "open",
                 "listing": "sell",
