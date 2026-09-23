@@ -900,7 +900,7 @@ def _extract_nft_slug(raw: str) -> str | None:
     return m.group(1) if m else None
 
 
-def _parse_nft_meta(raw: str) -> dict[str, str] | None:
+def _parse_nft_meta(raw: str) -> dict[str, Any] | None:
     slug = _extract_nft_slug(raw)
     if not slug:
         return None
@@ -923,6 +923,8 @@ def _parse_nft_meta(raw: str) -> dict[str, str] | None:
             f"https://nft.fragment.com/gift/{slug}.medium.jpg",
             f"https://nft.fragment.com/gift/{low}.large.jpg",
         ],
+        "lottie": f"/n/{low}.lottie.json",
+        "lottie_alt": f"https://nft.fragment.com/gift/{low}.lottie.json",
         "color": f"hsl({hue} 42% 38%)",
     }
 
@@ -1392,13 +1394,71 @@ async def serve_emoji(request: web.Request) -> web.StreamResponse:
 
 
 async def serve_nft_img(request: web.Request) -> web.StreamResponse:
-    """Прокси картинок Fragment — стабильно в Mini App WebView."""
+    """Прокси картинок и Lottie Fragment — стабильно в Mini App WebView."""
+    import aiohttp
+
     raw = str(request.match_info.get("slug") or "")
-    slug = raw.rsplit(".", 1)[0] if "." in raw else raw
+    want_lottie = raw.lower().endswith(".lottie.json")
+    if want_lottie:
+        slug = raw[: -len(".lottie.json")]
+    elif "." in raw:
+        slug = raw.rsplit(".", 1)[0]
+    else:
+        slug = raw
     if not re.fullmatch(r"[A-Za-z0-9_\-]{1,80}", slug):
         raise web.HTTPNotFound()
     low = slug.lower()
     NFT_IMG_DIR.mkdir(parents=True, exist_ok=True)
+
+    timeout = aiohttp.ClientTimeout(total=20)
+    headers = {
+        "User-Agent": "Mozilla/5.0 (compatible; GGSelBot/1.0)",
+        "Accept": "*/*",
+    }
+
+    if want_lottie:
+        cached = NFT_IMG_DIR / f"{low}.lottie.json"
+        if cached.is_file() and cached.stat().st_size > 500:
+            return web.FileResponse(
+                cached,
+                headers={
+                    "Cache-Control": "public, max-age=604800",
+                    "Content-Type": "application/json",
+                },
+            )
+        candidates = [
+            f"https://nft.fragment.com/gift/{low}.lottie.json",
+            f"https://nft.fragment.com/gift/{slug}.lottie.json",
+        ]
+        data: bytes | None = None
+        try:
+            async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:
+                for url in candidates:
+                    try:
+                        async with session.get(url) as resp:
+                            if resp.status != 200:
+                                continue
+                            body = await resp.read()
+                            if len(body) < 500 or b"{" not in body[:40]:
+                                continue
+                            data = body
+                            break
+                    except Exception:
+                        continue
+        except Exception as exc:
+            log.warning("nft lottie fetch %s: %s", low, exc)
+        if not data:
+            raise web.HTTPNotFound()
+        try:
+            cached.write_bytes(data)
+        except OSError:
+            pass
+        return web.Response(
+            body=data,
+            content_type="application/json",
+            headers={"Cache-Control": "public, max-age=604800"},
+        )
+
     cached = NFT_IMG_DIR / f"{low}.jpg"
     if cached.is_file() and cached.stat().st_size > 200:
         return web.FileResponse(
@@ -1413,14 +1473,7 @@ async def serve_nft_img(request: web.Request) -> web.StreamResponse:
         f"https://nft.fragment.com/gift/{slug}.medium.jpg",
         f"https://nft.fragment.com/gift/{slug}.webp",
     ]
-    import aiohttp
-
-    timeout = aiohttp.ClientTimeout(total=12)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (compatible; GGSelBot/1.0)",
-        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
-    }
-    data: bytes | None = None
+    data = None
     content_type = "image/jpeg"
     try:
         async with aiohttp.ClientSession(timeout=timeout, headers=headers) as session:

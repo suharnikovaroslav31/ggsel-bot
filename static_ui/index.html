@@ -16,6 +16,7 @@
   })();
   </script>
   <script src="/assets/telegram-web-app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/400.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/600.css" />
   <style>
@@ -607,6 +608,23 @@ input, textarea, select {
   width: 100%; height: 100%; object-fit: cover; display: block;
 }
 .shot > img.is-fail { display: none !important; }
+.nft-lottie {
+  position: absolute; inset: 0; z-index: 2;
+  opacity: 0; pointer-events: none;
+  display: flex; align-items: center; justify-content: center;
+}
+.nft-lottie.on { opacity: 1; }
+.nft-lottie svg {
+  width: 100% !important; height: 100% !important;
+  display: block;
+}
+.hero-nft .nft-lottie,
+.mcard .shot .nft-lottie,
+.feed-card .nft-lottie,
+.nft-card .shot .nft-lottie,
+.nft-prev .shot .nft-lottie {
+  background: transparent;
+}
 .nft-prev {
   display: flex; align-items: center; gap: 12px;
   background: #111318; color: #fff; border-radius: 18px;
@@ -857,11 +875,14 @@ input, textarea, select {
 .feed-card .ph { display: grid; place-items: center; font-size: 16px; padding: 10px; z-index: 0; color: #fff; font-weight: 800; text-align: center; }
 .feed-card img { z-index: 1; }
 .feed-card img.is-fail { display: none !important; }
+.feed-card .nft-lottie {
+  position: absolute; inset: 0; z-index: 1;
+}
 .feed-card .shade {
   position: absolute; inset: 0; z-index: 2;
   background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,.78) 100%);
 }
-.feed-card .ft, .feed-card .fn { position: relative; z-index: 1; padding: 0 10px; }
+.feed-card .ft, .feed-card .fn { position: relative; z-index: 3; padding: 0 10px; }
 .feed-card .ft { font-size: 13px; font-weight: 700; padding-bottom: 2px; }
 .feed-card .fn { color: rgba(255,255,255,.72); font-size: 11px; padding-bottom: 10px; }
 .market-grid {
@@ -907,6 +928,9 @@ input, textarea, select {
   color: #fff; font-weight: 800; font-size: 28px; padding: 16px; text-align: center; z-index: 0; line-height: 1.15;
 }
 .buy-sheet .hero-nft img.is-fail { display: none !important; }
+.buy-sheet .hero-nft .nft-lottie {
+  position: absolute; inset: 0; z-index: 2;
+}
 .rev {
   background: var(--card); border-radius: 20px; padding: 14px;
   display: grid; grid-template-columns: 52px 1fr; gap: 12px;
@@ -1438,6 +1462,8 @@ function nftInfo(desc){
       `https://nft.fragment.com/gift/${slug}.medium.jpg`,
       `https://nft.fragment.com/gift/${low}.large.jpg`
     ],
+    lottie:"/n/"+low+".lottie.json",
+    lottie_alt:`https://nft.fragment.com/gift/${low}.lottie.json`,
     color:`hsl(${hue} 42% 38%)`
   };
 }
@@ -1450,6 +1476,14 @@ function nftImgHtml(n, cls=""){
   const dataChain=uniq.length?` data-chain="${esc(uniq.join("|"))}" data-ci="0"`:"";
   return `${ph}<img class="${cls}" src="${esc(uniq[0]||"")}" alt="" decoding="async"${dataChain} onload="this.classList.remove('is-fail')" onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
 }
+function nftAnimHtml(n, cls=""){
+  if(!n) return `<div class="ph" style="background:#1a2430">NFT</div>`;
+  const lottie=n.lottie||(n.slug?("/n/"+String(n.slug).toLowerCase()+".lottie.json"):"");
+  const lottieAlt=n.lottie_alt||"";
+  const still=nftImgHtml(n, cls);
+  if(!lottie) return still;
+  return `${still}<div class="nft-lottie" data-lottie="${esc(lottie)}" data-lottie-alt="${esc(lottieAlt)}" aria-hidden="true"></div>`;
+}
 window.__nftImgFail=function(img){
   const chain=String(img.getAttribute("data-chain")||"").split("|").filter(Boolean);
   let i=Number(img.getAttribute("data-ci")||0)+1;
@@ -1461,10 +1495,67 @@ window.__nftImgFail=function(img){
   }
   img.classList.add("is-fail");
 };
+window.__nftAnims=window.__nftAnims||[];
+function destroyNftAnims(){
+  (window.__nftAnims||[]).forEach(a=>{ try{ a.destroy(); }catch(e){} });
+  window.__nftAnims=[];
+}
+function mountNftAnims(root){
+  const scope=root||document;
+  if(!window.lottie||!window.lottie.loadAnimation) return;
+  const nodes=[...scope.querySelectorAll(".nft-lottie:not([data-mounted])")];
+  nodes.forEach(el=>{
+    const path=el.getAttribute("data-lottie")||"";
+    const alt=el.getAttribute("data-lottie-alt")||"";
+    if(!path) return;
+    el.dataset.mounted="1";
+    const parent=el.parentElement;
+    const still=parent&&parent.querySelector("img");
+    let triedAlt=false;
+    const start=(src)=>{
+      try{
+        const anim=window.lottie.loadAnimation({
+          container:el,
+          renderer:"svg",
+          loop:true,
+          autoplay:true,
+          path:src,
+          rendererSettings:{preserveAspectRatio:"xMidYMid meet", progressiveLoad:true}
+        });
+        window.__nftAnims.push(anim);
+        anim.addEventListener("DOMLoaded",()=>{
+          el.classList.add("on");
+          if(still) still.classList.add("is-fail");
+        });
+        anim.addEventListener("data_failed",()=>{
+          try{ anim.destroy(); }catch(e){}
+          if(!triedAlt && alt && alt!==src){
+            triedAlt=true;
+            el.innerHTML="";
+            start(alt);
+          }
+        });
+      }catch(e){}
+    };
+    // Ленивый старт когда карточка на экране
+    if("IntersectionObserver" in window){
+      const io=new IntersectionObserver((entries)=>{
+        entries.forEach(en=>{
+          if(!en.isIntersecting) return;
+          io.disconnect();
+          start(path);
+        });
+      },{rootMargin:"80px", threshold:0.05});
+      io.observe(el);
+    }else{
+      start(path);
+    }
+  });
+}
 function nftCard(desc){
   const n=nftInfo(desc);
   if(!n) return "";
-  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftImgHtml(n)}</div><div><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></button>`;
+  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftAnimHtml(n)}</div><div><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></button>`;
 }
 function statusLabel(st){
   return ({open:t("st_open"),active:t("st_active"),paid:t("st_paid"),goods_sent:t("st_sent"),completed:t("st_done"),cancelled:t("st_cancel")}[st])||st;
@@ -1621,7 +1712,7 @@ async function screenHome(){
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     return `<button type="button" class="feed-card" data-act="open-feed" data-id="${it.id}">
-      ${nftImgHtml(n)}
+      ${nftAnimHtml(n)}
       <div class="shade"></div>
       <div class="ft">${esc(title)}</div>
       <div class="fn">@${esc(it.username||"—")}</div>
@@ -1634,7 +1725,7 @@ async function screenHome(){
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
     const demo=!!it.demo;
     return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
-      <div class="shot">${nftImgHtml(n)}</div>
+      <div class="shot">${nftAnimHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
         <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
@@ -1647,7 +1738,7 @@ async function screenHome(){
     const n=nftInfo(r.nft_url||"");
     const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
     const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
-    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftImgHtml(n)}</div>`:`<div class="av">${esc(initial)}</div>`;
+    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftAnimHtml(n)}</div>`:`<div class="av">${esc(initial)}</div>`;
     const whoKey=String(r.username||"").replace(/^@/,"");
     return `<div class="rev">
       ${left}
@@ -1706,7 +1797,7 @@ async function screenMarketView(){
     :`<button class="kbtn primary" data-act="buy-market" data-code="${esc(code)}" data-demo="${it.demo?"1":"0"}">${pe("deal_money","💰")}<span>${uiLang()==="en"?"Buy via guarantor":"Купить через гаранта"}</span></button>`;
   const nftBtn=n.url?`<button class="kbtn" data-act="open-nft" data-url="${esc(n.url)}">${pe("btn_deal_nft","⛓️")}<span>${uiLang()==="en"?"Open in Telegram":"Открыть NFT в Telegram"}</span></button>`:"";
   return `<div class="buy-sheet bubble">
-    <div class="hero-nft">${nftImgHtml(n)}</div>
+    <div class="hero-nft">${nftAnimHtml(n)}</div>
     <div style="margin:0 0 8px"><span class="status-pill ok">${uiLang()==="en"?"Listed for sale":"Выставлено на продажу"}</span></div>
     <b style="font-size:20px">${esc(title)}</b>
     <div class="kv"><span>${uiLang()==="en"?"Price":"Цена"}</span><b>${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</b></div>
@@ -1804,7 +1895,7 @@ function screenCreateDesc(){
   return bubble(`${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")} <b>${nft?t("desc_nft"):t("desc")}</b>
     <p class="hint">${nft?(uiLang()==="en"?"Paste https://t.me/nft/Name-123 — preview appears below":"Вставь https://t.me/nft/Name-123 — превью появится ниже"):""}</p>
     <textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>
-    <div id="nft-prev">${preview?`<div class="nft-prev"><div class="shot">${nftImgHtml(preview)}</div><div class="nft-prev-meta"><b>${esc(preview.name)}${preview.num?" #"+esc(preview.num):""}</b><div class="hint">${esc(preview.url)}</div></div></div>`:""}</div>`)+
+    <div id="nft-prev">${preview?`<div class="nft-prev"><div class="shot">${nftAnimHtml(preview)}</div><div class="nft-prev-meta"><b>${esc(preview.name)}${preview.num?" #"+esc(preview.num):""}</b><div class="hint">${esc(preview.url)}</div></div></div>`:""}</div>`)+
     kb([[act(t("make"),"deal-make","btn_create","➕")],[cancelBtn()]]);
 }
 function screenCreateDone(){
@@ -2053,7 +2144,7 @@ async function screenUserProfile(){
       <div class="txt" style="margin-top:4px">${esc(r.body||"")}</div>
       <div class="muted" style="margin-top:4px">${esc(r.date||"")}${r.deal_code?" · #"+esc(r.deal_code):""}
         ${r.seller_username||r.buyer_username?` · ${esc(r.seller_username||"?")} → ${esc(r.buyer_username||"?")}`:""}</div>
-      ${n?`<div style="margin-top:8px;width:64px;height:64px;border-radius:12px;overflow:hidden">${nftImgHtml(n)}</div>`:""}
+      ${n?`<div class="shot" style="margin-top:8px;width:64px;height:64px;border-radius:12px;overflow:hidden;position:relative">${nftAnimHtml(n)}</div>`:""}
     </div>`;
   }).join("")||`<div class="hint">${en?"No reviews yet":"Отзывов пока нет"}</div>`;
   return `<div class="pub-hero">
@@ -2152,10 +2243,12 @@ function screenAdminId(kind){
 async function draw(opts={}){
   const root=document.getElementById("screen");
   if(!state.user){
+    destroyNftAnims();
     root.innerHTML=bubble("Загрузка…");
     syncTabs();
     return;
   }
+  destroyNftAnims();
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=await screenHome();
@@ -2193,6 +2286,8 @@ async function draw(opts={}){
     else if(s==="admin-grant"||s==="admin-ban"||s==="admin-unban") root.innerHTML=screenAdminId(s.replace("admin-",""));
     else root.innerHTML=await screenHome();
   }catch(e){root.innerHTML=bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);}
+  mountNftAnims(root);
+  if(!window.lottie) setTimeout(()=>mountNftAnims(root), 500);
   if(!opts.quiet){
     root.className="";
     void root.offsetWidth;
@@ -2540,13 +2635,15 @@ document.body.addEventListener("input",(ev)=>{
     const box=document.getElementById("nft-prev");
     if(!box) return;
     const n=nftInfo(ev.target.value);
-    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftImgHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></div>`:"";
+    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftAnimHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></div>`:"";
+    mountNftAnims(box);
   }
   if(ev.target&&ev.target.id==="rv-nft"){
     const box=document.getElementById("rv-nft-prev");
     if(!box) return;
     const n=nftInfo(ev.target.value);
-    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftImgHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b></div></div>`:"";
+    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftAnimHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b></div></div>`:"";
+    mountNftAnims(box);
   }
 });
 document.addEventListener("visibilitychange",()=>{
