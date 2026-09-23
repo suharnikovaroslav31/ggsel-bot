@@ -2088,8 +2088,8 @@ async function screenAdmin(){
       <div class="rv-lab">NFT</div>
       <input id="rv-nft" placeholder="https://t.me/nft/Name-123" />
       <div id="rv-nft-prev"></div>
-      <div class="rv-lab">${en?"Existing deal code (skip auto-create)":"Код существующей сделки (без автосоздания)"}</div>
-      <input id="rv-deal" placeholder="${en?"optional":"необязательно"}" />
+      <div class="rv-lab">${en?"Existing deal code (optional)":"Код сделки (необязательно — можно пустым)"}</div>
+      <input id="rv-deal" placeholder="${en?"leave empty to auto-create":"оставь пустым — создастся сама"}" autocomplete="off" />
       <div class="admin-actions">
         <button type="button" class="ghost" data-act="rev-rand">${en?"Random":"Случайный"}</button>
         <button type="button" class="go" data-act="rev-add">${en?"Add review + deal":"Отзыв + сделка"}</button>
@@ -2446,6 +2446,8 @@ document.body.addEventListener("click",async(ev)=>{
       state.dealCode=clean;go("deal-view");return;
     }
     if(actName==="rev-add"){
+      const rawDeal=String((document.getElementById("rv-deal")||{}).value||"").trim();
+      const dealCode=/^[A-Za-z0-9_\-]{4,24}$/.test(rawDeal)&&!/nft/i.test(rawDeal)&&!/:\/\//.test(rawDeal)?rawDeal:"";
       const body={
         username:(document.getElementById("rv-user")||{}).value||"",
         author_role:(document.getElementById("rv-role")||{}).value||"buyer",
@@ -2457,9 +2459,9 @@ document.body.addEventListener("click",async(ev)=>{
         rating:(document.getElementById("rv-rating")||{}).value||5,
         body:(document.getElementById("rv-body")||{}).value||"",
         nft_url:(document.getElementById("rv-nft")||{}).value||"",
-        deal_code:(document.getElementById("rv-deal")||{}).value||"",
         date:(document.getElementById("rv-date")||{}).value||""
       };
+      if(dealCode) body.deal_code=dealCode;
       const r=await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
       toast(r.deal_code?("OK · #"+r.deal_code):"OK");
       await loadMe();

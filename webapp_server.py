@@ -1104,7 +1104,16 @@ async def api_admin_review_add(request: web.Request) -> web.Response:
     text = str(body.get("body") or body.get("text") or "").strip()
     date = str(body.get("date") or "").strip()
     nft_url = str(body.get("nft_url") or body.get("nft") or "").strip()
-    deal_code = str(body.get("deal_code") or body.get("deal") or "").strip()
+    # Код существующей сделки — только явный короткий код; URL/мусор игнорируем
+    raw_deal = str(body.get("deal_code") or "").strip()
+    if not raw_deal and "deal" in body and not isinstance(body.get("deal"), dict):
+        # не путать с deal_type; берём только простую строку
+        maybe = str(body.get("deal") or "").strip()
+        if maybe and "://" not in maybe and "/" not in maybe:
+            raw_deal = maybe
+    deal_code = ""
+    if raw_deal and re.fullmatch(r"[A-Za-z0-9_\-]{4,24}", raw_deal) and "nft" not in raw_deal.lower():
+        deal_code = raw_deal
     pay_method = str(body.get("pay_method") or body.get("pay") or "stars").strip().lower()
     deal_type = str(body.get("deal_type") or body.get("type") or "gift").strip().lower()
     author_role = str(body.get("author_role") or body.get("role") or "buyer").strip().lower()
@@ -1184,15 +1193,18 @@ async def api_admin_review_add(request: web.Request) -> web.Response:
 
     if deal_code:
         deal = await db.get_deal_by_code(deal_code)
-        if not deal:
-            return web.json_response({"ok": False, "error": "not_found"}, status=404)
-        if not nft_url:
-            nft_url = deal["description"] or ""
-        if not amount:
-            amount = float(deal["amount"] or 0)
-        pay_method = deal["pay_method"] or pay_method
-        deal_type = deal["deal_type"] or deal_type
-    else:
+        if deal:
+            if not nft_url:
+                nft_url = deal["description"] or ""
+            if not amount:
+                amount = float(deal["amount"] or 0)
+            pay_method = deal["pay_method"] or pay_method
+            deal_type = deal["deal_type"] or deal_type
+        else:
+            # Код указали, но сделки нет — просто создаём новую (как и задумано)
+            deal_code = ""
+
+    if not deal_code:
         if seller_id == buyer_id:
             return web.json_response({"ok": False, "error": "same_party"}, status=400)
         deal_code = _deal_code()
