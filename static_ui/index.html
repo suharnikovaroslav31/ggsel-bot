@@ -383,7 +383,12 @@ button.item {
 .deal-thumb img, .deal-thumb .ph {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
-.deal-thumb .ph { display: grid; place-items: center; font-size: 9px; font-weight: 800; color: #fff; text-align: center; padding: 2px; }
+.deal-thumb .ph {
+  display: grid; place-items: center; font-size: 9px; font-weight: 800;
+  color: #fff; text-align: center; padding: 2px; z-index: 0; line-height: 1.1;
+}
+.deal-thumb img { z-index: 1; }
+.deal-thumb img.is-fail { display: none !important; }
 .deal-body { flex: 1; min-width: 0; }
 input, textarea, select {
   width: 100%;
@@ -553,16 +558,55 @@ input, textarea, select {
   cursor: pointer;
   margin: 10px 0 14px;
 }
-.nft-card img {
-  width: 64px;
-  height: 64px;
-  border-radius: 14px;
-  object-fit: cover;
+.nft-card .shot {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: 0 0 56px;
   background: #2b2f38;
-  flex: 0 0 64px;
 }
+.nft-card .shot img,
+.nft-card .shot .ph {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+.nft-card .shot .ph {
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  text-align: center;
+  padding: 4px;
+  line-height: 1.15;
+  z-index: 0;
+}
+.nft-card .shot img {
+  z-index: 1;
+  background: transparent;
+}
+.nft-card .shot img.is-fail { display: none; }
 .nft-card b { display: block; font-size: 16px; }
 .nft-card .hint { color: #b8bec8; word-break: break-all; }
+/* Общий стек превью: плейсхолдер под картинкой, не рядом */
+.shot { position: relative; overflow: hidden; background: #1a2430; }
+.shot > .ph {
+  position: absolute; inset: 0; z-index: 0;
+  display: grid; place-items: center;
+  color: #fff; font-weight: 800; text-align: center;
+  padding: 6px; line-height: 1.15; font-size: 11px;
+}
+.shot > img {
+  position: absolute; inset: 0; z-index: 1;
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.shot > img.is-fail { display: none !important; }
 .nft-prev {
   display: flex; align-items: center; gap: 12px;
   background: #111318; color: #fff; border-radius: 18px;
@@ -810,9 +854,11 @@ input, textarea, select {
 .feed-card img, .feed-card .ph {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
-.feed-card .ph { display: grid; place-items: center; font-size: 16px; padding: 10px; }
+.feed-card .ph { display: grid; place-items: center; font-size: 16px; padding: 10px; z-index: 0; color: #fff; font-weight: 800; text-align: center; }
+.feed-card img { z-index: 1; }
+.feed-card img.is-fail { display: none !important; }
 .feed-card .shade {
-  position: absolute; inset: 0;
+  position: absolute; inset: 0; z-index: 2;
   background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,.78) 100%);
 }
 .feed-card .ft, .feed-card .fn { position: relative; z-index: 1; padding: 0 10px; }
@@ -832,13 +878,14 @@ input, textarea, select {
   background: #1a2430; overflow: hidden;
 }
 .mcard .shot img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1;
 }
 .mcard .shot .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
   color: #fff; font-weight: 800; font-size: 18px; letter-spacing: .02em;
-  padding: 12px; text-align: center;
+  padding: 12px; text-align: center; z-index: 0; line-height: 1.15;
 }
+.mcard .shot img.is-fail { display: none !important; }
 .mcard .meta { padding: 10px 12px 12px; }
 .mcard .nm { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mcard .pr { color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px; }
@@ -853,12 +900,13 @@ input, textarea, select {
   aspect-ratio: 1; position: relative;
 }
 .buy-sheet .hero-nft img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1;
 }
 .buy-sheet .hero-nft .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
-  color: #fff; font-weight: 800; font-size: 28px; padding: 16px; text-align: center;
+  color: #fff; font-weight: 800; font-size: 28px; padding: 16px; text-align: center; z-index: 0; line-height: 1.15;
 }
+.buy-sheet .hero-nft img.is-fail { display: none !important; }
 .rev {
   background: var(--card); border-radius: 20px; padding: 14px;
   display: grid; grid-template-columns: 52px 1fr; gap: 12px;
@@ -1400,22 +1448,23 @@ function nftImgHtml(n, cls=""){
   const chain=[n.img,n.img_alt].concat(n.img_fallbacks||[]).filter(Boolean);
   const uniq=[...new Set(chain)];
   const dataChain=uniq.length?` data-chain="${esc(uniq.join("|"))}" data-ci="0"`:"";
-  return `${ph}<img class="${cls}" src="${esc(uniq[0]||"")}" alt=""${dataChain} onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
+  return `${ph}<img class="${cls}" src="${esc(uniq[0]||"")}" alt="" decoding="async"${dataChain} onload="this.classList.remove('is-fail')" onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
 }
 window.__nftImgFail=function(img){
   const chain=String(img.getAttribute("data-chain")||"").split("|").filter(Boolean);
   let i=Number(img.getAttribute("data-ci")||0)+1;
   if(i<chain.length){
     img.setAttribute("data-ci",String(i));
+    img.classList.remove("is-fail");
     img.src=chain[i];
     return;
   }
-  img.style.display="none";
+  img.classList.add("is-fail");
 };
 function nftCard(desc){
   const n=nftInfo(desc);
   if(!n) return "";
-  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot" style="width:56px;height:56px;border-radius:12px;position:relative;overflow:hidden;flex:0 0 auto">${nftImgHtml(n)}</div><div><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></button>`;
+  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftImgHtml(n)}</div><div><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b><div class="hint">${esc(n.url)}</div></div></button>`;
 }
 function statusLabel(st){
   return ({open:t("st_open"),active:t("st_active"),paid:t("st_paid"),goods_sent:t("st_sent"),completed:t("st_done"),cancelled:t("st_cancel")}[st])||st;
