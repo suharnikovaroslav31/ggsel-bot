@@ -685,19 +685,14 @@ class Database:
     async def _purge_demo_reviews(self) -> None:
         cur = await self.conn.execute(
             "SELECT 1 FROM bot_meta WHERE key = ? LIMIT 1",
-            ("purge_demo_reviews_v1",),
+            ("purge_all_reviews_manual_v1",),
         )
         if await cur.fetchone() is not None:
             return
-        await self.conn.execute(
-            """
-            DELETE FROM reviews
-            WHERE username IN ('chupayl','denchik','vika_nft','lextrade','rarebrod','fast_deal','nft_safe','ton_guy','mira_p2p','kosta')
-            """
-        )
+        await self.conn.execute("DELETE FROM reviews")
         await self.conn.execute(
             "INSERT INTO bot_meta (key, value) VALUES (?, ?)",
-            ("purge_demo_reviews_v1", "1"),
+            ("purge_all_reviews_manual_v1", "1"),
         )
         await self.conn.commit()
 

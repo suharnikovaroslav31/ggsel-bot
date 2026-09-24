@@ -899,9 +899,8 @@ input, textarea, select {
 .feed-card .ph { display: grid; place-items: center; font-size: 16px; padding: 10px; z-index: 0; color: #fff; font-weight: 800; text-align: center; }
 .feed-card img {
   z-index: 1;
-  transform: scale(1.72);
-  transform-origin: center 42%;
-  will-change: transform;
+  object-fit: cover;
+  transform: none;
 }
 .feed-card img.is-fail { display: none !important; }
 .feed-card .nft-lottie {
@@ -911,8 +910,7 @@ input, textarea, select {
 .feed-card .nft-lottie svg,
 .feed-card .nft-lottie canvas {
   width: 100% !important; height: 100% !important;
-  transform: scale(1.72);
-  transform-origin: center 42%;
+  transform: none;
 }
 .feed-card .shade {
   position: absolute; inset: 0; z-index: 2;
@@ -979,12 +977,12 @@ input, textarea, select {
 }
 .mcard .shot img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1;
-  transform: scale(1.65); transform-origin: center 40%;
+  transform: none;
 }
 .mcard .shot .nft-lottie svg,
 .mcard .shot .nft-lottie canvas {
   width: 100% !important; height: 100% !important;
-  transform: scale(1.65); transform-origin: center 40%;
+  transform: none;
 }
 .mcard .shot .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
@@ -1165,31 +1163,38 @@ input, textarea, select {
 .theme-card.light .swatch { background: linear-gradient(135deg,#fff,#dfe5ec); box-shadow: 0 6px 14px rgba(0,0,0,.08); }
 .theme-card.dark .swatch { background: linear-gradient(135deg,#2a3140,#0e1116); box-shadow: 0 6px 14px rgba(0,0,0,.35); }
 #coach {
-  position: fixed; inset: 0; z-index: 80; display: grid; place-items: end center;
-  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-  background: var(--shade); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(8,10,14,.38);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
   opacity: 0; pointer-events: none; transition: opacity .35s var(--ease);
 }
 #coach.on { opacity: 1; pointer-events: auto; }
 .coach-card {
-  width: min(420px, 100%); background: var(--card); color: var(--text);
-  border-radius: 28px; padding: 22px 18px 16px;
-  box-shadow: 0 24px 60px rgba(0,0,0,.28);
-  transform: translateY(18px); transition: transform .4s var(--ease);
+  position: absolute;
+  width: min(300px, calc(100% - 28px));
+  background: var(--card); color: var(--text);
+  border-radius: 28px; padding: 20px 16px 14px;
+  box-shadow: 0 28px 70px rgba(0,0,0,.32), 0 0 0 1px rgba(255,255,255,.04);
+  animation: coach-float 5.2s ease-in-out infinite;
+  transition: top .55s var(--ease), left .55s var(--ease), right .55s var(--ease), bottom .55s var(--ease), transform .4s var(--ease);
 }
-#coach.on .coach-card { transform: translateY(0); }
+@keyframes coach-float {
+  0%,100% { transform: translate3d(0,0,0) rotate(-0.6deg); }
+  50% { transform: translate3d(0,-10px,0) rotate(0.7deg); }
+}
+#coach.on .coach-card { }
 .coach-card .step { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
-.coach-card h3 { margin: 8px 0 6px; font-size: 22px; letter-spacing: -.02em; }
-.coach-card p { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.coach-card h3 { margin: 8px 0 6px; font-size: 20px; letter-spacing: -.02em; }
+.coach-card p { margin: 0 0 14px; color: var(--muted); font-size: 14px; line-height: 1.45; }
 .coach-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
 .coach-actions button {
-  appearance: none; border: 0; border-radius: 16px; min-height: 48px; font-weight: 700; cursor: pointer;
+  appearance: none; border: 0; border-radius: 16px; min-height: 46px; font-weight: 700; cursor: pointer;
   transition: transform .2s var(--ease);
 }
 .coach-actions button:active { transform: scale(var(--press)); }
 .coach-actions .skip { background: var(--btn); color: var(--text); }
 .coach-actions .next { background: var(--accent); color: #fff; }
-.coach-dots { display: flex; gap: 6px; justify-content: center; margin: 0 0 14px; }
+.coach-dots { display: flex; gap: 6px; justify-content: center; margin: 0 0 12px; }
 .coach-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: block; }
 .coach-dots i.on { background: var(--accent); width: 18px; border-radius: 99px; }
 .av, .avatar {
@@ -1515,6 +1520,23 @@ function rememberedLang(){
     try{return sessionStorage.getItem("ggsel_lang")||"";}catch(x){return "";}
   }
 }
+function avatarUrl(userOrKey, id){
+  const tgUser=tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user;
+  if(userOrKey&&typeof userOrKey==="object"){
+    const u=userOrKey;
+    if(tgUser&&tgUser.photo_url&&Number(tgUser.id)===Number(u.id)){
+      return tgUser.photo_url;
+    }
+    if(u.avatar) return u.avatar+(u.avatar.includes("?")?"&":"?")+"v="+encodeURIComponent(String(u.id||""));
+    if(u.id) return "/a/u"+u.id+".jpg?v="+u.id;
+    if(u.username) return "/a/"+String(u.username).replace(/^@/,"")+".jpg";
+    return "";
+  }
+  const key=String(userOrKey||"").replace(/^@/,"");
+  if(id&&Number(id)>0) return "/a/u"+id+".jpg?v="+id;
+  if(key) return "/a/"+key+".jpg";
+  return "";
+}
 function rememberLang(code){
   if(!code) return;
   try{localStorage.setItem("ggsel_lang",code);}catch(e){}
@@ -1551,7 +1573,16 @@ function showCoach(step=0){
   const s=COACH_STEPS[step]||COACH_STEPS[0];
   const last=step>=COACH_STEPS.length-1;
   const dots=COACH_STEPS.map((_,i)=>`<i class="${i===step?"on":""}"></i>`).join("");
-  el.innerHTML=`<div class="coach-card">
+  const spots=[
+    {top:"10%",left:"6%",right:"auto",bottom:"auto"},
+    {top:"18%",left:"auto",right:"5%",bottom:"auto"},
+    {top:"auto",left:"8%",right:"auto",bottom:"18%"},
+    {top:"auto",left:"auto",right:"7%",bottom:"22%"},
+    {top:"28%",left:"12%",right:"auto",bottom:"auto"},
+    {top:"36%",left:"auto",right:"10%",bottom:"auto"},
+  ];
+  const pos=spots[step%spots.length];
+  el.innerHTML=`<div class="coach-card" style="top:${pos.top};left:${pos.left};right:${pos.right};bottom:${pos.bottom}">
     <div class="coach-dots">${dots}</div>
     <div class="step">${step+1} / ${COACH_STEPS.length}</div>
     <h3>${t(s.t)}</h3>
@@ -1805,7 +1836,7 @@ function mountNftAnims(root){
           autoplay:true,
           path:src,
           rendererSettings:{
-            preserveAspectRatio:"xMidYMid slice",
+            preserveAspectRatio:"xMidYMid meet",
             progressiveLoad:true,
             clearCanvas:true,
             hideOnTransparent:true
@@ -2011,7 +2042,7 @@ async function screenHome(){
     const whoKey=String(r.username||"").replace(/^@/,"");
     const initial=whoKey.slice(0,1).toUpperCase()||"G";
     const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
-    const av=r.avatar||(whoKey?`/a/${whoKey}.jpg`:"");
+    const av=r.avatar||avatarUrl(whoKey);
     const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftAnimHtml(n)}</div>`:
       `<div class="av av-wrap">${av?`<img class="av-img" src="${esc(av)}" alt="" loading="lazy" onerror="this.remove()">`:""}<span>${esc(initial)}</span></div>`;
     return `<div class="rev">
@@ -2285,7 +2316,7 @@ function screenProfile(){
   const rateN=Number(u.rating_count||0);
   const rateLabel=rateN?(`${rate.toFixed(1)} · ${rateN}`):(uiLang()==="en"?"No rating":"Нет оценок");
   return `<div class="bubble">
-    <div class="avatar av-wrap">${u.username?`<img class="av-img" src="/a/${esc(u.username)}.jpg" alt="" loading="lazy" onerror="this.remove()">`:""}<span>${esc(initials)}</span></div>
+    <div class="avatar av-wrap">${(()=>{const src=avatarUrl(u);return src?`<img class="av-img" src="${esc(src)}" alt="" loading="lazy" onerror="this.remove()">`:"";})()}<span>${esc(initials)}</span></div>
     <div class="who">${esc(name)}</div>
     <div class="muted">${u.username?"@"+esc(u.username):""} · ID ${esc(u.id)}</div>
     <div class="rate-row"><span class="stars">${rateN?starsTxt(Math.round(rate)):"☆☆☆☆☆"}</span><span class="muted">${esc(rateLabel)}</span></div>
@@ -2358,7 +2389,11 @@ async function screenAdmin(){
   const u=state.user;
   if(!u.is_admin) return bubble("Нет доступа")+kb([[backBtn()]]);
   let reviews=[];
+  let feed=[];
   try{ reviews=((await api("/api/reviews?sort="+(state.reviewSort||"new"))).reviews)||[]; }catch(e){}
+  if(u.is_super_admin){
+    try{ feed=((await api("/api/feed")).items)||[]; }catch(e){}
+  }
   const list=reviews.map(r=>{
     const n=nftInfo(r.nft_url||"");
     return `<div class="rev-admin" data-rid="${r.id}">
@@ -2377,6 +2412,20 @@ async function screenAdmin(){
     </div>
   </div>`;
   }).join("")||`<p class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</p>`;
+  const feedList=feed.map(it=>{
+    const n=it.nft||{};
+    const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
+    return `<div class="rev-admin" data-rid="${it.id}">
+      <img src="${esc(n.img||"")}" alt="" data-chain="${esc([n.img,n.img_alt].concat(n.img_fallbacks||[]).filter(Boolean).join("|"))}" data-ci="0" onerror="window.__nftImgFail&&window.__nftImgFail(this)">
+      <div>
+        <b>${esc(title)}</b>
+        <div class="muted">@${esc(it.username||"")} · ${esc(it.date||"")}</div>
+      </div>
+      <div class="ops">
+        <button type="button" class="del" data-act="rev-del" data-id="${it.id}">🗑</button>
+      </div>
+    </div>`;
+  }).join("")||`<p class="hint">${uiLang()==="en"?"Feed is empty":"Лента пустая"}</p>`;
   const tools=[
     [btn(t("credit"),"admin-credit","deal_money","💰")],
     [btn(t("mybal"),"admin-bal","deal_person","👤")],
@@ -2391,7 +2440,24 @@ async function screenAdmin(){
   const meHint=en
     ?"Tip: put me / your @ in buyer — rating and completed deals go to you."
     :"Подсказка: укажи me или свой @ как покупателя — рейтинг и сделки засчитаются тебе.";
+  const feedBlock=u.is_super_admin?`<div class="admin-sheet">
+      <h2>◈ ${en?"Successful deals feed":"Лента успешных сделок"}</h2>
+      <div class="sub">${en?"Only owner. NFT link required — card appears on Home feed.":"Только главный админ. Нужна ссылка NFT — карточка появится на главной."}</div>
+      <div class="rv-lab">${en?"Seller / author @":"Продавец / автор @"}</div>
+      <input id="fd-user" placeholder="@username" value="${esc(state.user.username?("@"+state.user.username):"")}" />
+      <div class="rv-lab">NFT URL</div>
+      <input id="fd-nft" placeholder="https://t.me/nft/Name-123" />
+      <div id="fd-nft-prev"></div>
+      <div class="rv-lab">${en?"Caption (optional)":"Подпись (необязательно)"}</div>
+      <input id="fd-body" placeholder="${en?"Sold via GGSel":"Продано через GGSel"}" />
+      <div class="admin-actions one" style="margin-top:8px">
+        <button type="button" class="go" data-act="feed-add">${en?"Add to feed":"Добавить в ленту"}</button>
+      </div>
+      <div class="sec-row" style="margin-top:14px"><h2 style="margin:0;font-size:16px">${en?"Feed items":"Элементы ленты"}</h2></div>
+      ${feedList}
+    </div>`:"";
   return `<div class="admin-hero"><h1>✦ ${en?"Admin desk":"Админ-панель"}</h1><p>${en?"Reviews, deals, balances — premium tools.":"Отзывы, сделки и балансы в одном месте."}</p></div>
+    ${feedBlock}
     <div class="admin-sheet">
       <h2>✦ ${en?"Review desk":"Модерация отзывов"}</h2>
       <div class="sub">${en?"Creates a completed deal automatically. Fill parties, amount and review.":"Автоматически создаёт завершённую сделку. Укажи стороны, сумму и текст."}</div>
@@ -2428,12 +2494,8 @@ async function screenAdmin(){
       <div id="rv-nft-prev"></div>
       <div class="rv-lab">${en?"Existing deal code (optional)":"Код сделки (необязательно — можно пустым)"}</div>
       <input id="rv-deal" placeholder="${en?"leave empty to auto-create":"оставь пустым — создастся сама"}" autocomplete="off" />
-      <div class="admin-actions">
-        <button type="button" class="ghost" data-act="rev-rand">${en?"Random":"Случайный"}</button>
+      <div class="admin-actions one">
         <button type="button" class="go" data-act="rev-add">${en?"Add review + deal":"Отзыв + сделка"}</button>
-      </div>
-      <div class="admin-actions one" style="margin-top:8px">
-        <button type="button" class="ghost" data-act="rev-bulk">${en?"Generate 5 reviews":"Сгенерировать сразу 5 отзывов"}</button>
       </div>
     </div>
     <div class="admin-sheet">
@@ -2463,7 +2525,7 @@ async function screenUserProfile(){
   const en=uiLang()==="en";
   const name=p.full_name||(p.username?("@"+p.username):("ID "+(p.user_id||key)));
   const initials=String(name).replace(/^@/,"").slice(0,2).toUpperCase();
-  const av=p.avatar||(p.username?`/a/${String(p.username).replace(/^@/,"")}.jpg`:(p.user_id?`/a/u${p.user_id}.jpg`:""));
+  const av=p.avatar||avatarUrl(p.username, p.user_id);
   const rate=Number(p.rating||0);
   const rateN=Number(p.rating_count||0);
   const deals=(p.deals||[]).map(d=>{
@@ -2811,6 +2873,28 @@ document.body.addEventListener("click",async(ev)=>{
       if(r.joined) toast(uiLang()==="en"?"Joined":"Вы вошли в сделку");
       state.dealCode=clean;go("deal-view");return;
     }
+    if(actName==="feed-add"){
+      if(!state.user||!state.user.is_super_admin){toast("Нет доступа");return;}
+      const nft=(document.getElementById("fd-nft")||{}).value||"";
+      if(!nftInfo(nft)){toast(uiLang()==="en"?"Need NFT link https://t.me/nft/...":"Нужна ссылка https://t.me/nft/...");return;}
+      const who=(document.getElementById("fd-user")||{}).value||(state.user.username?("@"+state.user.username):"me");
+      const caption=(document.getElementById("fd-body")||{}).value||(uiLang()==="en"?"Successful deal":"Успешная сделка");
+      const body={
+        username:who,
+        author_role:"seller",
+        seller:who,
+        buyer:"buyer_"+Math.floor(Math.random()*9000+1000),
+        amount:"0",
+        pay_method:"ton",
+        deal_type:"gift",
+        rating:5,
+        body:caption,
+        nft_url:nft
+      };
+      await api("/api/admin/reviews",{method:"POST",body:JSON.stringify(body)});
+      toast(uiLang()==="en"?"Added to feed":"Добавлено в ленту");
+      go("admin");return;
+    }
     if(actName==="rev-add"){
       const rawDeal=String((document.getElementById("rv-deal")||{}).value||"").trim();
       const dealCode=/^[A-Za-z0-9_\-]{4,24}$/.test(rawDeal)&&!/nft/i.test(rawDeal)&&!/:\/\//.test(rawDeal)?rawDeal:"";
@@ -3015,6 +3099,13 @@ document.body.addEventListener("input",(ev)=>{
   }
   if(ev.target&&ev.target.id==="rv-nft"){
     const box=document.getElementById("rv-nft-prev");
+    if(!box) return;
+    const n=nftInfo(ev.target.value);
+    box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftAnimHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b></div></div>`:"";
+    mountNftAnims(box);
+  }
+  if(ev.target&&ev.target.id==="fd-nft"){
+    const box=document.getElementById("fd-nft-prev");
     if(!box) return;
     const n=nftInfo(ev.target.value);
     box.innerHTML=n?`<div class="nft-prev"><div class="shot">${nftAnimHtml(n)}</div><div class="nft-prev-meta"><b>${esc(n.name)}${n.num?" #"+esc(n.num):""}</b></div></div>`:"";

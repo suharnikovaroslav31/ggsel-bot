@@ -552,6 +552,7 @@ async def api_me(request: web.Request) -> web.Response:
     avg, cnt = await db.user_rating(uid, uname)
     payload["rating"] = avg
     payload["rating_count"] = cnt
+    payload["avatar"] = f"/a/u{uid}.jpg"
     return web.json_response({"ok": True, "user": payload})
 
 
@@ -586,12 +587,12 @@ async def _refresh_start_button(uid: int, deal: str = "") -> None:
         if not msg_id:
             return
         from keyboards.main import open_app_kb
-        from utils.app_gate import APP_READY
+        from utils.app_gate import _welcome_text
         from utils.media import edit_message_ui
 
         query = f"deal={deal}" if deal else ""
         await asyncio.wait_for(
-            edit_message_ui(_bot, uid, msg_id, APP_READY, open_app_kb(query)),
+            edit_message_ui(_bot, uid, msg_id, _welcome_text(), open_app_kb(query)),
             timeout=8,
         )
     except Exception:
@@ -1063,10 +1064,17 @@ def _review_json(row) -> dict[str, Any]:
     except (KeyError, IndexError, TypeError, ValueError):
         amount = 0.0
 
+    role = _col("author_role", "buyer") or "buyer"
+    seller_id = _int("seller_id")
+    buyer_id = _int("buyer_id")
+    author_uid = buyer_id if role == "buyer" else seller_id
+    uname = (row["username"] or "").lstrip("@")
+    avatar = f"/a/u{author_uid}.jpg" if author_uid and author_uid > 0 else (f"/a/{uname}.jpg" if uname else "")
+
     return {
         "id": int(row["id"]),
         "username": row["username"] or "",
-        "avatar": f"/a/{(row['username'] or '').lstrip('@')}.jpg" if (row["username"] or "") else "",
+        "avatar": avatar,
         "rating": int(row["rating"] or 5),
         "body": row["body"] or "",
         "date": row["review_date"] or "",
@@ -1075,9 +1083,9 @@ def _review_json(row) -> dict[str, Any]:
         "deal_code": _col("deal_code"),
         "seller_username": _col("seller_username"),
         "buyer_username": _col("buyer_username"),
-        "seller_id": _int("seller_id"),
-        "buyer_id": _int("buyer_id"),
-        "author_role": _col("author_role", "buyer") or "buyer",
+        "seller_id": seller_id,
+        "buyer_id": buyer_id,
+        "author_role": role,
         "amount": amount,
         "pay_method": _col("pay_method"),
         "deal_type": _col("deal_type", "gift") or "gift",
@@ -1128,19 +1136,6 @@ async def api_reviews_list(request: web.Request) -> web.Response:
     newest = str(request.query.get("sort") or "new").lower() != "old"
     rows = await db.list_reviews(newest_first=newest)
     reviews = [_review_json(r) for r in rows]
-    # Авто-лента: живые отзывы с разными датами, не мешают ручным
-    demo = _showcase_reviews(18)
-    seen = {str(r.get("username") or "").lower() + "|" + str(r.get("nft_url") or "") for r in reviews}
-    for d in demo:
-        key = f"{d.get('username','')}|{d.get('nft_url','')}".lower()
-        if key in seen:
-            continue
-        reviews.append(d)
-        seen.add(key)
-    if newest:
-        reviews.sort(key=lambda r: (str(r.get("date") or ""), int(r.get("id") or 0)), reverse=True)
-    else:
-        reviews.sort(key=lambda r: (str(r.get("date") or ""), int(r.get("id") or 0)))
     return web.json_response(
         {"ok": True, "reviews": reviews},
         headers={"Cache-Control": "no-store"},
@@ -1148,7 +1143,7 @@ async def api_reviews_list(request: web.Request) -> web.Response:
 
 
 async def api_feed(request: web.Request) -> web.Response:
-    rows = await db.list_feed_reviews(limit=24)
+    rows = await db.list_feed_reviews(limit=48)
     items = []
     for r in rows:
         nft = _parse_nft_meta(r["nft_url"] or "")
@@ -1159,11 +1154,17 @@ async def api_feed(request: web.Request) -> web.Response:
         if code:
             deal = await db.get_deal_by_code(code)
         uname = (r["username"] or "").lstrip("@")
+        uid = None
+        try:
+            uid = int(r["buyer_id"] or r["seller_id"] or 0) or None
+        except (TypeError, ValueError, KeyError):
+            uid = None
+        av = f"/a/u{uid}.jpg" if uid and uid > 0 else (f"/a/{uname}.jpg" if uname else "")
         items.append(
             {
                 "id": int(r["id"]),
                 "username": uname,
-                "avatar": f"/a/{uname}.jpg" if uname else "",
+                "avatar": av,
                 "body": r["body"] or "",
                 "date": r["review_date"] or "",
                 "rating": int(r["rating"] or 5),
@@ -1183,28 +1184,6 @@ async def api_feed(request: web.Request) -> web.Response:
                 ),
             }
         )
-    # Добиваем ленту авто-сделками с NFT
-    if len(items) < 16:
-        for d in _showcase_reviews(20):
-            nft = _parse_nft_meta(d.get("nft_url") or "")
-            if not nft:
-                continue
-            items.append(
-                {
-                    "id": int(d["id"]),
-                    "username": d.get("username") or "",
-                    "avatar": d.get("avatar") or "",
-                    "body": d.get("body") or "",
-                    "date": d.get("date") or "",
-                    "rating": int(d.get("rating") or 5),
-                    "nft": nft,
-                    "deal_code": d.get("deal_code") or "",
-                    "deal": None,
-                    "demo": True,
-                }
-            )
-            if len(items) >= 24:
-                break
     return web.json_response(
         {"ok": True, "items": items},
         headers={"Cache-Control": "no-store"},
@@ -1545,7 +1524,7 @@ async def api_public_profile(request: web.Request) -> web.Response:
                     "user_id": None,
                     "username": uname,
                     "full_name": full_name,
-                    "avatar": f"/a/{uname}.jpg" if uname else "",
+                    "avatar": f"/a/u{uid}.jpg" if uid else (f"/a/{uname}.jpg" if uname else ""),
                     "rating": avg,
                     "rating_count": cnt,
                     "completed_deals": 0,
@@ -1581,7 +1560,7 @@ async def api_public_profile(request: web.Request) -> web.Response:
                 "user_id": uid,
                 "username": uname,
                 "full_name": full_name,
-                "avatar": f"/a/{uname}.jpg" if uname else f"/a/u{uid}.jpg",
+                "avatar": f"/a/u{uid}.jpg",
                 "rating": avg,
                 "rating_count": cnt,
                 "completed_deals": completed,
@@ -1790,26 +1769,25 @@ async def serve_nft_img(request: web.Request) -> web.StreamResponse:
 
 
 async def serve_avatar(request: web.Request) -> web.Response:
-    """Реальная аватарка Telegram, если юзер есть в боте; иначе стабильный SVG по нику."""
+    """Реальная аватарка Telegram по user_id / @username (кто писал боту)."""
     import aiohttp
 
     raw = str(request.match_info.get("key") or "").strip()
-    if raw.lower().endswith(".jpg") or raw.lower().endswith(".png") or raw.lower().endswith(".webp"):
+    if raw.lower().endswith((".jpg", ".png", ".webp", ".jpeg")):
         raw = raw.rsplit(".", 1)[0]
     key = raw.lstrip("@")
     if not key or len(key) > 64:
         raise web.HTTPNotFound()
 
+    bust = str(request.query.get("v") or request.query.get("t") or "")
     cache_dir = NFT_IMG_DIR / "avatars"
     try:
         cache_dir.mkdir(parents=True, exist_ok=True)
     except OSError:
         pass
-    cached = cache_dir / f"{key.lower()}.jpg"
 
-    # Попытка: реальный user_id из БД → фото профиля через Bot API
     uid: int | None = None
-    if key.startswith("u") and key[1:].isdigit():
+    if key.startswith("u") and key[1:].lstrip("-").isdigit():
         uid = int(key[1:])
     elif key.lstrip("-").isdigit():
         uid = int(key)
@@ -1821,44 +1799,66 @@ async def serve_avatar(request: web.Request) -> web.Response:
         except Exception:
             uid = None
 
-    if uid and uid > 0 and _bot is not None and BOT_TOKEN:
-        try:
-            if cached.is_file() and cached.stat().st_size > 200:
-                return web.Response(
-                    body=cached.read_bytes(),
-                    content_type="image/jpeg",
-                    headers={"Cache-Control": "public, max-age=86400"},
-                )
-            photos = await _bot.get_user_profile_photos(uid, limit=1)
-            if photos and photos.total_count and photos.photos:
-                sizes = photos.photos[0]
-                file_id = sizes[-1].file_id
-                file = await _bot.get_file(file_id)
-                path = file.file_path
-                url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{path}"
-                timeout = aiohttp.ClientTimeout(total=12)
-                async with aiohttp.ClientSession(timeout=timeout) as session:
-                    async with session.get(url) as resp:
-                        if resp.status == 200:
-                            data = await resp.read()
-                            if len(data) > 200:
-                                try:
-                                    cached.write_bytes(data)
-                                except OSError:
-                                    pass
-                                return web.Response(
-                                    body=data,
-                                    content_type="image/jpeg",
-                                    headers={"Cache-Control": "public, max-age=86400"},
-                                )
-        except Exception as exc:
-            log.debug("avatar tg %s: %s", key, exc)
+    cache_name = f"u{uid}.jpg" if uid and uid > 0 else f"{key.lower()}.jpg"
+    cached = cache_dir / cache_name
 
-    svg = _avatar_svg(key)
+    async def _download_file(file_id: str) -> bytes | None:
+        if _bot is None or not BOT_TOKEN:
+            return None
+        file = await _bot.get_file(file_id)
+        path = file.file_path
+        if not path:
+            return None
+        url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{path}"
+        timeout = aiohttp.ClientTimeout(total=15)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(url) as resp:
+                if resp.status != 200:
+                    return None
+                data = await resp.read()
+                return data if len(data) > 200 else None
+
+    if uid and uid > 0 and _bot is not None and BOT_TOKEN:
+        # Свежий кэш — отдаём; ?v= / ?t= сбрасывает
+        if not bust and cached.is_file() and cached.stat().st_size > 200:
+            return web.Response(
+                body=cached.read_bytes(),
+                content_type="image/jpeg",
+                headers={"Cache-Control": "public, max-age=3600"},
+            )
+        data: bytes | None = None
+        try:
+            chat = await _bot.get_chat(uid)
+            photo = getattr(chat, "photo", None)
+            if photo and getattr(photo, "big_file_id", None):
+                data = await _download_file(photo.big_file_id)
+        except Exception as exc:
+            log.info("avatar get_chat %s: %s", uid, exc)
+        if not data:
+            try:
+                photos = await _bot.get_user_profile_photos(uid, limit=1)
+                if photos and photos.total_count and photos.photos:
+                    file_id = photos.photos[0][-1].file_id
+                    data = await _download_file(file_id)
+            except Exception as exc:
+                log.info("avatar profile_photos %s: %s", uid, exc)
+        if data:
+            try:
+                cached.write_bytes(data)
+            except OSError:
+                pass
+            return web.Response(
+                body=data,
+                content_type="image/jpeg",
+                headers={"Cache-Control": "public, max-age=3600"},
+            )
+
+    # Нет фото / приватность — мягкий плейсхолдер без долгого кэша
+    svg = _avatar_svg(key if not uid else f"u{uid}")
     return web.Response(
         body=svg,
         content_type="image/svg+xml",
-        headers={"Cache-Control": "public, max-age=604800"},
+        headers={"Cache-Control": "no-store"},
     )
 
 
