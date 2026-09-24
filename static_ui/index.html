@@ -954,63 +954,54 @@ input, textarea, select {
 .market-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;
 }
-.market-tunnel {
-  display: flex; flex-direction: column; gap: 10px;
-}
 .mcard {
   appearance: none; border: 0; cursor: pointer; text-align: left;
-  background: var(--card); border-radius: 20px; overflow: hidden;
-  box-shadow: 0 10px 22px rgba(18,21,28,.06); padding: 0;
+  background: var(--card); border-radius: 18px; overflow: hidden;
+  box-shadow: 0 8px 18px rgba(18,21,28,.05); padding: 0;
   display: flex; flex-direction: column;
   transition: transform .28s var(--ease), box-shadow .28s var(--ease);
 }
 .mcard:active { transform: scale(var(--press)); }
-.mcard.fill {
-  position: relative; aspect-ratio: .78; min-height: 210px;
-}
 .mcard .shot {
   position: relative; width: 100%; aspect-ratio: 1;
   background: #1a2430; overflow: hidden;
 }
-.mcard.fill .shot {
-  position: absolute; inset: 0; aspect-ratio: auto; height: 100%;
-}
+/* Fragment-карточка: обрезаем цветные полоски сверху/снизу, оставляем сам подарок */
 .mcard .shot img {
-  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1;
-  transform: none;
+  position: absolute; inset: -12%;
+  width: 124%; height: 124%;
+  object-fit: cover; object-position: center 46%;
+  display: block; z-index: 1;
+}
+.mcard .shot .nft-lottie {
+  position: absolute; inset: 0; z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
 .mcard .shot .nft-lottie svg,
 .mcard .shot .nft-lottie canvas {
-  width: 100% !important; height: 100% !important;
+  width: 78% !important; height: 78% !important;
+  max-width: 78%; max-height: 78%;
   transform: none;
 }
 .mcard .shot .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
-  color: #fff; font-weight: 800; font-size: 18px; letter-spacing: .02em;
-  padding: 12px; text-align: center; z-index: 0; line-height: 1.15;
+  color: #fff; font-weight: 800; font-size: 15px; letter-spacing: .02em;
+  padding: 10px; text-align: center; z-index: 0; line-height: 1.15;
 }
 .mcard .shot img.is-fail { display: none !important; }
-.mcard .meta { padding: 10px 12px 12px; }
-.mcard.fill .meta {
-  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
-  padding: 40px 12px 12px;
-  background: linear-gradient(180deg, transparent, rgba(0,0,0,.82));
-  color: #fff;
-}
-.mcard .nm { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mcard .pr { color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px; }
-.mcard.fill .pr { color: #7dffa8; }
+.mcard .meta { padding: 8px 10px 10px; background: var(--card); }
+.mcard .nm { font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+.mcard .pr { color: var(--accent); font-weight: 700; font-size: 12px; margin-top: 2px; }
 .mcard .by { color: var(--muted); font-size: 11px; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
-.mcard.fill .by { color: rgba(255,255,255,.72); }
 .mcard .by img.av-sm {
-  width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex: 0 0 16px;
+  width: 14px; height: 14px; border-radius: 50%; object-fit: cover; flex: 0 0 14px;
 }
 .mcard .cta-mini {
-  margin-top: 8px; display: inline-flex; align-items: center; justify-content: center;
-  background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); border-radius: 999px;
-  padding: 6px 10px; font-size: 11px; font-weight: 800;
+  margin-top: 6px; display: inline-flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border-radius: 999px;
+  padding: 5px 8px; font-size: 10px; font-weight: 800;
 }
-.mcard.fill .cta-mini { background: rgba(255,255,255,.14); color: #fff; }
 .buy-sheet .hero-nft {
   border-radius: 22px; overflow: hidden; background: #1a2430; margin-bottom: 12px;
   aspect-ratio: 1; position: relative;
@@ -2086,7 +2077,7 @@ function renderMarketCards(market){
     const demo=!!it.demo;
     const seller=it.seller||"";
     const av=it.avatar||(seller?`/a/${seller}.jpg`:"");
-    return `<div class="mcard fill" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
+    return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
       <div class="shot">${nftAnimHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
