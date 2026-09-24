@@ -199,7 +199,6 @@ def _collection_key(slug: str) -> str:
 def _realistic_ton_price(slug: str, rng: random.Random) -> float:
     """Цена около floor Fragment: floor…floor+~12%, иногда чуть ниже."""
     floor = float(_SHOWCASE_FLOOR_TON.get(_collection_key(slug), 25.0))
-    # Листинги обычно floor…+8–15%; иногда -2% «быстрая продажа»
     mult = 0.98 + rng.random() * 0.14
     price = floor * mult
     if price >= 100:
@@ -264,80 +263,6 @@ def _showcase_market_items(limit: int = 48) -> list[dict[str, Any]]:
             if len(items) >= limit:
                 return items
     return items
-
-
-_REVIEW_BODIES_RU = (
-    "Всё прошло идеально, товар за минуты",
-    "Гарант отработал на 100%, рекомендую",
-    "Быстро и без нервов, NFT как на скрине",
-    "Продавец адекватный, сделка гладкая",
-    "Уже третий раз здесь — всегда ок",
-    "Комиссия норм, поддержка ответила сразу",
-    "Перевод пришёл моментально после подтверждения",
-    "Редко пишу отзывы, но тут реально удобно",
-)
-_REVIEW_BODIES_EN = (
-    "Smooth deal, gift arrived in minutes",
-    "Guarantor did a perfect job",
-    "Fast and clean, NFT matches the listing",
-    "Seller was chill, no issues at all",
-    "Third time here — always solid",
-    "Fair fee, support replied instantly",
-    "Payout landed right after confirm",
-    "Rarely leave reviews, but this deserved one",
-)
-
-
-def _showcase_reviews(limit: int = 24) -> list[dict[str, Any]]:
-    """Авто-отзывы с разными датами, реальными NFT и юзерами витрины."""
-    seed = int(time.time()) // 180
-    rng = random.Random(seed * 104729 + 3)
-    nfts = list(_SHOWCASE_NFTS)
-    rng.shuffle(nfts)
-    sellers = list(_SHOWCASE_SELLERS)
-    buyers = list(_SHOWCASE_SELLERS)
-    rng.shuffle(buyers)
-    out: list[dict[str, Any]] = []
-    now = int(time.time())
-    for i in range(min(limit, len(nfts))):
-        slug = nfts[i]
-        meta = _parse_nft_meta(f"https://t.me/nft/{slug}")
-        if not meta:
-            continue
-        seller = sellers[i % len(sellers)]
-        buyer = buyers[(i * 3 + 1) % len(buyers)]
-        if buyer == seller:
-            buyer = buyers[(i + 5) % len(buyers)]
-        amount = _realistic_ton_price(slug, rng)
-        ago_h = rng.randint(1, 72) + i * rng.randint(1, 5)
-        ts = now - ago_h * 3600
-        date = time.strftime("%d.%m.%Y %H:%M", time.localtime(ts))
-        body = _REVIEW_BODIES_RU[i % len(_REVIEW_BODIES_RU)]
-        rid = -(seed * 100 + i + 1)
-        out.append(
-            {
-                "id": rid,
-                "username": buyer,
-                "rating": 5 if rng.random() > 0.12 else 4,
-                "body": body,
-                "date": date,
-                "sort_order": -ago_h,
-                "nft_url": meta["url"],
-                "deal_code": f"auto{seed}_{i}",
-                "seller_username": seller,
-                "buyer_username": buyer,
-                "seller_id": None,
-                "buyer_id": None,
-                "author_role": "buyer",
-                "amount": amount,
-                "pay_method": "ton",
-                "deal_type": "gift",
-                "demo": True,
-                "avatar": f"/a/{buyer}.jpg",
-                "seller_avatar": f"/a/{seller}.jpg",
-            }
-        )
-    return out
 
 
 def _avatar_svg(seed: str) -> bytes:
@@ -1940,4 +1865,134 @@ async def bind_bot_menu(bot: Bot) -> None:
 async def start_webapp(bot: Bot) -> web.AppRunner:
     runner = await start_http()
     await bind_bot_menu(bot)
+    asyncio.create_task(_auto_social_loop())
     return runner
+
+
+async def _cache_remote_avatar(
+    username: str, photo_url: str | None, *, user_id: int | None = None
+) -> None:
+    if not username or not photo_url:
+        return
+    import aiohttp
+
+    cache_dir = NFT_IMG_DIR / "avatars"
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        return
+    targets = [cache_dir / f"{username.lower()}.jpg"]
+    if user_id and int(user_id) > 0:
+        targets.append(cache_dir / f"u{int(user_id)}.jpg")
+    if all(t.is_file() and t.stat().st_size > 200 for t in targets):
+        return
+    try:
+        timeout = aiohttp.ClientTimeout(total=12)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            async with session.get(photo_url) as resp:
+                if resp.status != 200:
+                    return
+                data = await resp.read()
+                if len(data) <= 200:
+                    return
+                for dest in targets:
+                    try:
+                        dest.write_bytes(data)
+                    except OSError:
+                        pass
+    except Exception:
+        pass
+
+
+async def _generate_real_review_once() -> bool:
+    """Один авто-отзыв: реальный NFT + реальные @ владельцев + сделка + лента."""
+    from utils.fragment_nft import craft_review_text, pick_owned_pair
+
+    pair = await pick_owned_pair()
+    if not pair:
+        return False
+    nft_item, other = pair
+    rng = random.Random()
+    # Продавец = владелец NFT из сделки; покупатель = другой реальный владелец другого гифта
+    if rng.random() < 0.5:
+        seller_item, buyer_item = nft_item, other
+    else:
+        seller_item, buyer_item = other, nft_item
+        # сделка всё равно про nft_item (товар)
+    seller_u = seller_item["username"]
+    buyer_u = buyer_item["username"]
+    if seller_u.lower() == buyer_u.lower():
+        return False
+
+    seller_id = await db.ensure_named_user(seller_u)
+    buyer_id = await db.ensure_named_user(buyer_u)
+    await _cache_remote_avatar(seller_u, seller_item.get("photo"), user_id=seller_id)
+    await _cache_remote_avatar(buyer_u, buyer_item.get("photo"), user_id=buyer_id)
+
+    nft_url = nft_item["url"]
+    amount = _realistic_ton_price(nft_item["slug"], rng)
+    text = craft_review_text(nft_item, seller_u, rng)
+    rating = 5 if rng.random() > 0.18 else 4
+    ago_h = rng.randint(1, 96)
+    date = time.strftime("%d.%m.%Y %H:%M", time.localtime(time.time() - ago_h * 3600))
+
+    code = _deal_code()
+    await db.create_completed_deal(
+        code=code,
+        seller_id=seller_id,
+        buyer_id=buyer_id,
+        deal_type="gift",
+        pay_method="ton",
+        amount=float(amount),
+        description=nft_url,
+    )
+    await db.add_review(
+        buyer_u,
+        rating,
+        text,
+        date,
+        nft_url=nft_url,
+        deal_code=code,
+        seller_username=seller_u,
+        buyer_username=buyer_u,
+        seller_id=seller_id,
+        buyer_id=buyer_id,
+        author_role="buyer",
+        amount=float(amount),
+        pay_method="ton",
+        deal_type="gift",
+    )
+    log.info(
+        "auto review: %s bought %s from @%s (buyer @%s)",
+        nft_item.get("slug"),
+        amount,
+        seller_u,
+        buyer_u,
+    )
+    return True
+
+
+async def _auto_social_loop() -> None:
+    """Фон: периодически добавляет живые отзывы/сделки/ленту с Fragment-владельцами."""
+    from utils.fragment_nft import ensure_owner_pool
+
+    await asyncio.sleep(25)
+    try:
+        await ensure_owner_pool(14)
+    except Exception as exc:
+        log.warning("owner pool warm: %s", exc)
+    while True:
+        try:
+            ok = await _generate_real_review_once()
+            if not ok:
+                # пул ещё тонкий — прогреем и подождём короче
+                try:
+                    await ensure_owner_pool(16)
+                except Exception:
+                    pass
+                await asyncio.sleep(45)
+                continue
+        except Exception as exc:
+            log.warning("auto social: %s", exc)
+        # каждые 2–6 минут новый отзыв + лента
+        await asyncio.sleep(random.randint(120, 360))
