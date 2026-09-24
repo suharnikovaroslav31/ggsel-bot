@@ -321,8 +321,10 @@ def craft_review_text(nft: dict[str, Any], seller: str, rng: random.Random) -> s
     gift = nft.get("name") or "NFT"
     num = nft.get("num") or "?"
     tpl = rng.choice(REVIEW_TEMPLATES)
-    text = tpl.format(gift=gift, num=num, seller=seller.lstrip("@"))
-    # лёгкая вариативность хвостов
+    try:
+        text = tpl.format(gift=gift, num=num, seller=str(seller or "").lstrip("@"))
+    except Exception:
+        text = f"Сделка по {gift} #{num} прошла отлично"
     tails = ("", "", " 👍", " ✅", " 🔥", " ⚡", " 💯")
     return (text + rng.choice(tails)).strip()
 
