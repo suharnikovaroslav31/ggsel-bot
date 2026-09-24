@@ -995,7 +995,8 @@ input, textarea, select {
 .mcard .pr { color: var(--accent); font-weight: 700; font-size: 12px; margin-top: 2px; }
 .mcard .by { color: var(--muted); font-size: 11px; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
 .mcard .by img.av-sm {
-  width: 14px; height: 14px; border-radius: 50%; object-fit: cover; flex: 0 0 14px;
+  width: 14px !important; height: 14px !important; border-radius: 50%;
+  object-fit: cover; flex: 0 0 14px; position: static !important;
 }
 .mcard .cta-mini {
   margin-top: 6px; display: inline-flex; align-items: center; justify-content: center;
@@ -1191,12 +1192,37 @@ input, textarea, select {
 .av, .avatar {
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
 }
 .av span, .avatar span {
   position: absolute; inset: 0; display: grid; place-items: center;
   font-weight: 800; z-index: 0;
 }
-.av img, .avatar img { position: relative; z-index: 1; }
+.av img, .avatar img, img.av-img {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  border-radius: inherit;
+  display: block;
+  z-index: 1;
+}
+.rev .av {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: block;
+  background: #dff7e8;
+}
+img.av-sm {
+  width: 14px !important; height: 14px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  flex: 0 0 14px;
+  position: static !important;
+  inset: auto !important;
+}
 .kbtn, .chip, .cta, .cta-light, .fab, .tab, .qcard {
   transition: transform .22s var(--ease), background .22s var(--ease), box-shadow .22s var(--ease);
 }
