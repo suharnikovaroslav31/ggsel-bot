@@ -49,9 +49,8 @@ WEBAPP_DIR = BASE_DIR / "static_ui"
 EMOJI_DIR = DB_PATH.parent / "emoji"
 NFT_IMG_DIR = DB_PATH.parent / "nft_img"
 
-# Живая витрина: ротация раз в 2 минуты (плюс реальные лоты продавцов)
-# Floors ≈ Fragment snapshot (TON), источник giftswatchdata / fragment
-_MARKET_ROTATE_SEC = 120
+# Живая витрина: ротация ~60с, большой туннель лотов (Fragment floors)
+_MARKET_ROTATE_SEC = 60
 _SHOWCASE_FLOOR_TON: dict[str, float] = {
     "PlushPepe": 3999.0,
     "DurovsCap": 435.0,
@@ -73,40 +72,122 @@ _SHOWCASE_FLOOR_TON: dict[str, float] = {
     "VintageCigar": 47.0,
     "MiniOscar": 83.0,
     "AstralShard": 148.0,
+    "StellarRocket": 12.0,
+    "InstantRamen": 4.5,
+    "BerryBox": 8.0,
+    "BunnyMuffin": 6.5,
+    "CookieHeart": 9.0,
+    "CrystalBall": 55.0,
+    "DeskCalendar": 11.0,
+    "EvilEye": 22.0,
+    "FlyingBroom": 18.0,
+    "GemSignet": 42.0,
+    "HangingStar": 15.0,
+    "HeartLocket": 28.0,
+    "HeroicHelmet": 95.0,
+    "HomemadeCake": 7.5,
+    "HypnoLollipop": 5.5,
+    "IonGem": 120.0,
+    "JellyBunny": 14.0,
+    "JesterHat": 19.0,
+    "LightSword": 65.0,
+    "LoveCandle": 16.0,
+    "LovePotion": 24.0,
+    "LunarSnake": 33.0,
+    "MadPumpkin": 21.0,
+    "PartySparkler": 8.5,
+    "RecordPlayer": 38.0,
+    "SakuraFlower": 26.0,
+    "SantaHat": 17.0,
+    "SharpTongue": 31.0,
+    "SkullFlower": 29.0,
+    "SnoopCigar": 48.0,
+    "SnoopDogg": 210.0,
+    "SnowMittens": 13.0,
+    "SpicedWine": 10.0,
+    "SpringBasket": 12.5,
+    "StarNotepad": 9.5,
+    "TopHat": 36.0,
+    "TrappedHeart": 27.0,
+    "VictoryMedal": 44.0,
+    "WinterWreath": 14.5,
+    "WitchHat": 23.0,
+    "XmasStocking": 11.5,
 }
-_SHOWCASE_NFTS = (
-    "PlushPepe-128",
-    "DurovsCap-7",
-    "LolPop-4421",
-    "PreciousPeach-88",
-    "PerfumeBottle-203",
-    "ToyBear-915",
-    "SwissWatch-44",
-    "DiamondRing-301",
-    "SignetRing-77",
-    "ScaredCat-1204",
-    "MagicPotion-56",
-    "GenieLamp-19",
-    "EternalRose-333",
-    "LootBag-812",
-    "NekoHelmet-45",
-    "ElectricSkull-67",
-    "SpyAgaric-902",
-    "VintageCigar-14",
-    "MiniOscar-3",
-    "AstralShard-221",
+_SHOWCASE_COLLECTIONS = tuple(_SHOWCASE_FLOOR_TON.keys())
+_SHOWCASE_NFTS = tuple(
+    f"{name}-{num}"
+    for name, nums in (
+        ("PlushPepe", (128, 401, 902)),
+        ("DurovsCap", (7, 41, 88)),
+        ("LolPop", (4421, 1203, 8801)),
+        ("PreciousPeach", (88, 214, 501)),
+        ("PerfumeBottle", (203, 77, 509)),
+        ("ToyBear", (915, 44, 301)),
+        ("SwissWatch", (44, 119, 802)),
+        ("DiamondRing", (301, 55, 918)),
+        ("SignetRing", (77, 404, 612)),
+        ("ScaredCat", (1204, 88, 733)),
+        ("MagicPotion", (56, 291, 808)),
+        ("GenieLamp", (19, 404, 711)),
+        ("EternalRose", (333, 101, 909)),
+        ("LootBag", (812, 45, 606)),
+        ("NekoHelmet", (45, 222, 777)),
+        ("ElectricSkull", (67, 303, 919)),
+        ("SpyAgaric", (902, 32736, 111)),
+        ("VintageCigar", (14, 505, 808)),
+        ("MiniOscar", (3, 88, 404)),
+        ("AstralShard", (221, 17, 650)),
+        ("StellarRocket", (40940, 1204, 88)),
+        ("InstantRamen", (340605, 991, 44)),
+        ("BerryBox", (1024, 55, 808)),
+        ("BunnyMuffin", (777, 301, 120)),
+        ("CookieHeart", (404, 88, 2011)),
+        ("CrystalBall", (56, 909, 333)),
+        ("DeskCalendar", (12, 404, 880)),
+        ("EvilEye", (707, 19, 555)),
+        ("FlyingBroom", (303, 88, 1204)),
+        ("GemSignet", (41, 909, 217)),
+        ("HangingStar", (88, 404, 1600)),
+        ("HeartLocket", (215, 77, 901)),
+        ("HeroicHelmet", (9, 404, 88)),
+        ("HomemadeCake", (512, 77, 3001)),
+        ("HypnoLollipop", (1804, 55, 909)),
+        ("IonGem", (17, 404, 88)),
+        ("JellyBunny", (606, 120, 909)),
+        ("JesterHat", (88, 404, 711)),
+        ("LightSword", (33, 909, 214)),
+        ("LoveCandle", (404, 55, 1208)),
+        ("LovePotion", (91, 404, 777)),
+        ("LunarSnake", (208, 88, 505)),
+        ("MadPumpkin", (404, 31, 909)),
+        ("PartySparkler", (1204, 88, 55)),
+        ("RecordPlayer", (44, 909, 217)),
+        ("SakuraFlower", (808, 101, 404)),
+        ("SantaHat", (1225, 88, 404)),
+        ("SharpTongue", (66, 909, 301)),
+        ("SkullFlower", (404, 88, 717)),
+        ("SnoopCigar", (14, 505, 909)),
+        ("SnoopDogg", (7, 88, 404)),
+        ("SnowMittens", (1224, 55, 808)),
+        ("SpicedWine", (404, 91, 1204)),
+        ("SpringBasket", (303, 88, 505)),
+        ("StarNotepad", (88, 404, 1601)),
+        ("TopHat", (19, 909, 404)),
+        ("TrappedHeart", (214, 88, 707)),
+        ("VictoryMedal", (1, 404, 909)),
+        ("WinterWreath", (1225, 55, 808)),
+        ("WitchHat", (310, 88, 404)),
+        ("XmasStocking", (1225, 91, 707)),
+    )
+    for num in nums
 )
 _SHOWCASE_SELLERS = (
-    "tonfox",
-    "nftlane",
-    "giftok",
-    "dealwave",
-    "starpay",
-    "rarebrod",
-    "rubnode",
-    "p2psafe",
-    "pepe_hub",
-    "cap_trade",
+    "tonfox", "nftlane", "giftok", "dealwave", "starpay", "rarebrod", "rubnode",
+    "p2psafe", "pepe_hub", "cap_trade", "BPANPR", "Daria_Koroleva", "FragmentDeal",
+    "gift_market_ru", "ton_gifts_pro", "nft_vault", "safe_p2p", "crystal_ton",
+    "lottie_shop", "rocket_deals", "agaric_store", "ramen_hub", "peach_lane",
+    "watch_desk", "skull_trade", "rose_exchange", "oscar_mini", "shard_lab",
 )
 
 
@@ -136,37 +217,144 @@ def _market_rotate_in() -> int:
     return max(1, _MARKET_ROTATE_SEC - int(time.time()) % _MARKET_ROTATE_SEC)
 
 
-def _showcase_market_items(limit: int = 10) -> list[dict[str, Any]]:
-    """Детерминированная витрина на окно 2 мин — цены как на Fragment (TON)."""
-    seed = _market_seed()
-    rng = random.Random(seed)
+def _showcase_market_items(limit: int = 48) -> list[dict[str, Any]]:
+    """Большой живой туннель лотов: несколько окон ротации + реальные floors."""
+    now = int(time.time())
+    base = now // _MARKET_ROTATE_SEC
+    items: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    windows = max(1, min(10, (limit + 5) // 6))
+    per_window = max(4, (limit + windows - 1) // windows)
+    for w in range(windows):
+        seed = base - w
+        rng = random.Random(seed * 7919 + 17)
+        nfts = list(_SHOWCASE_NFTS)
+        rng.shuffle(nfts)
+        sellers = list(_SHOWCASE_SELLERS)
+        rng.shuffle(sellers)
+        for i, slug in enumerate(nfts[:per_window]):
+            low = slug.lower()
+            if low in seen:
+                continue
+            meta = _parse_nft_meta(f"https://t.me/nft/{slug}")
+            if not meta:
+                continue
+            seen.add(low)
+            seller = sellers[(i + w) % len(sellers)]
+            amount = _realistic_ton_price(slug, rng)
+            age = w * _MARKET_ROTATE_SEC + rng.randint(0, _MARKET_ROTATE_SEC - 1)
+            items.append(
+                {
+                    "code": f"v{seed}_{i}",
+                    "amount": amount,
+                    "pay_method": "ton",
+                    "deal_type": "gift",
+                    "status": "open",
+                    "listing": "sell",
+                    "nft": meta,
+                    "seller": seller,
+                    "seller_id": None,
+                    "owner_id": None,
+                    "demo": True,
+                    "avatar": f"/a/{seller}.jpg",
+                    "collection": _collection_key(slug),
+                    "listed_ago": age,
+                }
+            )
+            if len(items) >= limit:
+                return items
+    return items
+
+
+_REVIEW_BODIES_RU = (
+    "Всё прошло идеально, товар за минуты",
+    "Гарант отработал на 100%, рекомендую",
+    "Быстро и без нервов, NFT как на скрине",
+    "Продавец адекватный, сделка гладкая",
+    "Уже третий раз здесь — всегда ок",
+    "Комиссия норм, поддержка ответила сразу",
+    "Перевод пришёл моментально после подтверждения",
+    "Редко пишу отзывы, но тут реально удобно",
+)
+_REVIEW_BODIES_EN = (
+    "Smooth deal, gift arrived in minutes",
+    "Guarantor did a perfect job",
+    "Fast and clean, NFT matches the listing",
+    "Seller was chill, no issues at all",
+    "Third time here — always solid",
+    "Fair fee, support replied instantly",
+    "Payout landed right after confirm",
+    "Rarely leave reviews, but this deserved one",
+)
+
+
+def _showcase_reviews(limit: int = 24) -> list[dict[str, Any]]:
+    """Авто-отзывы с разными датами, реальными NFT и юзерами витрины."""
+    seed = int(time.time()) // 180
+    rng = random.Random(seed * 104729 + 3)
     nfts = list(_SHOWCASE_NFTS)
     rng.shuffle(nfts)
     sellers = list(_SHOWCASE_SELLERS)
-    rng.shuffle(sellers)
-    items: list[dict[str, Any]] = []
-    for i, slug in enumerate(nfts[:limit]):
+    buyers = list(_SHOWCASE_SELLERS)
+    rng.shuffle(buyers)
+    out: list[dict[str, Any]] = []
+    now = int(time.time())
+    for i in range(min(limit, len(nfts))):
+        slug = nfts[i]
         meta = _parse_nft_meta(f"https://t.me/nft/{slug}")
         if not meta:
             continue
         seller = sellers[i % len(sellers)]
+        buyer = buyers[(i * 3 + 1) % len(buyers)]
+        if buyer == seller:
+            buyer = buyers[(i + 5) % len(buyers)]
         amount = _realistic_ton_price(slug, rng)
-        items.append(
+        ago_h = rng.randint(1, 72) + i * rng.randint(1, 5)
+        ts = now - ago_h * 3600
+        date = time.strftime("%d.%m.%Y %H:%M", time.localtime(ts))
+        body = _REVIEW_BODIES_RU[i % len(_REVIEW_BODIES_RU)]
+        rid = -(seed * 100 + i + 1)
+        out.append(
             {
-                "code": f"v{seed}_{i}",
+                "id": rid,
+                "username": buyer,
+                "rating": 5 if rng.random() > 0.12 else 4,
+                "body": body,
+                "date": date,
+                "sort_order": -ago_h,
+                "nft_url": meta["url"],
+                "deal_code": f"auto{seed}_{i}",
+                "seller_username": seller,
+                "buyer_username": buyer,
+                "seller_id": None,
+                "buyer_id": None,
+                "author_role": "buyer",
                 "amount": amount,
                 "pay_method": "ton",
                 "deal_type": "gift",
-                "status": "open",
-                "listing": "sell",
-                "nft": meta,
-                "seller": seller,
-                "seller_id": None,
-                "owner_id": None,
                 "demo": True,
+                "avatar": f"/a/{buyer}.jpg",
+                "seller_avatar": f"/a/{seller}.jpg",
             }
         )
-    return items
+    return out
+
+
+def _avatar_svg(seed: str) -> bytes:
+    h = abs(hash(seed))
+    c1 = f"hsl({h % 360} 62% 48%)"
+    c2 = f"hsl({(h // 7) % 360} 55% 36%)"
+    letter = (seed[:1] or "?").upper()
+    svg = (
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">'
+        f'<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">'
+        f'<stop offset="0%" stop-color="{c1}"/><stop offset="100%" stop-color="{c2}"/>'
+        f"</linearGradient></defs>"
+        f'<rect width="128" height="128" rx="36" fill="url(#g)"/>'
+        f'<text x="64" y="78" text-anchor="middle" font-family="system-ui,sans-serif" '
+        f'font-size="56" font-weight="700" fill="#fff">{letter}</text></svg>'
+    )
+    return svg.encode("utf-8")
 
 
 _bot: Bot | None = None
@@ -878,6 +1066,7 @@ def _review_json(row) -> dict[str, Any]:
     return {
         "id": int(row["id"]),
         "username": row["username"] or "",
+        "avatar": f"/a/{(row['username'] or '').lstrip('@')}.jpg" if (row["username"] or "") else "",
         "rating": int(row["rating"] or 5),
         "body": row["body"] or "",
         "date": row["review_date"] or "",
@@ -938,8 +1127,22 @@ def _normalize_nft_description(raw: str) -> str | None:
 async def api_reviews_list(request: web.Request) -> web.Response:
     newest = str(request.query.get("sort") or "new").lower() != "old"
     rows = await db.list_reviews(newest_first=newest)
+    reviews = [_review_json(r) for r in rows]
+    # Авто-лента: живые отзывы с разными датами, не мешают ручным
+    demo = _showcase_reviews(18)
+    seen = {str(r.get("username") or "").lower() + "|" + str(r.get("nft_url") or "") for r in reviews}
+    for d in demo:
+        key = f"{d.get('username','')}|{d.get('nft_url','')}".lower()
+        if key in seen:
+            continue
+        reviews.append(d)
+        seen.add(key)
+    if newest:
+        reviews.sort(key=lambda r: (str(r.get("date") or ""), int(r.get("id") or 0)), reverse=True)
+    else:
+        reviews.sort(key=lambda r: (str(r.get("date") or ""), int(r.get("id") or 0)))
     return web.json_response(
-        {"ok": True, "reviews": [_review_json(r) for r in rows]},
+        {"ok": True, "reviews": reviews},
         headers={"Cache-Control": "no-store"},
     )
 
@@ -955,10 +1158,12 @@ async def api_feed(request: web.Request) -> web.Response:
         code = (r["deal_code"] or "").strip()
         if code:
             deal = await db.get_deal_by_code(code)
+        uname = (r["username"] or "").lstrip("@")
         items.append(
             {
                 "id": int(r["id"]),
-                "username": r["username"] or "",
+                "username": uname,
+                "avatar": f"/a/{uname}.jpg" if uname else "",
                 "body": r["body"] or "",
                 "date": r["review_date"] or "",
                 "rating": int(r["rating"] or 5),
@@ -978,7 +1183,32 @@ async def api_feed(request: web.Request) -> web.Response:
                 ),
             }
         )
-    return web.json_response({"ok": True, "items": items}, headers={"Cache-Control": "no-store"})
+    # Добиваем ленту авто-сделками с NFT
+    if len(items) < 16:
+        for d in _showcase_reviews(20):
+            nft = _parse_nft_meta(d.get("nft_url") or "")
+            if not nft:
+                continue
+            items.append(
+                {
+                    "id": int(d["id"]),
+                    "username": d.get("username") or "",
+                    "avatar": d.get("avatar") or "",
+                    "body": d.get("body") or "",
+                    "date": d.get("date") or "",
+                    "rating": int(d.get("rating") or 5),
+                    "nft": nft,
+                    "deal_code": d.get("deal_code") or "",
+                    "deal": None,
+                    "demo": True,
+                }
+            )
+            if len(items) >= 24:
+                break
+    return web.json_response(
+        {"ok": True, "items": items},
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 async def api_feed_item(request: web.Request) -> web.Response:
@@ -1052,6 +1282,7 @@ async def api_market(request: web.Request) -> web.Response:
         listing = "sell" if seller_id else "buy"
         owner_id = seller_id or buyer_id
         owner = await db.get_user(owner_id) if owner_id else None
+        seller_name = (owner["username"] if owner and owner["username"] else None)
         items.append(
             {
                 "code": r["code"],
@@ -1061,30 +1292,67 @@ async def api_market(request: web.Request) -> web.Response:
                 "status": r["status"],
                 "listing": listing,
                 "nft": nft,
-                "seller": (owner["username"] if owner and owner["username"] else None),
+                "seller": seller_name,
                 "seller_id": owner_id or None,
                 "owner_id": owner_id or None,
                 "demo": False,
+                "avatar": f"/a/{seller_name}.jpg" if seller_name else (f"/a/u{owner_id}.jpg" if owner_id else ""),
+                "collection": _collection_key(nft.get("slug") or ""),
             }
         )
 
-    # Добиваем витрину «живыми» лотами — ротация каждые 2 минуты
-    for demo in _showcase_market_items(12):
+    # Большой live-туннель: десятки лотов с реальных Fragment floors
+    for demo in _showcase_market_items(64):
         slug = ((demo.get("nft") or {}).get("slug") or "").lower()
         if slug and slug in seen_nft:
             continue
         if slug:
             seen_nft.add(slug)
         items.append(demo)
-        if len(items) >= 16:
-            break
+
+    q = str(request.query.get("q") or "").strip().lower()
+    coll = str(request.query.get("collection") or "").strip()
+    sort = str(request.query.get("sort") or "new").strip().lower()
+    try:
+        price_min = float(request.query.get("min") or 0)
+    except (TypeError, ValueError):
+        price_min = 0.0
+    try:
+        price_max = float(request.query.get("max") or 0)
+    except (TypeError, ValueError):
+        price_max = 0.0
+
+    filtered = []
+    for it in items:
+        nft = it.get("nft") or {}
+        name = f"{nft.get('name') or ''} {nft.get('num') or ''} {it.get('seller') or ''}".lower()
+        if q and q not in name and q not in str(nft.get("slug") or "").lower():
+            continue
+        if coll and _collection_key(nft.get("slug") or "") != coll:
+            continue
+        amt = float(it.get("amount") or 0)
+        if price_min and amt < price_min:
+            continue
+        if price_max and amt > price_max:
+            continue
+        filtered.append(it)
+
+    if sort == "price_asc":
+        filtered.sort(key=lambda x: float(x.get("amount") or 0))
+    elif sort == "price_desc":
+        filtered.sort(key=lambda x: float(x.get("amount") or 0), reverse=True)
+    elif sort == "name":
+        filtered.sort(key=lambda x: str((x.get("nft") or {}).get("name") or "").lower())
+    # new = keep insertion order (newest windows first)
 
     return web.json_response(
         {
             "ok": True,
-            "items": items,
+            "items": filtered,
             "seed": _market_seed(),
             "rotate_in": _market_rotate_in(),
+            "collections": list(_SHOWCASE_COLLECTIONS),
+            "total": len(filtered),
         },
         headers={"Cache-Control": "no-store"},
     )
@@ -1277,6 +1545,7 @@ async def api_public_profile(request: web.Request) -> web.Response:
                     "user_id": None,
                     "username": uname,
                     "full_name": full_name,
+                    "avatar": f"/a/{uname}.jpg" if uname else "",
                     "rating": avg,
                     "rating_count": cnt,
                     "completed_deals": 0,
@@ -1312,6 +1581,7 @@ async def api_public_profile(request: web.Request) -> web.Response:
                 "user_id": uid,
                 "username": uname,
                 "full_name": full_name,
+                "avatar": f"/a/{uname}.jpg" if uname else f"/a/u{uid}.jpg",
                 "rating": avg,
                 "rating_count": cnt,
                 "completed_deals": completed,
@@ -1519,6 +1789,79 @@ async def serve_nft_img(request: web.Request) -> web.StreamResponse:
     )
 
 
+async def serve_avatar(request: web.Request) -> web.Response:
+    """Реальная аватарка Telegram, если юзер есть в боте; иначе стабильный SVG по нику."""
+    import aiohttp
+
+    raw = str(request.match_info.get("key") or "").strip()
+    if raw.lower().endswith(".jpg") or raw.lower().endswith(".png") or raw.lower().endswith(".webp"):
+        raw = raw.rsplit(".", 1)[0]
+    key = raw.lstrip("@")
+    if not key or len(key) > 64:
+        raise web.HTTPNotFound()
+
+    cache_dir = NFT_IMG_DIR / "avatars"
+    try:
+        cache_dir.mkdir(parents=True, exist_ok=True)
+    except OSError:
+        pass
+    cached = cache_dir / f"{key.lower()}.jpg"
+
+    # Попытка: реальный user_id из БД → фото профиля через Bot API
+    uid: int | None = None
+    if key.startswith("u") and key[1:].isdigit():
+        uid = int(key[1:])
+    elif key.lstrip("-").isdigit():
+        uid = int(key)
+    else:
+        try:
+            row = await db.find_user_by_username(key)
+            if row:
+                uid = int(row["user_id"])
+        except Exception:
+            uid = None
+
+    if uid and uid > 0 and _bot is not None and BOT_TOKEN:
+        try:
+            if cached.is_file() and cached.stat().st_size > 200:
+                return web.Response(
+                    body=cached.read_bytes(),
+                    content_type="image/jpeg",
+                    headers={"Cache-Control": "public, max-age=86400"},
+                )
+            photos = await _bot.get_user_profile_photos(uid, limit=1)
+            if photos and photos.total_count and photos.photos:
+                sizes = photos.photos[0]
+                file_id = sizes[-1].file_id
+                file = await _bot.get_file(file_id)
+                path = file.file_path
+                url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{path}"
+                timeout = aiohttp.ClientTimeout(total=12)
+                async with aiohttp.ClientSession(timeout=timeout) as session:
+                    async with session.get(url) as resp:
+                        if resp.status == 200:
+                            data = await resp.read()
+                            if len(data) > 200:
+                                try:
+                                    cached.write_bytes(data)
+                                except OSError:
+                                    pass
+                                return web.Response(
+                                    body=data,
+                                    content_type="image/jpeg",
+                                    headers={"Cache-Control": "public, max-age=86400"},
+                                )
+        except Exception as exc:
+            log.debug("avatar tg %s: %s", key, exc)
+
+    svg = _avatar_svg(key)
+    return web.Response(
+        body=svg,
+        content_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
 def build_app() -> web.Application:
     app = web.Application()
     app.router.add_get("/health", health)
@@ -1549,6 +1892,7 @@ def build_app() -> web.Application:
     app.router.add_post("/api/admin/reviews/{rid}/move", api_admin_review_move)
     app.router.add_get("/e/{key}.webp", serve_emoji)
     app.router.add_get("/n/{slug}", serve_nft_img)
+    app.router.add_get("/a/{key}", serve_avatar)
     app.router.add_static("/assets", path=str(WEBAPP_DIR), name="webapp_static")
     app.router.add_get("/l/{lang}/deal/{code}", index)
     app.router.add_get("/l/{lang}", index)

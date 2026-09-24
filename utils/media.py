@@ -33,17 +33,22 @@ async def send_ui(
     chat_id: int | str,
     text: str,
     markup: InlineKeyboardMarkup | None = None,
+    *,
+    parse_mode: str | None = "HTML",
 ) -> Message:
     global _cached_file_id
     media = animation_source()
     if media is None:
-        return await bot.send_message(chat_id, text, reply_markup=markup)
+        return await bot.send_message(
+            chat_id, text, reply_markup=markup, parse_mode=parse_mode
+        )
 
     sent = await bot.send_animation(
         chat_id,
         animation=media,
         caption=text,
         reply_markup=markup,
+        parse_mode=parse_mode,
     )
     if sent.animation and not _cached_file_id:
         _cached_file_id = sent.animation.file_id
@@ -67,7 +72,11 @@ async def edit_message_ui(
 ) -> None:
     try:
         await bot.edit_message_caption(
-            chat_id=chat_id, message_id=message_id, caption=text, reply_markup=markup
+            chat_id=chat_id,
+            message_id=message_id,
+            caption=text,
+            reply_markup=markup,
+            parse_mode="HTML",
         )
         return
     except TelegramBadRequest as exc:
@@ -101,7 +110,7 @@ async def edit_ui(
     msg = callback.message
     if msg and _has_media(msg):
         try:
-            await msg.edit_caption(caption=text, reply_markup=markup)
+            await msg.edit_caption(caption=text, reply_markup=markup, parse_mode="HTML")
             return msg
         except TelegramBadRequest as exc:
             if "message is not modified" in str(exc).lower():

@@ -38,6 +38,25 @@
   --logo-wordmark-color: #12151c;
   --dock: #ffffff;
   --hero: #161b22;
+  --shade: rgba(0,0,0,.55);
+  --ease: cubic-bezier(.22,1,.36,1);
+  --press: 0.97;
+}
+html[data-theme="dark"] {
+  --bg: #0e1116;
+  --card: #171b22;
+  --btn: #222833;
+  --btn-press: #2c3442;
+  --line: #2a3140;
+  --text: #f2f4f7;
+  --muted: #8b95a7;
+  --accent: #22c55e;
+  --accent-hover: #1aaf51;
+  --ink: #0a0c10;
+  --logo-wordmark-color: #f2f4f7;
+  --dock: #12161d;
+  --hero: #0a0c10;
+  --shade: rgba(0,0,0,.62);
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body {
@@ -46,6 +65,7 @@ html, body {
   background: var(--bg);
   color: var(--text);
   font-family: Geist, "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  transition: background .35s var(--ease), color .35s var(--ease);
 }
 body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow-x: hidden; }
 #app {
@@ -865,51 +885,106 @@ input, textarea, select {
 .feed-h { display: flex; gap: 10px; overflow-x: auto; padding: 2px 0 14px; scrollbar-width: none; }
 .feed-h::-webkit-scrollbar { display: none; }
 .feed-card {
-  flex: 0 0 128px; height: 160px; border-radius: 22px; padding: 0;
+  flex: 0 0 132px; height: 168px; border-radius: 22px; padding: 0;
   display: flex; flex-direction: column; justify-content: flex-end;
   color: #fff; position: relative; overflow: hidden;
   background: #1a1f28; border: 0; appearance: none; cursor: pointer; text-align: left;
+  transform: translateZ(0);
+  transition: transform .28s var(--ease), box-shadow .28s var(--ease);
 }
+.feed-card:active { transform: scale(var(--press)); }
 .feed-card img, .feed-card .ph {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
 .feed-card .ph { display: grid; place-items: center; font-size: 16px; padding: 10px; z-index: 0; color: #fff; font-weight: 800; text-align: center; }
-.feed-card img { z-index: 1; }
+.feed-card img {
+  z-index: 1;
+  transform: scale(1.72);
+  transform-origin: center 42%;
+  will-change: transform;
+}
 .feed-card img.is-fail { display: none !important; }
 .feed-card .nft-lottie {
   position: absolute; inset: 0; z-index: 1;
+  overflow: hidden;
+}
+.feed-card .nft-lottie svg,
+.feed-card .nft-lottie canvas {
+  width: 100% !important; height: 100% !important;
+  transform: scale(1.72);
+  transform-origin: center 42%;
 }
 .feed-card .shade {
   position: absolute; inset: 0; z-index: 2;
-  background: linear-gradient(180deg, transparent 35%, rgba(0,0,0,.78) 100%);
+  background: linear-gradient(180deg, transparent 32%, rgba(0,0,0,.82) 100%);
+  pointer-events: none;
 }
 .feed-card .ft, .feed-card .fn { position: relative; z-index: 3; padding: 0 10px; }
 .feed-card .ft { font-size: 13px; font-weight: 700; padding-bottom: 2px; }
 .feed-card .fn { color: rgba(255,255,255,.72); font-size: 11px; padding-bottom: 10px; }
 .market-page { padding-bottom: 8px; }
-.market-head { margin: 4px 0 14px; }
+.market-head { margin: 4px 0 12px; }
 .market-head .sec { font-size: 22px; font-weight: 800; margin: 0 0 4px; }
 .market-head .muted { color: var(--muted); font-size: 13px; }
 .market-live {
   margin-top: 8px; display: inline-flex; align-items: center; gap: 6px;
-  background: #e8f8ee; color: var(--accent); border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); border-radius: 999px;
   padding: 6px 10px; font-size: 12px; font-weight: 800;
+}
+.market-tools { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; }
+.market-search {
+  width: 100%; border: 0; background: var(--card); color: var(--text);
+  border-radius: 16px; padding: 12px 14px; font: 600 14px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.market-filters {
+  display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none;
+}
+.market-filters::-webkit-scrollbar { display: none; }
+.mchip {
+  appearance: none; border: 0; flex: 0 0 auto; white-space: nowrap;
+  background: var(--card); color: var(--text); border-radius: 999px;
+  padding: 8px 12px; font: 700 12px/1 Geist, ui-sans-serif, system-ui, sans-serif;
+  box-shadow: inset 0 0 0 1px var(--line); cursor: pointer;
+  transition: background .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
+}
+.mchip.on { background: var(--accent); color: #fff; box-shadow: none; }
+.mchip:active { transform: scale(var(--press)); }
+.market-sort {
+  display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none;
 }
 .market-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;
 }
+.market-tunnel {
+  display: flex; flex-direction: column; gap: 10px;
+}
 .mcard {
   appearance: none; border: 0; cursor: pointer; text-align: left;
-  background: #fff; border-radius: 18px; overflow: hidden;
-  box-shadow: 0 8px 18px rgba(18,21,28,.05); padding: 0;
+  background: var(--card); border-radius: 20px; overflow: hidden;
+  box-shadow: 0 10px 22px rgba(18,21,28,.06); padding: 0;
   display: flex; flex-direction: column;
+  transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+}
+.mcard:active { transform: scale(var(--press)); }
+.mcard.fill {
+  position: relative; aspect-ratio: .78; min-height: 210px;
 }
 .mcard .shot {
   position: relative; width: 100%; aspect-ratio: 1;
   background: #1a2430; overflow: hidden;
 }
+.mcard.fill .shot {
+  position: absolute; inset: 0; aspect-ratio: auto; height: 100%;
+}
 .mcard .shot img {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; z-index: 1;
+  transform: scale(1.65); transform-origin: center 40%;
+}
+.mcard .shot .nft-lottie svg,
+.mcard .shot .nft-lottie canvas {
+  width: 100% !important; height: 100% !important;
+  transform: scale(1.65); transform-origin: center 40%;
 }
 .mcard .shot .ph {
   position: absolute; inset: 0; display: grid; place-items: center;
@@ -918,14 +993,26 @@ input, textarea, select {
 }
 .mcard .shot img.is-fail { display: none !important; }
 .mcard .meta { padding: 10px 12px 12px; }
+.mcard.fill .meta {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 3;
+  padding: 40px 12px 12px;
+  background: linear-gradient(180deg, transparent, rgba(0,0,0,.82));
+  color: #fff;
+}
 .mcard .nm { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mcard .pr { color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 2px; }
-.mcard .by { color: var(--muted); font-size: 11px; margin-top: 2px; }
+.mcard.fill .pr { color: #7dffa8; }
+.mcard .by { color: var(--muted); font-size: 11px; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+.mcard.fill .by { color: rgba(255,255,255,.72); }
+.mcard .by img.av-sm {
+  width: 16px; height: 16px; border-radius: 50%; object-fit: cover; flex: 0 0 16px;
+}
 .mcard .cta-mini {
   margin-top: 8px; display: inline-flex; align-items: center; justify-content: center;
-  background: #e8f8ee; color: var(--accent); border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); border-radius: 999px;
   padding: 6px 10px; font-size: 11px; font-weight: 800;
 }
+.mcard.fill .cta-mini { background: rgba(255,255,255,.14); color: #fff; }
 .buy-sheet .hero-nft {
   border-radius: 22px; overflow: hidden; background: #1a2430; margin-bottom: 12px;
   aspect-ratio: 1; position: relative;
@@ -1032,26 +1119,104 @@ input, textarea, select {
 .me-hint { font-size: 12px; color: var(--muted); margin: -2px 0 8px; }
 
 .admin-sheet {
-  background: #f4f6f8; border-radius: 24px; padding: 16px;
-  box-shadow: 0 12px 28px rgba(18,21,28,.05); margin-bottom: 14px;
-  border: 1px solid rgba(18,21,28,.04);
+  background: var(--card); border-radius: 24px; padding: 16px;
+  box-shadow: 0 12px 28px rgba(18,21,28,.06); margin-bottom: 14px;
+  border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
 }
 .admin-sheet h2 { margin: 0 0 4px; font-size: 20px; display: flex; align-items: center; gap: 8px; }
 .admin-sheet .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
 .admin-sheet input, .admin-sheet textarea {
-  width: 100%; border: 0; background: #fff; border-radius: 14px;
+  width: 100%; border: 0; background: var(--bg); color: var(--text); border-radius: 14px;
   padding: 12px 14px; margin-bottom: 8px; font: 500 14px/1.3 Geist, ui-sans-serif, system-ui, sans-serif;
-  box-shadow: inset 0 0 0 1px rgba(18,21,28,.04);
+  box-shadow: inset 0 0 0 1px var(--line);
 }
 .admin-sheet textarea { min-height: 72px; resize: vertical; }
 .admin-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 4px; }
 .admin-actions .ghost, .admin-actions .go {
-  appearance: none; border: 0; border-radius: 14px; min-height: 46px;
+  appearance: none; border: 0; border-radius: 16px; min-height: 48px;
   padding: 0 14px; font-weight: 700; cursor: pointer; width: 100%;
+  transition: transform .2s var(--ease), background .2s var(--ease);
 }
-.admin-actions .ghost { background: #fff; color: var(--text); box-shadow: inset 0 0 0 1px var(--line); }
+.admin-actions .ghost { background: var(--btn); color: var(--text); }
 .admin-actions .go { background: var(--accent); color: #fff; }
+.admin-actions .ghost:active, .admin-actions .go:active { transform: scale(var(--press)); }
 .admin-actions.one { grid-template-columns: 1fr; }
+.admin-hero {
+  background: linear-gradient(145deg, #122018 0%, #1a3a28 50%, #1db954 140%);
+  color: #fff; border-radius: 24px; padding: 18px 16px; margin-bottom: 14px;
+}
+.admin-hero h1 { margin: 0; font-size: 22px; font-weight: 800; }
+.admin-hero p { margin: 6px 0 0; opacity: .78; font-size: 13px; }
+.theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+.theme-card {
+  appearance: none; border: 0; border-radius: 22px; min-height: 120px; cursor: pointer;
+  padding: 16px; text-align: left; position: relative; overflow: hidden;
+  box-shadow: inset 0 0 0 2px transparent; transition: transform .25s var(--ease), box-shadow .25s var(--ease);
+}
+.theme-card:active { transform: scale(var(--press)); }
+.theme-card.on { box-shadow: inset 0 0 0 2px var(--accent); }
+.theme-card.light { background: #f4f6f8; color: #12151c; }
+.theme-card.dark { background: #12161d; color: #f2f4f7; }
+.theme-card .t-title { font-weight: 800; font-size: 16px; }
+.theme-card .t-sub { margin-top: 4px; font-size: 12px; opacity: .65; }
+.theme-card .swatch {
+  position: absolute; right: 12px; bottom: 12px; width: 42px; height: 42px; border-radius: 14px;
+}
+.theme-card.light .swatch { background: linear-gradient(135deg,#fff,#dfe5ec); box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+.theme-card.dark .swatch { background: linear-gradient(135deg,#2a3140,#0e1116); box-shadow: 0 6px 14px rgba(0,0,0,.35); }
+#coach {
+  position: fixed; inset: 0; z-index: 80; display: grid; place-items: end center;
+  padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+  background: var(--shade); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  opacity: 0; pointer-events: none; transition: opacity .35s var(--ease);
+}
+#coach.on { opacity: 1; pointer-events: auto; }
+.coach-card {
+  width: min(420px, 100%); background: var(--card); color: var(--text);
+  border-radius: 28px; padding: 22px 18px 16px;
+  box-shadow: 0 24px 60px rgba(0,0,0,.28);
+  transform: translateY(18px); transition: transform .4s var(--ease);
+}
+#coach.on .coach-card { transform: translateY(0); }
+.coach-card .step { font-size: 12px; font-weight: 800; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
+.coach-card h3 { margin: 8px 0 6px; font-size: 22px; letter-spacing: -.02em; }
+.coach-card p { margin: 0 0 16px; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.coach-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; }
+.coach-actions button {
+  appearance: none; border: 0; border-radius: 16px; min-height: 48px; font-weight: 700; cursor: pointer;
+  transition: transform .2s var(--ease);
+}
+.coach-actions button:active { transform: scale(var(--press)); }
+.coach-actions .skip { background: var(--btn); color: var(--text); }
+.coach-actions .next { background: var(--accent); color: #fff; }
+.coach-dots { display: flex; gap: 6px; justify-content: center; margin: 0 0 14px; }
+.coach-dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); display: block; }
+.coach-dots i.on { background: var(--accent); width: 18px; border-radius: 99px; }
+.av, .avatar {
+  position: relative;
+  overflow: hidden;
+}
+.av span, .avatar span {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-weight: 800; z-index: 0;
+}
+.av img, .avatar img { position: relative; z-index: 1; }
+.kbtn, .chip, .cta, .cta-light, .fab, .tab, .qcard {
+  transition: transform .22s var(--ease), background .22s var(--ease), box-shadow .22s var(--ease);
+}
+.kbtn:active, .chip:active, .cta:active, .qcard:active { transform: scale(var(--press)); }
+@media (max-width: 520px) {
+  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .fab, .live-dot {
+    animation: none !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
 .star-pick { display: flex; gap: 4px; margin: 0 0 8px; }
 .star-pick button {
   appearance: none; border: 0; background: #fff; border-radius: 10px;
@@ -1155,6 +1320,7 @@ input, textarea, select {
     </nav>
   </div>
   <div id="toast"></div>
+  <div id="coach" aria-hidden="true"></div>
   <div id="intro" hidden>
     <div class="intro-stage">
       <div class="intro-logo"></div>
@@ -1183,7 +1349,14 @@ const I18N = {
     tab_home:"Главная", tab_market:"Маркет", tab_create:"Сделка", tab_deals:"Сделки", tab_bal:"Баланс",
     tab_req:"Реквизиты", tab_refs:"Рефералы", tab_support:"Поддержка", tab_admin:"Админ",
     tab_profile:"Профиль", profile:"Профиль", my_id:"ID", copy_id:"Скопировать ID",
-    market_title:"Маркет NFT", market_sub:"Живые лоты · обновление каждые 2 мин",
+    market_title:"Маркет NFT", market_sub:"Живой туннель лотов · реальные floors Fragment",
+    theme_title:"Тема оформления", theme_sub:"Светлая или тёмная — как удобнее",
+    theme_light:"Светлая", theme_dark:"Тёмная", theme_light_sub:"Чистый дневной интерфейс", theme_dark_sub:"Мягкий ночной режим",
+    coach_skip:"Пропустить", coach_next:"Далее", coach_done:"Понятно",
+    coach1_t:"Безопасные сделки", coach1_d:"Деньги резервируются у гаранта, пока обе стороны не подтвердят обмен.",
+    coach2_t:"Живой маркет", coach2_d:"Лоты с реальными NFT и ценами обновляются онлайн. Фильтры — под любой вкус.",
+    coach3_t:"Отзывы и профили", coach3_d:"Смотри рейтинг продавца, аватар и историю сделок перед покупкой.",
+    m_all:"Все", m_price_asc:"Дешевле", m_price_desc:"Дороже", m_new:"Новые", m_search:"Поиск NFT или @продавца",
     deal_card:"Сделка", deal_link_for:"Ссылка для второго участника", pay_now:"Оплатить с баланса",
     sent_goods:"Товар передан гаранту", recv_goods:"Подтвердить получение",
     st_open:"Ожидает второго участника", st_active:"Ожидает оплаты", st_paid:"Оплачено",
@@ -1227,7 +1400,14 @@ const I18N = {
     tab_home:"Home", tab_market:"Market", tab_create:"Deal", tab_deals:"Deals", tab_bal:"Balance",
     tab_req:"Details", tab_refs:"Refs", tab_support:"Support", tab_admin:"Admin",
     tab_profile:"Profile", profile:"Profile", my_id:"ID", copy_id:"Copy ID",
-    market_title:"NFT market", market_sub:"Live lots · refresh every 2 min",
+    market_title:"NFT market", market_sub:"Live lot tunnel · real Fragment floors",
+    theme_title:"Appearance", theme_sub:"Light or dark — your call",
+    theme_light:"Light", theme_dark:"Dark", theme_light_sub:"Clean daytime UI", theme_dark_sub:"Soft night mode",
+    coach_skip:"Skip", coach_next:"Next", coach_done:"Got it",
+    coach1_t:"Safe deals", coach1_d:"Funds stay with the guarantor until both sides confirm the swap.",
+    coach2_t:"Live market", coach2_d:"Lots with real NFTs and prices refresh online. Filters for every taste.",
+    coach3_t:"Reviews & profiles", coach3_d:"Check seller rating, avatar and deal history before you buy.",
+    m_all:"All", m_price_asc:"Cheapest", m_price_desc:"Highest", m_new:"Newest", m_search:"Search NFT or @seller",
     deal_card:"Deal", deal_link_for:"Link for the other party", pay_now:"Pay from balance",
     sent_goods:"Item sent to guarantor", recv_goods:"Confirm receipt",
     st_open:"Waiting for the other party", st_active:"Waiting for payment", st_paid:"Paid",
@@ -1312,7 +1492,7 @@ const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_c
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
 const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:120,marketSig:"",feed:[],reviews:[]};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:60,marketSig:"",marketFilter:{q:"",collection:"",sort:"new"},marketCollections:[],feed:[],reviews:[],coachStep:0};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -1339,6 +1519,58 @@ function rememberLang(code){
   if(!code) return;
   try{localStorage.setItem("ggsel_lang",code);}catch(e){}
   try{sessionStorage.setItem("ggsel_lang",code);}catch(e){}
+}
+function rememberedTheme(){
+  try{ return localStorage.getItem("ggsel_theme")||""; }catch(e){ return ""; }
+}
+function applyTheme(theme){
+  const t=theme==="dark"?"dark":"light";
+  document.documentElement.setAttribute("data-theme", t);
+  try{ localStorage.setItem("ggsel_theme", t); }catch(e){}
+  const bg=t==="dark"?"#0e1116":"#eef2f5";
+  try{ tg&&tg.setHeaderColor&&tg.setHeaderColor(bg); tg&&tg.setBackgroundColor&&tg.setBackgroundColor(bg); }catch(e){}
+}
+function needThemePicker(){
+  return !rememberedTheme();
+}
+function needCoach(){
+  try{ return localStorage.getItem("ggsel_coach")!=="1"; }catch(e){ return true; }
+}
+function markCoachDone(){
+  try{ localStorage.setItem("ggsel_coach","1"); }catch(e){}
+}
+const COACH_STEPS=[
+  {t:"coach1_t",d:"coach1_d"},
+  {t:"coach2_t",d:"coach2_d"},
+  {t:"coach3_t",d:"coach3_d"},
+];
+function showCoach(step=0){
+  const el=document.getElementById("coach");
+  if(!el) return;
+  state.coachStep=step;
+  const s=COACH_STEPS[step]||COACH_STEPS[0];
+  const last=step>=COACH_STEPS.length-1;
+  const dots=COACH_STEPS.map((_,i)=>`<i class="${i===step?"on":""}"></i>`).join("");
+  el.innerHTML=`<div class="coach-card">
+    <div class="coach-dots">${dots}</div>
+    <div class="step">${step+1} / ${COACH_STEPS.length}</div>
+    <h3>${t(s.t)}</h3>
+    <p>${t(s.d)}</p>
+    <div class="coach-actions">
+      <button type="button" class="skip" data-act="coach-skip">${t("coach_skip")}</button>
+      <button type="button" class="next" data-act="${last?"coach-done":"coach-next"}">${last?t("coach_done"):t("coach_next")}</button>
+    </div>
+  </div>`;
+  el.classList.add("on");
+  el.setAttribute("aria-hidden","false");
+}
+function hideCoach(){
+  const el=document.getElementById("coach");
+  if(!el) return;
+  el.classList.remove("on");
+  el.setAttribute("aria-hidden","true");
+  el.innerHTML="";
+  markCoachDone();
 }
 function needLangPicker(){
   if(rememberedLang()) return false;
@@ -1416,9 +1648,40 @@ async function pickLanguage(code){
     rememberLang(code);
     await loadMe();
     haptic();
+    if(needThemePicker()){
+      state.screen="theme";
+      state.stack=["theme"];
+      await draw();
+      return;
+    }
     await enterApp();
     await draw();
+    if(needCoach()) showCoach(0);
   }catch(e){toast(e.message);}
+}
+function pickTheme(theme){
+  applyTheme(theme);
+  haptic();
+  enterApp().then(async()=>{
+    await draw();
+    if(needCoach()) showCoach(0);
+  });
+}
+function screenTheme(){
+  const cur=rememberedTheme()||"light";
+  return bubble(`<b>${t("theme_title")}</b><p class="hint">${t("theme_sub")}</p>`)+
+    `<div class="theme-grid">
+      <button type="button" class="theme-card light${cur==="light"?" on":""}" data-act="pick-theme" data-theme="light">
+        <div class="t-title">${t("theme_light")}</div>
+        <div class="t-sub">${t("theme_light_sub")}</div>
+        <div class="swatch"></div>
+      </button>
+      <button type="button" class="theme-card dark${cur==="dark"?" on":""}" data-act="pick-theme" data-theme="dark">
+        <div class="t-title">${t("theme_dark")}</div>
+        <div class="t-sub">${t("theme_dark_sub")}</div>
+        <div class="swatch"></div>
+      </button>
+    </div>`;
 }
 function filterLangs(){
   const q=String((document.getElementById("lang-q")||{}).value||"").toLowerCase().trim();
@@ -1515,10 +1778,13 @@ window.__nftAnims=window.__nftAnims||[];
 function destroyNftAnims(){
   (window.__nftAnims||[]).forEach(a=>{ try{ a.destroy(); }catch(e){} });
   window.__nftAnims=[];
+  window.__nftAnimCount=0;
 }
 function mountNftAnims(root){
   const scope=root||document;
   if(!window.lottie||!window.lottie.loadAnimation) return;
+  const lowPower=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent||"");
+  const maxLive=lowPower?3:6;
   const nodes=[...scope.querySelectorAll(".nft-lottie:not([data-mounted])")];
   nodes.forEach(el=>{
     const path=el.getAttribute("data-lottie")||"";
@@ -1528,23 +1794,33 @@ function mountNftAnims(root){
     const parent=el.parentElement;
     const still=parent&&parent.querySelector("img");
     let triedAlt=false;
+    let animRef=null;
     const start=(src)=>{
+      if((window.__nftAnimCount||0)>=maxLive) return;
       try{
         const anim=window.lottie.loadAnimation({
           container:el,
-          renderer:"svg",
+          renderer: lowPower ? "canvas" : "svg",
           loop:true,
           autoplay:true,
           path:src,
-          rendererSettings:{preserveAspectRatio:"xMidYMid meet", progressiveLoad:true}
+          rendererSettings:{
+            preserveAspectRatio:"xMidYMid slice",
+            progressiveLoad:true,
+            clearCanvas:true,
+            hideOnTransparent:true
+          }
         });
         window.__nftAnims.push(anim);
+        window.__nftAnimCount=(window.__nftAnimCount||0)+1;
+        animRef=anim;
         anim.addEventListener("DOMLoaded",()=>{
           el.classList.add("on");
           if(still) still.classList.add("is-fail");
         });
         anim.addEventListener("data_failed",()=>{
           try{ anim.destroy(); }catch(e){}
+          window.__nftAnimCount=Math.max(0,(window.__nftAnimCount||1)-1);
           if(!triedAlt && alt && alt!==src){
             triedAlt=true;
             el.innerHTML="";
@@ -1553,15 +1829,17 @@ function mountNftAnims(root){
         });
       }catch(e){}
     };
-    // Ленивый старт когда карточка на экране
     if("IntersectionObserver" in window){
       const io=new IntersectionObserver((entries)=>{
         entries.forEach(en=>{
-          if(!en.isIntersecting) return;
-          io.disconnect();
-          start(path);
+          if(en.isIntersecting){
+            if(!animRef) start(path);
+            else try{ animRef.play(); }catch(e){}
+          } else if(animRef){
+            try{ animRef.pause(); }catch(e){}
+          }
         });
-      },{rootMargin:"80px", threshold:0.05});
+      },{rootMargin:"40px", threshold:0.12});
       io.observe(el);
     }else{
       start(path);
@@ -1662,7 +1940,7 @@ function syncTabs(){
   const bar=document.getElementById("tabbar");
   if(bar){
     bar.classList.toggle("off", !state.user);
-    bar.classList.toggle("hide", state.screen==="lang"&&!rememberedLang()&&!(state.user&&Number(state.user.lang_picked)));
+    bar.classList.toggle("hide", (state.screen==="lang"&&!rememberedLang()&&!(state.user&&Number(state.user.lang_picked))) || state.screen==="theme");
     bar.classList.toggle("admin", !!(state.user&&state.user.is_admin));
   }
   const on=currentTab();
@@ -1730,10 +2008,12 @@ async function screenHome(){
   }).join(""):"";
   const revCards=reviews.length?reviews.slice(0,12).map(r=>{
     const n=nftInfo(r.nft_url||"");
-    const initial=String(r.username||"G").replace(/^@/,"").slice(0,1).toUpperCase();
-    const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
-    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftAnimHtml(n)}</div>`:`<div class="av">${esc(initial)}</div>`;
     const whoKey=String(r.username||"").replace(/^@/,"");
+    const initial=whoKey.slice(0,1).toUpperCase()||"G";
+    const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
+    const av=r.avatar||(whoKey?`/a/${whoKey}.jpg`:"");
+    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftAnimHtml(n)}</div>`:
+      `<div class="av av-wrap">${av?`<img class="av-img" src="${esc(av)}" alt="" loading="lazy" onerror="this.remove()">`:""}<span>${esc(initial)}</span></div>`;
     return `<div class="rev">
       ${left}
       <div><div class="meta"><button type="button" class="ulink who" data-act="open-profile" data-key="${esc(whoKey)}">@${esc(r.username)}</button><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div>
@@ -1773,36 +2053,58 @@ function renderMarketCards(market){
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
     const demo=!!it.demo;
-    return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
+    const seller=it.seller||"";
+    const av=it.avatar||(seller?`/a/${seller}.jpg`:"");
+    return `<div class="mcard fill" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
       <div class="shot">${nftAnimHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
         <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
-        <div class="by">${uiLang()==="en"?"Listed by":"От"} ${it.seller?unameLink(it.seller,it.owner_id||it.seller_id):unameLink("",it.owner_id||it.seller_id)}</div>
+        <div class="by">${av?`<img class="av-sm" src="${esc(av)}" alt="" loading="lazy" decoding="async">`:""}${it.seller?unameLink(it.seller,it.owner_id||it.seller_id):unameLink("",it.owner_id||it.seller_id)}</div>
         <div class="cta-mini">${mine?(uiLang()==="en"?"Your listing":"Ваш лот"):(uiLang()==="en"?"For sale":"На продаже")}</div>
       </div>
     </div>`;
   }).join("");
 }
 async function screenMarket(){
+  const f=state.marketFilter||{q:"",collection:"",sort:"new"};
   let market=state.market||[];
+  let collections=state.marketCollections||[];
   try{
-    const r=await api("/api/market");
+    const qs=new URLSearchParams();
+    if(f.q) qs.set("q", f.q);
+    if(f.collection) qs.set("collection", f.collection);
+    if(f.sort) qs.set("sort", f.sort);
+    const r=await api("/api/market?"+qs.toString());
     const next=r.items||[];
     if(next.length || !market.length) market=next;
     state.marketSeed=r.seed||state.marketSeed||0;
-    state.marketRotateIn=r.rotate_in||state.marketRotateIn||120;
+    state.marketRotateIn=r.rotate_in||state.marketRotateIn||60;
+    if(r.collections&&r.collections.length) collections=r.collections;
   }catch(e){}
   state.market=market;
-  const rotate=Number(state.marketRotateIn)||120;
+  state.marketCollections=collections;
+  const rotate=Number(state.marketRotateIn)||60;
   const en=uiLang()==="en";
+  const chips=[`<button type="button" class="mchip${f.collection?"":" on"}" data-act="m-coll" data-coll="">${t("m_all")}</button>`]
+    .concat((collections||[]).slice(0,18).map(c=>`<button type="button" class="mchip${f.collection===c?" on":""}" data-act="m-coll" data-coll="${esc(c)}">${esc(c)}</button>`));
+  const sorts=[
+    ["new",t("m_new")],
+    ["price_asc",t("m_price_asc")],
+    ["price_desc",t("m_price_desc")],
+  ].map(([k,lab])=>`<button type="button" class="mchip${f.sort===k?" on":""}" data-act="m-sort" data-sort="${k}">${lab}</button>`).join("");
   return `<div class="market-page">
     <div class="market-head">
       <div class="sec">${t("market_title")}</div>
       <div class="muted">${t("market_sub")}</div>
-      <div class="market-live">● ${en?"Live":"Онлайн"} · ${en?"refresh in":"обновление через"} ${esc(rotate)}s</div>
+      <div class="market-live">● ${en?"Live":"Онлайн"} · ${en?"refresh in":"обновление через"} ${esc(rotate)}s · ${market.length}</div>
     </div>
-    <div class="market-grid">${renderMarketCards(market)}</div>
+    <div class="market-tools">
+      <input id="m-q" class="market-search" type="search" placeholder="${esc(t("m_search"))}" value="${esc(f.q||"")}" />
+      <div class="market-filters">${chips.join("")}</div>
+      <div class="market-sort">${sorts}</div>
+    </div>
+    <div class="market-grid market-tunnel">${renderMarketCards(market)}</div>
   </div>`;
 }
 async function screenMarketView(){
@@ -1983,7 +2285,7 @@ function screenProfile(){
   const rateN=Number(u.rating_count||0);
   const rateLabel=rateN?(`${rate.toFixed(1)} · ${rateN}`):(uiLang()==="en"?"No rating":"Нет оценок");
   return `<div class="bubble">
-    <div class="avatar">${esc(initials)}</div>
+    <div class="avatar av-wrap">${u.username?`<img class="av-img" src="/a/${esc(u.username)}.jpg" alt="" loading="lazy" onerror="this.remove()">`:""}<span>${esc(initials)}</span></div>
     <div class="who">${esc(name)}</div>
     <div class="muted">${u.username?"@"+esc(u.username):""} · ID ${esc(u.id)}</div>
     <div class="rate-row"><span class="stars">${rateN?starsTxt(Math.round(rate)):"☆☆☆☆☆"}</span><span class="muted">${esc(rateLabel)}</span></div>
@@ -1998,6 +2300,7 @@ function screenProfile(){
     [btn(t("bal"),"bal","btn_balance","🧳")],
     [btn(t("refs"),"refs","btn_refs","🌐")],
     [btn(t("lang"),"lang","btn_lang","⚙️")],
+    [btn(t("theme_title"),"theme","btn_lang","🎨")],
     [act(t("support"),"support","btn_support","🎧")],
     u.is_admin?[btn(t("admin"),"admin","construction","🛠")]:null,
     [act(t("copy_id"),"copy:"+u.id,"deal_link","🔗")]
@@ -2088,7 +2391,8 @@ async function screenAdmin(){
   const meHint=en
     ?"Tip: put me / your @ in buyer — rating and completed deals go to you."
     :"Подсказка: укажи me или свой @ как покупателя — рейтинг и сделки засчитаются тебе.";
-  return `<div class="admin-sheet">
+  return `<div class="admin-hero"><h1>✦ ${en?"Admin desk":"Админ-панель"}</h1><p>${en?"Reviews, deals, balances — premium tools.":"Отзывы, сделки и балансы в одном месте."}</p></div>
+    <div class="admin-sheet">
       <h2>✦ ${en?"Review desk":"Модерация отзывов"}</h2>
       <div class="sub">${en?"Creates a completed deal automatically. Fill parties, amount and review.":"Автоматически создаёт завершённую сделку. Укажи стороны, сумму и текст."}</div>
       <div class="rv-lab">${en?"You are writing as":"Автор отзыва пишет как"}</div>
@@ -2159,6 +2463,7 @@ async function screenUserProfile(){
   const en=uiLang()==="en";
   const name=p.full_name||(p.username?("@"+p.username):("ID "+(p.user_id||key)));
   const initials=String(name).replace(/^@/,"").slice(0,2).toUpperCase();
+  const av=p.avatar||(p.username?`/a/${String(p.username).replace(/^@/,"")}.jpg`:(p.user_id?`/a/u${p.user_id}.jpg`:""));
   const rate=Number(p.rating||0);
   const rateN=Number(p.rating_count||0);
   const deals=(p.deals||[]).map(d=>{
@@ -2182,7 +2487,7 @@ async function screenUserProfile(){
     </div>`;
   }).join("")||`<div class="hint">${en?"No reviews yet":"Отзывов пока нет"}</div>`;
   return `<div class="pub-hero">
-      <div class="avatar">${esc(initials)}</div>
+      <div class="avatar">${av?`<img src="${esc(av)}" alt="" loading="lazy" onerror="this.parentNode.textContent='${esc(initials)}'">`:`${esc(initials)}`}</div>
       <div class="who">${esc(name)}</div>
       <div class="muted">${p.username?"@"+esc(p.username):""}${p.user_id!=null?" · ID "+esc(p.user_id):""}${p.is_self?" · "+(en?"You":"Это вы"):""}</div>
       <div class="stats">
@@ -2308,6 +2613,7 @@ async function draw(opts={}){
     else if(s==="profile") root.innerHTML=screenProfile();
     else if(s==="user-profile") root.innerHTML=await screenUserProfile();
     else if(s==="lang") root.innerHTML=screenLang();
+    else if(s==="theme") root.innerHTML=screenTheme();
     else if(s==="admin") root.innerHTML=await screenAdmin();
     else if(s==="admin-credit") root.innerHTML=currencyScreen("acred");
     else if(s==="admin-xfer") root.innerHTML=currencyScreen("axfer");
@@ -2378,14 +2684,20 @@ async function refreshHomeLive(){
 async function refreshMarketLive(){
   if(state.screen!=="market") return;
   try{
-    const r=await api("/api/market");
+    const f=state.marketFilter||{};
+    const qs=new URLSearchParams();
+    if(f.q) qs.set("q", f.q);
+    if(f.collection) qs.set("collection", f.collection);
+    if(f.sort) qs.set("sort", f.sort);
+    const r=await api("/api/market?"+qs.toString());
     const next=r.items||[];
     const seed=r.seed||0;
-    const fp=[seed,(next||[]).map(x=>x.code).join(",")].join("|");
+    const fp=[seed,(next||[]).map(x=>x.code).join(","),f.q||"",f.collection||"",f.sort||""].join("|");
     if(fp===state.marketSig && next.length) return;
     if(next.length || !(state.market||[]).length) state.market=next;
     state.marketSeed=seed||state.marketSeed;
-    state.marketRotateIn=r.rotate_in||state.marketRotateIn||120;
+    state.marketRotateIn=r.rotate_in||state.marketRotateIn||60;
+    if(r.collections) state.marketCollections=r.collections;
     state.marketSig=fp;
     await draw({quiet:true});
   }catch(e){}
@@ -2473,6 +2785,17 @@ document.body.addEventListener("click",async(ev)=>{
   const actName=a.dataset.act;
   try{
     if(actName==="pick-lang"){await pickLanguage(a.dataset.lang);return;}
+    if(actName==="pick-theme"){pickTheme(a.dataset.theme||"light");return;}
+    if(actName==="coach-skip"||actName==="coach-done"){hideCoach();return;}
+    if(actName==="coach-next"){showCoach((state.coachStep||0)+1);return;}
+    if(actName==="m-coll"){
+      state.marketFilter=Object.assign({},state.marketFilter||{},{collection:a.dataset.coll||""});
+      await draw({quiet:true});return;
+    }
+    if(actName==="m-sort"){
+      state.marketFilter=Object.assign({},state.marketFilter||{},{sort:a.dataset.sort||"new"});
+      await draw({quiet:true});return;
+    }
     if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";await draw({quiet:true});return;}
     if(actName==="open-feed"){
       state.feedId=Number(a.dataset.id)||null;
@@ -2676,6 +2999,13 @@ document.body.addEventListener("click",async(ev)=>{
 });
 document.body.addEventListener("input",(ev)=>{
   if(ev.target&&ev.target.id==="lang-q") filterLangs();
+  if(ev.target&&ev.target.id==="m-q"){
+    clearTimeout(window.__mqT);
+    window.__mqT=setTimeout(()=>{
+      state.marketFilter=Object.assign({},state.marketFilter||{},{q:String(ev.target.value||"").trim()});
+      if(state.screen==="market") draw({quiet:true});
+    },280);
+  }
   if(ev.target&&ev.target.id==="f-desc"){
     const box=document.getElementById("nft-prev");
     if(!box) return;
@@ -2701,6 +3031,7 @@ document.addEventListener("visibilitychange",()=>{
 });
 if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
 (async function init(){
+  applyTheme(rememberedTheme()||"light");
   const intro=playIntro();
   let lastErr=null;
   for(let i=0;i<8;i++){
@@ -2710,12 +3041,16 @@ if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
       if(needLangPicker()){
         state.screen="lang";
         state.stack=["lang"];
+      } else if(needThemePicker()){
+        state.screen="theme";
+        state.stack=["theme"];
       } else {
         await enterApp();
       }
       syncLangChip();
       syncBack();
       await draw();
+      if(!needLangPicker() && !needThemePicker() && needCoach()) showCoach(0);
       return;
     }catch(e){
       lastErr=e;

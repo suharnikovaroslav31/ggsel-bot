@@ -6,7 +6,17 @@ from keyboards.main import language_start_kb, open_app_kb
 from utils.media import edit_ui, reply_ui, send_ui
 
 APP_PROMPT = "Выберите язык / Choose language"
-APP_READY = "Откройте GGSel / Open GGSel"
+# Точь-в-точь как welcome GG SELL (blockquote = серые плашки в Telegram)
+APP_READY = (
+    "👋 Добро пожаловать!\n"
+    "\n"
+    "<blockquote>💼 GG SELL — надёжный сервис для безопасных сделок!\n"
+    "Автоматизировано, быстро и без лишних хлопот!</blockquote>\n"
+    "<blockquote>🌚 Комиссия за услугу: всего 1%\n"
+    "⏱ Поддержка 24/7: @GGselSupporter</blockquote>\n"
+    "\n"
+    "❤️ Теперь ваши сделки под защитой! 🛡️"
+)
 
 
 def lang_picked(user) -> bool:

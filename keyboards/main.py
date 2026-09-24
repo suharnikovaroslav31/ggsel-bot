@@ -68,7 +68,7 @@ def open_app_kb(query: str = "") -> InlineKeyboardMarkup:
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text="Открыть GGSel",
+                    text="📝 Open GG SELL",
                     web_app=WebAppInfo(url=app_url(query)),
                 )
             ]
