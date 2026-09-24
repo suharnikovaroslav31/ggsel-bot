@@ -53,6 +53,8 @@ SEED_SLUGS = (
     "HypnoLollipop-7221",
     "LightSword-16",
 )
+
+COLLECTIONS = (
     "PlushPepe",
     "DurovsCap",
     "LolPop",
