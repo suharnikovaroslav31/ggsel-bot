@@ -4,19 +4,23 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message, ReplyKey
 from database import db
 from keyboards.main import language_start_kb, open_app_kb
 from utils.media import edit_ui, reply_ui, send_ui
+from config import MANAGER_USERNAME
 
 APP_PROMPT = "Выберите язык / Choose language"
-# Точь-в-точь как welcome GG SELL (blockquote = серые плашки в Telegram)
-APP_READY = (
-    "👋 Добро пожаловать!\n"
-    "\n"
-    "<blockquote>💼 GG SELL — надёжный сервис для безопасных сделок!\n"
-    "Автоматизировано, быстро и без лишних хлопот!</blockquote>\n"
-    "<blockquote>🌚 Комиссия за услугу: всего 1%\n"
-    "⏱ Поддержка 24/7: @GGselSupporter</blockquote>\n"
-    "\n"
-    "❤️ Теперь ваши сделки под защитой! 🛡️"
-)
+
+
+def _welcome_text() -> str:
+    manager = (MANAGER_USERNAME or "GGsel_deal").lstrip("@")
+    return (
+        "👋 Добро пожаловать!\n"
+        "\n"
+        "<blockquote>💼 GG SELL — надёжный сервис для безопасных сделок!\n"
+        "Автоматизировано, быстро и без лишних хлопот!</blockquote>\n"
+        "<blockquote>🌚 Комиссия за услугу: всего 1%\n"
+        f"⏱ Поддержка 24/7: @{manager}</blockquote>\n"
+        "\n"
+        "❤️ Теперь ваши сделки под защитой! 🛡️"
+    )
 
 
 def lang_picked(user) -> bool:
@@ -29,7 +33,7 @@ def lang_picked(user) -> bool:
 
 
 def entry_text(user) -> str:
-    return APP_READY if lang_picked(user) else APP_PROMPT
+    return _welcome_text() if lang_picked(user) else APP_PROMPT
 
 
 def entry_kb(user, deal: str | None = None) -> InlineKeyboardMarkup:
