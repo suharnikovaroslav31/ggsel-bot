@@ -1913,12 +1913,9 @@ async def _generate_real_review_once() -> bool:
         return False
     nft_item, other = pair
     rng = random.Random()
-    # Продавец = владелец NFT из сделки; покупатель = другой реальный владелец другого гифта
-    if rng.random() < 0.5:
-        seller_item, buyer_item = nft_item, other
-    else:
-        seller_item, buyer_item = other, nft_item
-        # сделка всё равно про nft_item (товар)
+    # Товар = nft_item; продавец = его реальный владелец с Fragment
+    seller_item = nft_item
+    buyer_item = other
     seller_u = seller_item["username"]
     buyer_u = buyer_item["username"]
     if seller_u.lower() == buyer_u.lower():
