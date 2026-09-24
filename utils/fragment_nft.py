@@ -35,7 +35,24 @@ SKIP_USERS = {
     "giftdocumentation",
 }
 
-COLLECTIONS = (
+# Проверенные публичные гифты с @-владельцами (быстрый прогрев пула)
+SEED_SLUGS = (
+    "SpyAgaric-32736",
+    "StellarRocket-40940",
+    "InstantRamen-340605",
+    "LolPop-1203",
+    "ToyBear-915",
+    "SwissWatch-44",
+    "EternalRose-333",
+    "MagicPotion-56",
+    "ScaredCat-1204",
+    "AstralShard-221",
+    "CookieHeart-279",
+    "BunnyMuffin-25645",
+    "SnowMittens-2044",
+    "HypnoLollipop-7221",
+    "LightSword-16",
+)
     "PlushPepe",
     "DurovsCap",
     "LolPop",
@@ -262,12 +279,18 @@ async def ensure_owner_pool(min_size: int = 12) -> list[dict[str, Any]]:
     async with _lock:
         if not _owner_cache and not _owner_pool:
             _load_disk()
+        # Сначала сиды — почти всегда с @username
+        for slug in SEED_SLUGS:
+            if len(_owner_pool) >= min_size:
+                break
+            await fetch_nft_owner(slug)
+            await asyncio.sleep(0.05)
         tries = 0
-        while len(_owner_pool) < min_size and tries < min_size * 6:
+        while len(_owner_pool) < min_size and tries < min_size * 8:
             tries += 1
             slug = random_gift_slug()
             await fetch_nft_owner(slug)
-            await asyncio.sleep(0.15)
+            await asyncio.sleep(0.12)
         _save_disk()
         return list(_owner_pool)
 

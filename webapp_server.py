@@ -1865,8 +1865,21 @@ async def bind_bot_menu(bot: Bot) -> None:
 async def start_webapp(bot: Bot) -> web.AppRunner:
     runner = await start_http()
     await bind_bot_menu(bot)
-    asyncio.create_task(_auto_social_loop())
+    start_auto_social()
     return runner
+
+
+_auto_social_started = False
+
+
+def start_auto_social() -> None:
+    """Идемпотентный старт фоновой генерации отзывов/ленты."""
+    global _auto_social_started
+    if _auto_social_started:
+        return
+    _auto_social_started = True
+    asyncio.create_task(_auto_social_loop())
+    log.info("Auto social loop scheduled")
 
 
 async def _cache_remote_avatar(
@@ -1970,26 +1983,40 @@ async def _generate_real_review_once() -> bool:
 
 
 async def _auto_social_loop() -> None:
-    """Фон: периодически добавляет живые отзывы/сделки/ленту с Fragment-владельцами."""
+    """Фон: сразу несколько живых отзывов, потом регулярно."""
     from utils.fragment_nft import ensure_owner_pool
 
-    await asyncio.sleep(25)
+    await asyncio.sleep(8)
     try:
-        await ensure_owner_pool(14)
+        await ensure_owner_pool(16)
     except Exception as exc:
         log.warning("owner pool warm: %s", exc)
+
+    # Сразу пачка, чтобы на главной что-то было видно
+    for _ in range(5):
+        try:
+            ok = await _generate_real_review_once()
+            log.info("auto social bootstrap ok=%s", ok)
+            if not ok:
+                await ensure_owner_pool(20)
+                await asyncio.sleep(2)
+                continue
+        except Exception as exc:
+            log.warning("auto social bootstrap: %s", exc)
+        await asyncio.sleep(1.5)
+
     while True:
         try:
             ok = await _generate_real_review_once()
             if not ok:
-                # пул ещё тонкий — прогреем и подождём короче
                 try:
-                    await ensure_owner_pool(16)
+                    await ensure_owner_pool(20)
                 except Exception:
                     pass
-                await asyncio.sleep(45)
+                await asyncio.sleep(30)
                 continue
+            log.info("auto social tick ok")
         except Exception as exc:
             log.warning("auto social: %s", exc)
-        # каждые 2–6 минут новый отзыв + лента
-        await asyncio.sleep(random.randint(120, 360))
+        # новый отзыв каждые 90–180 сек
+        await asyncio.sleep(random.randint(90, 180))

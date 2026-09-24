@@ -65,6 +65,12 @@ async def main() -> None:
                 await _bind(bot)
             except Exception as exc:
                 logging.warning("Mini App menu: %s", exc)
+            try:
+                from webapp_server import start_auto_social
+
+                start_auto_social()
+            except Exception as exc:
+                logging.warning("Auto social: %s", exc)
 
         db_admins = await db.list_admins()
         logging.info("Admins in DB: %s", ", ".join(str(x) for x in db_admins) or "(none)")
