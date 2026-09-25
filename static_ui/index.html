@@ -2069,14 +2069,18 @@ async function screenHome(){
   const u=state.user;
   const b=u.balances||{};
   const cur=state.balCur||"rub";
-  const map={rub:["₽",b.rub],uah:["₴",b.uah],kzt:["₸",b.kzt],ton:["TON",b.ton],usdt:["USDT",b.usdt],stars:["⭐",b.stars]};
+  const map={
+    rub:["₽",b.rub], byn:["Br",b.byn], kzt:["₸",b.kzt], uah:["₴",b.uah],
+    usd:["$",b.usd], eur:["€",b.eur],
+    ton:["TON",b.ton], usdt:["USDT",b.usdt], stars:["⭐",b.stars]
+  };
   const [sym,val]=map[cur]||map.rub;
   let feed=state.feed||[], reviews=state.reviews||[];
   try{ const r=await api("/api/feed"); feed=r.items||feed; }catch(e){}
   try{ const r=await api("/api/reviews"); reviews=r.reviews||reviews; }catch(e){}
   state.feed=feed; state.reviews=reviews;
   state.homeSig=homeFingerprint([],feed,reviews,cur,val,0);
-  const curs=["rub","uah","kzt","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
+  const curs=["rub","byn","kzt","uah","usd","eur","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
   const feedCards=feed.length?feed.map(it=>{
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
