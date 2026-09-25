@@ -1332,7 +1332,155 @@ img.av-sm {
 .tabbar.admin .tab.admin-only { display: flex !important; }
 .tabbar.off { pointer-events: none; opacity: .45; }
 .tabbar.hide { pointer-events: none; opacity: 0; visibility: hidden; }
-  </style>
+  
+/* === Full iPhone system look === */
+:root {
+  --ios-blue: #007aff;
+  --ios-gray: #8e8e93;
+  --ios-sep: rgba(60,60,67,.29);
+  --ios-fill-secondary: rgba(120,120,128,.16);
+  --large-title: 34px;
+}
+html[data-theme="dark"] {
+  --ios-sep: rgba(84,84,88,.65);
+  --ios-fill-secondary: rgba(120,120,128,.32);
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif !important;
+}
+.stage { padding: 4px 16px 110px; }
+.large-title {
+  font-size: var(--large-title); font-weight: 700; letter-spacing: -.02em;
+  margin: 4px 0 12px; line-height: 1.1;
+}
+.ios-section {
+  font-size: 13px; font-weight: 400; color: var(--muted);
+  text-transform: uppercase; letter-spacing: -.01em;
+  margin: 18px 8px 8px; padding: 0;
+}
+.ios-group {
+  background: var(--grouped); border-radius: 12px; overflow: hidden;
+  margin-bottom: 8px;
+  box-shadow: 0 0 0 0.5px var(--hair);
+}
+.ios-row {
+  appearance: none; border: 0; background: transparent; color: var(--text);
+  width: 100%; display: flex; align-items: center; gap: 12px;
+  min-height: 44px; padding: 10px 16px; text-align: left; cursor: pointer;
+  font: 400 17px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  position: relative;
+}
+.ios-row + .ios-row::before {
+  content: ""; position: absolute; left: 54px; right: 0; top: 0; height: 0.5px;
+  background: var(--ios-sep);
+}
+.ios-row .flag { font-size: 22px; width: 28px; text-align: center; flex: 0 0 28px; }
+.ios-row .meta { flex: 1; min-width: 0; }
+.ios-row .meta b { display: block; font-weight: 500; font-size: 17px; }
+.ios-row .meta small { display: block; color: var(--muted); font-size: 13px; margin-top: 1px; }
+.ios-row .amt { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 17px; }
+.ios-row .chev { color: var(--ios-gray); font-size: 18px; font-weight: 300; }
+.ios-row.on { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.ios-row:active { background: var(--ios-fill-secondary); }
+.ios-search {
+  width: 100%; border: 0; background: var(--ios-fill-secondary); color: var(--text);
+  border-radius: 10px; padding: 10px 12px; margin: 0 0 12px;
+  font: 400 17px/1.2 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+.wallet-card {
+  background: linear-gradient(160deg, #1c1c1e 0%, #2c2c2e 55%, #3a3a3c 100%);
+  color: #fff; border-radius: 20px; padding: 20px 18px 16px; margin: 4px 0 16px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.18);
+  position: relative; overflow: hidden;
+}
+html[data-theme="dark"] .wallet-card {
+  background: linear-gradient(160deg, #2c2c2e 0%, #1c1c1e 100%);
+  box-shadow: 0 0 0 0.5px var(--hair), 0 12px 32px rgba(0,0,0,.4);
+}
+.wallet-card::after {
+  content: ""; position: absolute; right: -20%; top: -40%; width: 60%; height: 120%;
+  background: radial-gradient(circle, rgba(52,199,89,.22), transparent 70%);
+  pointer-events: none;
+}
+.wallet-card .lab { font-size: 13px; font-weight: 500; opacity: .65; position: relative; z-index: 1; }
+.wallet-card .sum {
+  font-size: 40px; font-weight: 700; letter-spacing: -.03em; margin: 6px 0 14px;
+  font-variant-numeric: tabular-nums; position: relative; z-index: 1;
+}
+.wallet-card .sum small { font-size: 22px; font-weight: 600; opacity: .75; margin-left: 4px; }
+.wallet-card .cur-row { position: relative; z-index: 1; gap: 8px; }
+.wallet-card .cur {
+  appearance: none; border: 0; background: rgba(255,255,255,.12); color: #fff;
+  border-radius: 999px; padding: 7px 12px; font: 600 12px/1 -apple-system, BlinkMacSystemFont, sans-serif;
+  cursor: pointer; white-space: nowrap;
+}
+.wallet-card .cur.on { background: #fff; color: #000; }
+.wallet-card .cur-all {
+  background: rgba(52,199,89,.9) !important; color: #fff !important;
+}
+.splash {
+  background: var(--grouped) !important;
+  border-radius: 20px !important;
+  border: 0.5px solid var(--hair);
+  box-shadow: none !important;
+  color: var(--text) !important;
+}
+.splash::before, .splash::after { display: none !important; }
+.splash .badge {
+  background: color-mix(in srgb, var(--accent) 16%, transparent) !important;
+  color: var(--accent) !important;
+}
+.splash h1 { color: var(--text) !important; font-size: 28px !important; font-weight: 700 !important; letter-spacing: -.02em; margin-left: 0 !important; }
+.splash p { color: var(--muted) !important; margin-left: 0 !important; }
+.splash .cta-light {
+  background: var(--accent) !important; color: #fff !important;
+  border-radius: 14px !important; font-weight: 600 !important;
+}
+.qcard {
+  background: var(--grouped) !important;
+  border: 0.5px solid var(--hair) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+.qcard .qi {
+  background: color-mix(in srgb, var(--accent) 14%, transparent) !important;
+  color: var(--accent) !important; border-radius: 10px !important;
+}
+.bal-card { display: none; }
+.tabbar {
+  border-radius: 999px !important;
+  padding: 6px 8px 8px !important;
+}
+.tab.on { background: transparent !important; color: var(--ios-blue) !important; }
+.tab.on span { color: var(--ios-blue) !important; }
+.fab {
+  background: var(--accent) !important;
+  box-shadow: 0 8px 20px rgba(52,199,89,.35) !important;
+}
+.rev, .mcard, .admin-sheet, .pub-deal, .pub-rev {
+  border-radius: 12px !important;
+}
+.kbtn {
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+}
+.lang-list, .cur-list { display: flex; flex-direction: column; gap: 0; }
+.lang-list { background: var(--grouped); border-radius: 12px; overflow: hidden; box-shadow: 0 0 0 0.5px var(--hair); }
+.lang-row {
+  border-radius: 0 !important; box-shadow: none !important;
+  border: 0 !important; background: transparent !important;
+  min-height: 52px !important; padding: 10px 16px !important;
+}
+.lang-row + .lang-row { box-shadow: inset 0 0.5px 0 var(--ios-sep) !important; }
+.chip {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+}
+.topbar {
+  padding: 6px 16px 8px !important;
+}
+
+</style>
 </head>
 <body>
   <div id="app">
@@ -1441,7 +1589,7 @@ const I18N = {
     grant:"Добавить воркера", ban:"Забанить", unban:"Разбанить", close:"Закрыть",
     owner:"Главный админ", worker:"Админ-панель", pick_cur:"Выберите валюту",
     uid:"Telegram ID", lang_title:"Выбор языка / Language", ru:"Русский", en:"English",
-    search_lang:"Поиск языка", pick_lang:"Выберите язык", all_langs:"Все языки мира"
+    search_lang:"Поиск языка", pick_lang:"Выберите язык", all_langs:"Все языки мира", search_cur:"Поиск валюты", pick_cur_world:"Все валюты мира", all_curs:"Все валюты мира", cur_more:"Все"
   },
   en: {
     welcome_title:"Welcome to GGSel",
@@ -1492,7 +1640,7 @@ const I18N = {
     grant:"Add worker", ban:"Ban", unban:"Unban", close:"Close",
     owner:"Owner admin", worker:"Admin panel", pick_cur:"Choose currency",
     uid:"Telegram ID", lang_title:"Language / Выбор языка", ru:"Русский", en:"English",
-    search_lang:"Search language", pick_lang:"Choose language", all_langs:"All world languages"
+    search_lang:"Search language", pick_lang:"Choose language", all_langs:"All world languages", search_cur:"Search currency", pick_cur_world:"All world currencies", all_curs:"All world currencies", cur_more:"All"
   }
 };
 const WORLD_LANGS=[
@@ -1543,10 +1691,18 @@ const WORLD_LANGS=[
   ["se","Davvisámegiella","Northern Sami"],["fo","Føroyskt","Faroese"],["fy","Frysk","Western Frisian"],
   ["li","Limburgs","Limburgish"],["wa","Walon","Walloon"],["sc","Sardu","Sardinian"],["cu","Словѣньскъ","Church Slavonic"]
 ];
-const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_card","💳"],["stars","pay_stars","btn_pay_stars","⭐"],["usdt","pay_usdt","btn_pay_usdt","🪙"],["usd","pay_usd","btn_pay_usd","💸"],["eur","pay_eur","btn_pay_eur","💰"],["byn","pay_byn","btn_pay_byn","🇧🇾"],["kzt","pay_kzt","btn_pay_kzt","🇰🇿"],["uah","pay_uah","btn_pay_uah","🇺🇦"]];
+const WORLD_CURS=[["ton", "TON", "Toncoin", "💎", "Crypto"], ["usdt", "USDT", "Tether USDT", "🪙", "Crypto"], ["stars", "⭐", "Telegram Stars", "⭐", "Crypto"], ["eur", "€", "Euro", "🇪🇺", "Europe"], ["rub", "₽", "Russian Ruble", "🇷🇺", "Europe"], ["uah", "₴", "Ukrainian Hryvnia", "🇺🇦", "Europe"], ["byn", "Br", "Belarusian Ruble", "🇧🇾", "Europe"], ["gbp", "£", "British Pound", "🇬🇧", "Europe"], ["chf", "Fr", "Swiss Franc", "🇨🇭", "Europe"], ["pln", "zł", "Polish Zloty", "🇵🇱", "Europe"], ["czk", "Kč", "Czech Koruna", "🇨🇿", "Europe"], ["huf", "Ft", "Hungarian Forint", "🇭🇺", "Europe"], ["ron", "lei", "Romanian Leu", "🇷🇴", "Europe"], ["bgn", "лв", "Bulgarian Lev", "🇧🇬", "Europe"], ["rsd", "дин", "Serbian Dinar", "🇷🇸", "Europe"], ["try", "₺", "Turkish Lira", "🇹🇷", "Europe"], ["nok", "kr", "Norwegian Krone", "🇳🇴", "Europe"], ["sek", "kr", "Swedish Krona", "🇸🇪", "Europe"], ["dkk", "kr", "Danish Krone", "🇩🇰", "Europe"], ["isk", "kr", "Icelandic Krona", "🇮🇸", "Europe"], ["gel", "₾", "Georgian Lari", "🇬🇪", "Europe"], ["amd", "֏", "Armenian Dram", "🇦🇲", "Europe"], ["azn", "₼", "Azerbaijani Manat", "🇦🇿", "Europe"], ["mdl", "L", "Moldovan Leu", "🇲🇩", "Europe"], ["all", "L", "Albanian Lek", "🇦🇱", "Europe"], ["mkd", "ден", "Macedonian Denar", "🇲🇰", "Europe"], ["bam", "KM", "Bosnia Mark", "🇧🇦", "Europe"], ["hrk", "kn", "Croatian Kuna", "🇭🇷", "Europe"], ["kzt", "₸", "Kazakhstani Tenge", "🇰🇿", "CIS"], ["uzs", "soʻm", "Uzbekistani Som", "🇺🇿", "CIS"], ["kgs", "сом", "Kyrgyzstani Som", "🇰🇬", "CIS"], ["tjs", "ЅМ", "Tajikistani Somoni", "🇹🇯", "CIS"], ["tmt", "m", "Turkmenistani Manat", "🇹🇲", "CIS"], ["usd", "$", "US Dollar", "🇺🇸", "Americas"], ["cad", "C$", "Canadian Dollar", "🇨🇦", "Americas"], ["mxn", "Mex$", "Mexican Peso", "🇲🇽", "Americas"], ["brl", "R$", "Brazilian Real", "🇧🇷", "Americas"], ["ars", "$", "Argentine Peso", "🇦🇷", "Americas"], ["clp", "$", "Chilean Peso", "🇨🇱", "Americas"], ["cop", "$", "Colombian Peso", "🇨🇴", "Americas"], ["pen", "S/", "Peruvian Sol", "🇵🇪", "Americas"], ["uyu", "$U", "Uruguayan Peso", "🇺🇾", "Americas"], ["bob", "Bs", "Bolivian Boliviano", "🇧🇴", "Americas"], ["pyg", "₲", "Paraguayan Guarani", "🇵🇾", "Americas"], ["ves", "Bs", "Venezuelan Bolívar", "🇻🇪", "Americas"], ["gtq", "Q", "Guatemalan Quetzal", "🇬🇹", "Americas"], ["crc", "₡", "Costa Rican Colón", "🇨🇷", "Americas"], ["dop", "RD$", "Dominican Peso", "🇩🇴", "Americas"], ["hnl", "L", "Honduran Lempira", "🇭🇳", "Americas"], ["nio", "C$", "Nicaraguan Córdoba", "🇳🇮", "Americas"], ["pab", "B/.", "Panamanian Balboa", "🇵🇦", "Americas"], ["jmd", "J$", "Jamaican Dollar", "🇯🇲", "Americas"], ["ttd", "TT$", "Trinidad Dollar", "🇹🇹", "Americas"], ["bbd", "Bds$", "Barbadian Dollar", "🇧🇧", "Americas"], ["bsd", "B$", "Bahamian Dollar", "🇧🇸", "Americas"], ["bzd", "BZ$", "Belize Dollar", "🇧🇿", "Americas"], ["gyd", "G$", "Guyanese Dollar", "🇬🇾", "Americas"], ["srd", "$", "Surinamese Dollar", "🇸🇷", "Americas"], ["htg", "G", "Haitian Gourde", "🇭🇹", "Americas"], ["cup", "$", "Cuban Peso", "🇨🇺", "Americas"], ["cny", "¥", "Chinese Yuan", "🇨🇳", "Asia"], ["jpy", "¥", "Japanese Yen", "🇯🇵", "Asia"], ["krw", "₩", "South Korean Won", "🇰🇷", "Asia"], ["inr", "₹", "Indian Rupee", "🇮🇳", "Asia"], ["idr", "Rp", "Indonesian Rupiah", "🇮🇩", "Asia"], ["thb", "฿", "Thai Baht", "🇹🇭", "Asia"], ["vnd", "₫", "Vietnamese Dong", "🇻🇳", "Asia"], ["myr", "RM", "Malaysian Ringgit", "🇲🇾", "Asia"], ["sgd", "S$", "Singapore Dollar", "🇸🇬", "Asia"], ["hkd", "HK$", "Hong Kong Dollar", "🇭🇰", "Asia"], ["twd", "NT$", "New Taiwan Dollar", "🇹🇼", "Asia"], ["php", "₱", "Philippine Peso", "🇵🇭", "Asia"], ["pkr", "₨", "Pakistani Rupee", "🇵🇰", "Asia"], ["bdt", "৳", "Bangladeshi Taka", "🇧🇩", "Asia"], ["lkr", "Rs", "Sri Lankan Rupee", "🇱🇰", "Asia"], ["npr", "Rs", "Nepalese Rupee", "🇳🇵", "Asia"], ["mmk", "K", "Myanmar Kyat", "🇲🇲", "Asia"], ["khr", "៛", "Cambodian Riel", "🇰🇭", "Asia"], ["lak", "₭", "Lao Kip", "🇱🇦", "Asia"], ["mnt", "₮", "Mongolian Tögrög", "🇲🇳", "Asia"], ["kpw", "₩", "North Korean Won", "🇰🇵", "Asia"], ["mvr", "Rf", "Maldivian Rufiyaa", "🇲🇻", "Asia"], ["btn", "Nu", "Bhutanese Ngultrum", "🇧🇹", "Asia"], ["afn", "؋", "Afghan Afghani", "🇦🇫", "Asia"], ["bnd", "B$", "Brunei Dollar", "🇧🇳", "Asia"], ["mop", "MOP$", "Macanese Pataca", "🇲🇴", "Asia"], ["aed", "د.إ", "UAE Dirham", "🇦🇪", "Middle East"], ["sar", "﷼", "Saudi Riyal", "🇸🇦", "Middle East"], ["qar", "﷼", "Qatari Riyal", "🇶🇦", "Middle East"], ["kwd", "د.ك", "Kuwaiti Dinar", "🇰🇼", "Middle East"], ["bhd", ".د.ب", "Bahraini Dinar", "🇧🇭", "Middle East"], ["omr", "ر.ع.", "Omani Rial", "🇴🇲", "Middle East"], ["ils", "₪", "Israeli Shekel", "🇮🇱", "Middle East"], ["jod", "د.ا", "Jordanian Dinar", "🇯🇴", "Middle East"], ["lbp", "ل.ل", "Lebanese Pound", "🇱🇧", "Middle East"], ["iqd", "ع.د", "Iraqi Dinar", "🇮🇶", "Middle East"], ["irr", "﷼", "Iranian Rial", "🇮🇷", "Middle East"], ["yer", "﷼", "Yemeni Rial", "🇾🇪", "Middle East"], ["syp", "£", "Syrian Pound", "🇸🇾", "Middle East"], ["zar", "R", "South African Rand", "🇿🇦", "Africa"], ["egp", "E£", "Egyptian Pound", "🇪🇬", "Africa"], ["ngn", "₦", "Nigerian Naira", "🇳🇬", "Africa"], ["mad", "د.م.", "Moroccan Dirham", "🇲🇦", "Africa"], ["dzd", "د.ج", "Algerian Dinar", "🇩🇿", "Africa"], ["tnd", "د.ت", "Tunisian Dinar", "🇹🇳", "Africa"], ["lyd", "ل.د", "Libyan Dinar", "🇱🇾", "Africa"], ["ghs", "₵", "Ghanaian Cedi", "🇬🇭", "Africa"], ["kes", "KSh", "Kenyan Shilling", "🇰🇪", "Africa"], ["ugx", "USh", "Ugandan Shilling", "🇺🇬", "Africa"], ["tzs", "TSh", "Tanzanian Shilling", "🇹🇿", "Africa"], ["etb", "Br", "Ethiopian Birr", "🇪🇹", "Africa"], ["xof", "CFA", "West African CFA", "🇸🇳", "Africa"], ["xaf", "FCFA", "Central African CFA", "🇨🇲", "Africa"], ["cdf", "FC", "Congolese Franc", "🇨🇩", "Africa"], ["rwf", "FRw", "Rwandan Franc", "🇷🇼", "Africa"], ["mzn", "MT", "Mozambican Metical", "🇲🇿", "Africa"], ["aoa", "Kz", "Angolan Kwanza", "🇦🇴", "Africa"], ["zmw", "ZK", "Zambian Kwacha", "🇿🇲", "Africa"], ["mwk", "MK", "Malawian Kwacha", "🇲🇼", "Africa"], ["mur", "₨", "Mauritian Rupee", "🇲🇺", "Africa"], ["scr", "₨", "Seychellois Rupee", "🇸🇨", "Africa"], ["bwp", "P", "Botswana Pula", "🇧🇼", "Africa"], ["nad", "N$", "Namibian Dollar", "🇳🇦", "Africa"], ["szl", "E", "Swazi Lilangeni", "🇸🇿", "Africa"], ["lsl", "L", "Lesotho Loti", "🇱🇸", "Africa"], ["gmd", "D", "Gambian Dalasi", "🇬🇲", "Africa"], ["gnf", "FG", "Guinean Franc", "🇬🇳", "Africa"], ["sll", "Le", "Sierra Leonean Leone", "🇸🇱", "Africa"], ["lrd", "L$", "Liberian Dollar", "🇱🇷", "Africa"], ["sdg", "ج.س.", "Sudanese Pound", "🇸🇩", "Africa"], ["ssp", "£", "South Sudanese Pound", "🇸🇸", "Africa"], ["sos", "Sh", "Somali Shilling", "🇸🇴", "Africa"], ["djf", "Fdj", "Djiboutian Franc", "🇩🇯", "Africa"], ["kmf", "CF", "Comorian Franc", "🇰🇲", "Africa"], ["mga", "Ar", "Malagasy Ariary", "🇲🇬", "Africa"], ["cve", "$", "Cape Verdean Escudo", "🇨🇻", "Africa"], ["stn", "Db", "São Tomé Dobra", "🇸🇹", "Africa"], ["ern", "Nfk", "Eritrean Nakfa", "🇪🇷", "Africa"], ["aud", "A$", "Australian Dollar", "🇦🇺", "Oceania"], ["nzd", "NZ$", "New Zealand Dollar", "🇳🇿", "Oceania"], ["fjd", "FJ$", "Fijian Dollar", "🇫🇯", "Oceania"], ["pgk", "K", "Papua New Guinean Kina", "🇵🇬", "Oceania"], ["wst", "WS$", "Samoan Tala", "🇼🇸", "Oceania"], ["top", "T$", "Tongan Paʻanga", "🇹🇴", "Oceania"], ["vuv", "VT", "Vanuatu Vatu", "🇻🇺", "Oceania"], ["sbd", "SI$", "Solomon Islands Dollar", "🇸🇧", "Oceania"], ["xpf", "₣", "CFP Franc", "🇵🇫", "Oceania"]];
+const CUR_GROUPS=[["Crypto", ["ton", "usdt", "stars"]], ["Europe", ["eur", "rub", "uah", "byn", "gbp", "chf", "pln", "czk", "huf", "ron", "bgn", "rsd", "try", "nok", "sek", "dkk", "isk", "gel", "amd", "azn", "mdl", "all", "mkd", "bam", "hrk"]], ["CIS", ["kzt", "uzs", "kgs", "tjs", "tmt"]], ["Americas", ["usd", "cad", "mxn", "brl", "ars", "clp", "cop", "pen", "uyu", "bob", "pyg", "ves", "gtq", "crc", "dop", "hnl", "nio", "pab", "jmd", "ttd", "bbd", "bsd", "bzd", "gyd", "srd", "htg", "cup"]], ["Asia", ["cny", "jpy", "krw", "inr", "idr", "thb", "vnd", "myr", "sgd", "hkd", "twd", "php", "pkr", "bdt", "lkr", "npr", "mmk", "khr", "lak", "mnt", "kpw", "mvr", "btn", "afn", "bnd", "mop"]], ["Middle East", ["aed", "sar", "qar", "kwd", "bhd", "omr", "ils", "jod", "lbp", "iqd", "irr", "yer", "syp"]], ["Africa", ["zar", "egp", "ngn", "mad", "dzd", "tnd", "lyd", "ghs", "kes", "ugx", "tzs", "etb", "xof", "xaf", "cdf", "rwf", "mzn", "aoa", "zmw", "mwk", "mur", "scr", "bwp", "nad", "szl", "lsl", "gmd", "gnf", "sll", "lrd", "sdg", "ssp", "sos", "djf", "kmf", "mga", "cve", "stn", "ern"]], ["Oceania", ["aud", "nzd", "fjd", "pgk", "wst", "top", "vuv", "sbd", "xpf"]]];
+const PAYS=[["ton","pay_ton","btn_pay_ton","💎"],["card","pay_card","btn_pay_card","💳"],["stars","pay_stars","btn_pay_stars","⭐"],["usdt","pay_usdt","btn_pay_usdt","🪙"],["usd","pay_usd","btn_pay_usd","💸"],["eur","pay_eur","btn_pay_eur","💰"],["gbp","pay_gbp","btn_pay_gbp","£"],["cny","pay_cny","btn_pay_cny","¥"],["jpy","pay_jpy","btn_pay_jpy","¥"],["try","pay_try","btn_pay_try","₺"],["byn","pay_byn","btn_pay_byn","🇧🇾"],["kzt","pay_kzt","btn_pay_kzt","🇰🇿"],["uah","pay_uah","btn_pay_uah","🇺🇦"],["aed","pay_aed","btn_pay_aed","🇦🇪"],["inr","pay_inr","btn_pay_inr","₹"],["brl","pay_brl","btn_pay_brl","R$"]];
 const TYPES=[["gift","gift","btn_deal_gift","🎁"],["channel","channel","btn_deal_channel","📣"],["stars","stars","btn_deal_stars","⭐"],["nft","nft","btn_deal_nft","⛓️"]];
 const WDRAW=[["ton","w_ton","btn_pay_ton","💎"],["card","w_card","btn_pay_card","💳"],["byn","w_byn","btn_pay_byn","🇧🇾"],["kzt","w_kzt","btn_pay_kzt","🇰🇿"],["uah","w_uah","btn_pay_uah","🇺🇦"],["stars","w_stars","btn_pay_stars","⭐"],["usdt","w_usdt","btn_pay_usdt","🪙"],["usd","w_usd","btn_pay_usd","💸"],["eur","w_eur","btn_pay_eur","💰"]];
-const GROUPS=[["Crypto",[["ton","💎","balance_ton"],["usdt","🪙","balance_usdt"],["stars","⭐","balance_stars"]]],["Fiat",[["rub","💵","balance_rub"],["byn","🇧🇾","balance_byn"],["kzt","🇰🇿","balance_kzt"],["uah","🇺🇦","balance_uah"],["usd","💸","balance_usd"],["eur","💰","balance_eur"]]]];
+
+const CUR_PIN=["rub","usd","eur","uah","kzt","byn","ton","usdt","stars"];
+const CUR_MAP=Object.fromEntries(WORLD_CURS.map(c=>[c[0],{code:c[0],sym:c[1],name:c[2],flag:c[3],group:c[4]}]));
+function curMeta(code){return CUR_MAP[code]||{code:code,sym:String(code).toUpperCase(),name:code,flag:"💱",group:""};}
+function curAmount(code){const b=(state.user&&state.user.balances)||{};return b[code]??0;}
+
+const GROUPS=CUR_GROUPS.map(([name,keys])=>[name,keys.map(k=>{const c=WORLD_CURS.find(x=>x[0]===k)||[k,k.toUpperCase(),k,"💱",""];return [c[0],c[3],"balance_"+c[0]];})]);
 const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:60,marketSig:"",marketFilter:{q:"",collection:"",sort:"new"},marketCollections:[],feed:[],reviews:[],coachStep:0};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
@@ -1767,6 +1923,12 @@ function screenTheme(){
 function filterLangs(){
   const q=String((document.getElementById("lang-q")||{}).value||"").toLowerCase().trim();
   document.querySelectorAll(".lang-row").forEach(el=>{
+    el.hidden=!!q && !(el.dataset.q||"").includes(q);
+  });
+}
+function filterCurs(){
+  const q=String((document.getElementById("cur-q")||{}).value||"").toLowerCase().trim();
+  document.querySelectorAll("#cur-list .ios-row").forEach(el=>{
     el.hidden=!!q && !(el.dataset.q||"").includes(q);
   });
 }
@@ -2069,18 +2231,18 @@ async function screenHome(){
   const u=state.user;
   const b=u.balances||{};
   const cur=state.balCur||"rub";
-  const map={
-    rub:["₽",b.rub], byn:["Br",b.byn], kzt:["₸",b.kzt], uah:["₴",b.uah],
-    usd:["$",b.usd], eur:["€",b.eur],
-    ton:["TON",b.ton], usdt:["USDT",b.usdt], stars:["⭐",b.stars]
-  };
-  const [sym,val]=map[cur]||map.rub;
+  const meta=curMeta(cur);
+  const sym=meta.sym;
+  const val=b[cur]??0;
   let feed=state.feed||[], reviews=state.reviews||[];
   try{ const r=await api("/api/feed"); feed=r.items||feed; }catch(e){}
   try{ const r=await api("/api/reviews"); reviews=r.reviews||reviews; }catch(e){}
   state.feed=feed; state.reviews=reviews;
   state.homeSig=homeFingerprint([],feed,reviews,cur,val,0);
-  const curs=["rub","byn","kzt","uah","usd","eur","ton","usdt","stars"].map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("");
+  const pin=CUR_PIN.slice();
+  if(cur&&!pin.includes(cur)) pin.unshift(cur);
+  const curs=pin.map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("")
+    +`<button type="button" class="cur cur-all" data-act="open-curs">${t("cur_more")||"Все"} · ${WORLD_CURS.length}</button>`;
   const feedCards=feed.length?feed.map(it=>{
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
@@ -2118,9 +2280,9 @@ async function screenHome(){
       <button type="button" class="qcard" data-act="join-deal"><div class="qi">⧉</div><div class="ql">${uiLang()==="en"?"Join deal":"Вступить"}</div></button>
       <button type="button" class="qcard" data-go="market"><div class="qi">◇</div><div class="ql">${t("tab_market")}</div></button>
     </div>
-    <div class="bal-card">
-      <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"}</div>
-      <div class="sum">${esc(val??0)} ${esc(sym)}</div>
+    <div class="wallet-card">
+      <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"} · ${esc(meta.flag)} ${esc(cur.toUpperCase())}</div>
+      <div class="sum">${esc(val??0)}<small>${esc(sym)}</small></div>
       <div class="cur-row">${curs}</div>
     </div>
     <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div></div>
@@ -2298,13 +2460,15 @@ function screenCreateType(){
 function screenCreatePay(){
   const rows=[];
   for(let i=0;i<PAYS.length;i+=2){
-    const a=PAYS[i], b=PAYS[i+1];
-    const row=[btn(t(a[1]),"create-amt-"+a[0],a[2],a[3])];
-    if(b) row.push(btn(t(b[1]),"create-amt-"+b[0],b[2],b[3]));
+    const a=PAYS[i], c=PAYS[i+1];
+    const la=t(a[1]); const lb=c?t(c[1]):"";
+    const row=[btn(la===a[1]?a[0].toUpperCase():la,"create-amt-"+a[0],a[2],a[3])];
+    if(c) row.push(btn(lb===c[1]?c[0].toUpperCase():lb,"create-amt-"+c[0],c[2],c[3]));
     rows.push(row);
   }
+  rows.push([act(t("all_curs")||"🌍","open-pay-curs","deal_money","🌍")]);
   rows.push([backBtn()]);
-  return bubble(t("deal_pay"))+kb(rows);
+  return bubble(`${pe("deal_money","💰")} <b>${t("deal_pay")}</b>`)+kb(rows);
 }
 function screenCreateAmt(){
   return bubble(`<b>${t("create")}</b><p class="hint">${t("amount")}</p><input id="f-amount" inputmode="decimal" value="${esc(state.draft.amount)}" placeholder="100" />`)+
@@ -2617,18 +2781,41 @@ async function screenUserProfile(){
     <div class="pub-sec">${en?"Reviews":"Отзывы"}</div>
     ${revs}`+kb([[backBtn()]]);
 }
+
+function screenCur(mode){
+  const en=uiLang()==="en";
+  const cur=state.balCur||"rub";
+  const modeKey=mode||state.curMode||"bal";
+  const rows=WORLD_CURS.map(([code,sym,name,flag,group])=>{
+    const q=`${code} ${sym} ${name} ${flag} ${group}`.toLowerCase();
+    const amt=curAmount(code);
+    return `<button type="button" class="ios-row${cur===code?" on":""}" data-act="pick-cur" data-cur="${esc(code)}" data-mode="${esc(modeKey)}" data-q="${esc(q)}"><span class="flag">${esc(flag)}</span><span class="meta"><b>${esc(code.toUpperCase())} · ${esc(sym)}</b><small>${esc(name)} · ${esc(group)}</small></span><span class="amt">${esc(amt)}</span></button>`;
+  }).join("");
+  return `<div class="large-title">${esc(t("pick_cur_world")||(en?"Currencies":"Валюты"))}</div>
+    <p class="hint" style="margin-top:-6px">${esc(t("all_curs")||"")} · ${WORLD_CURS.length}</p>
+    <input id="cur-q" class="ios-search" type="search" autocomplete="off" placeholder="${esc(t("search_cur")||"Search")}" />
+    <div class="ios-group cur-list" id="cur-list">${rows}</div>`+kb([[backBtn()]]);
+}
 function screenBal(){
   const b=state.user.balances||{};
-  const groups=GROUPS.map(([name,keys])=>`<b>${name}</b>`+keys.map(([k,fb,icon])=>`<div class="line">${pe(icon,fb)} ${k.toUpperCase()}: <b>${b[k]??0}</b></div>`).join("")).join("<br>");
-  const rows=[];
-  for(let i=0;i<WDRAW.length;i+=2){
-    const a=WDRAW[i], c=WDRAW[i+1];
-    const row=[btn(t(a[1]),"wd-"+a[0],a[2],a[3])];
-    if(c) row.push(btn(t(c[1]),"wd-"+c[0],c[2],c[3]));
-    rows.push(row);
-  }
-  return bubble(`${pe("balance_card","💳")} <b>${t("bal")}</b><br><br>${groups}<p class="hint">${pe("deal_excl","❗️")} ${t("withdraw_hint")}</p>`)+kb(rows);
+  const en=uiLang()==="en";
+  const show=new Set(CUR_PIN);
+  WORLD_CURS.forEach(([code])=>{ if(Number(b[code]||0)) show.add(code); });
+  const rows=[...show].map(k=>{
+    const m=curMeta(k);
+    const v=b[k]??0;
+    return `<button type="button" class="ios-row" data-act="bal-cur" data-cur="${esc(k)}"><span class="flag">${esc(m.flag)}</span><span class="meta"><b>${esc(k.toUpperCase())}</b><small>${esc(m.name)}</small></span><span class="amt">${esc(v)} ${esc(m.sym)}</span></button>`;
+  }).join("");
+  const wd=WDRAW.map(([id,key,icon,fb])=>`<button type="button" class="ios-row" data-go="wd-${esc(id)}"><span class="flag">${esc(fb)}</span><span class="meta"><b>${esc(t(key))}</b></span><span class="chev">›</span></button>`).join("");
+  return `<div class="large-title">${esc(t("bal"))}</div>
+    <button type="button" class="ios-row" style="background:var(--grouped);border-radius:12px;margin-bottom:8px;box-shadow:0 0 0 .5px var(--hair)" data-act="open-curs"><span class="flag">🌍</span><span class="meta"><b>${esc(t("all_curs")||(en?"All currencies":"Все валюты"))}</b><small>${WORLD_CURS.length}</small></span><span class="chev">›</span></button>
+    <div class="ios-section">${en?"Balances":"Балансы"}</div>
+    <div class="ios-group">${rows}</div>
+    <div class="ios-section">${esc(t("withdraw"))}</div>
+    <div class="ios-group">${wd}</div>
+    <p class="hint">${pe("deal_excl","❗️")} ${t("withdraw_hint")}</p>`;
 }
+
 function screenWd(){
   return bubble(`${pe("deal_money","💰")} <b>${t("withdraw")}</b><p class="hint">${t("amount")}</p><input id="w-amount" inputmode="decimal" placeholder="100" />`)+
     kb([[act(t("withdraw"),"do-withdraw","deal_money","💰")],[backBtn()]]);
@@ -2675,17 +2862,8 @@ function screenLang(){
     (showBack?kb([[backBtn()]]):"");
 }
 function currencyScreen(prefix){
-  const keys=Object.keys(state.user.balances||{ton:0,rub:0,stars:0,usdt:0,usd:0,eur:0,byn:0,kzt:0,uah:0});
-  const meta={ton:["btn_pay_ton","💎"],rub:["btn_pay_rub","💵"],byn:["btn_pay_byn","🇧🇾"],kzt:["btn_pay_kzt","🇰🇿"],uah:["btn_pay_uah","🇺🇦"],stars:["btn_pay_stars","⭐"],usdt:["btn_pay_usdt","🪙"],usd:["btn_pay_usd","💸"],eur:["btn_pay_eur","💰"]};
-  const rows=[];
-  for(let i=0;i<keys.length;i+=2){
-    const a=keys[i], b=keys[i+1];
-    const row=[btn(a.toUpperCase(),prefix+"-"+a,(meta[a]||[])[0],(meta[a]||[])[1])];
-    if(b) row.push(btn(b.toUpperCase(),prefix+"-"+b,(meta[b]||[])[0],(meta[b]||[])[1]));
-    rows.push(row);
-  }
-  rows.push([backBtn()]);
-  return bubble(`${pe("deal_money","💰")} <b>${t("pick_cur")}</b>`)+kb(rows);
+  state.curMode=prefix;
+  return screenCur(prefix);
 }
 function screenAdminAmt(kind){
   return bubble(`${pe("deal_money","💰")} <b>${kind==="credit"?t("credit"):t("transfer")}</b><p class="hint">${t("amount")}</p><input id="a-amt" inputmode="decimal" placeholder="50" />`)+
@@ -2729,14 +2907,14 @@ async function draw(opts={}){
     else if(s==="profile") root.innerHTML=screenProfile();
     else if(s==="user-profile") root.innerHTML=await screenUserProfile();
     else if(s==="lang") root.innerHTML=screenLang();
+    else if(s==="cur") root.innerHTML=screenCur(state.curMode||"bal");
     else if(s==="theme") root.innerHTML=screenTheme();
     else if(s==="admin") root.innerHTML=await screenAdmin();
     else if(s==="admin-credit") root.innerHTML=currencyScreen("acred");
     else if(s==="admin-xfer") root.innerHTML=currencyScreen("axfer");
     else if(s==="admin-bal") {
-      const b=state.user.balances||{};
-      const groups=GROUPS.map(([name,keys])=>`<b>${name}</b>`+keys.map(([k,fb,icon])=>`<div class="line">${pe(icon,fb)} ${k.toUpperCase()}: <b>${b[k]??0}</b></div>`).join("")).join("<br>");
-      root.innerHTML=bubble(`${pe("deal_person","👤")} <b>${t("mybal")}</b><br><br>${groups}`)+kb([[backBtn()]]);
+      state.curMode="view";
+      root.innerHTML=screenCur("view")+kb([[backBtn()]]);
     }
     else if(s==="admin-amt") root.innerHTML=screenAdminAmt(state.admin.kind);
     else if(s==="admin-id") root.innerHTML=screenAdminId(state.admin.kind);
@@ -2912,7 +3090,18 @@ document.body.addEventListener("click",async(ev)=>{
       state.marketFilter=Object.assign({},state.marketFilter||{},{sort:a.dataset.sort||"new"});
       await draw({quiet:true});return;
     }
-    if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";await draw({quiet:true});return;}
+    if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";if(state.screen==="bal"||state.screen==="cur"){await go("home","back");}else await draw({quiet:true});return;}
+    if(actName==="open-curs"){state.curMode="bal";go("cur");return;}
+    if(actName==="open-pay-curs"){state.curMode="pay";go("cur");return;}
+    if(actName==="pick-cur"){
+      const code=a.dataset.cur||"rub";
+      const mode=a.dataset.mode||state.curMode||"bal";
+      if(mode==="pay"){state.draft.pay_method=code;go("create-amt");return;}
+      if(mode==="acred"||String(mode).startsWith("acred")){state.admin={kind:"credit",currency:code};go("admin-amt");return;}
+      if(mode==="axfer"||String(mode).startsWith("axfer")){state.admin={kind:"xfer",currency:code};go("admin-id");return;}
+      if(mode==="view"){state.balCur=code;await draw({quiet:true});return;}
+      state.balCur=code;go("home","back");return;
+    }
     if(actName==="open-feed"){
       state.feedId=Number(a.dataset.id)||null;
       if(!state.feedId) return;
@@ -3137,6 +3326,7 @@ document.body.addEventListener("click",async(ev)=>{
 });
 document.body.addEventListener("input",(ev)=>{
   if(ev.target&&ev.target.id==="lang-q") filterLangs();
+  if(ev.target&&ev.target.id==="cur-q") filterCurs();
   if(ev.target&&ev.target.id==="m-q"){
     clearTimeout(window.__mqT);
     window.__mqT=setTimeout(()=>{

@@ -160,17 +160,25 @@ def deal_type_menu(lang: str | None = "ru") -> InlineKeyboardMarkup:
 
 
 def deal_pay_menu(lang: str | None = "ru") -> InlineKeyboardMarkup:
-    from utils.currencies import PAY_METHODS, rows_of
+    from utils.currencies import BALANCE_META, PAY_METHODS, rows_of
 
-    buttons = [
-        _btn(
-            t(lang, text_key),
-            fallback_emoji=fallback,
-            callback=f"deal:pay:{pay_key}",
-            icon_key=icon_key,
+    buttons = []
+    for pay_key, text_key, fallback, icon_key in PAY_METHODS:
+        label = t(lang, text_key)
+        if label == text_key:
+            if pay_key == "card":
+                label = "Card" if (lang or "ru").startswith("en") else "Карта"
+            else:
+                meta = BALANCE_META.get(pay_key) or {}
+                label = meta.get("label") or pay_key.upper()
+        buttons.append(
+            _btn(
+                label,
+                fallback_emoji=fallback,
+                callback=f"deal:pay:{pay_key}",
+                icon_key=icon_key,
+            )
         )
-        for pay_key, text_key, fallback, icon_key in PAY_METHODS
-    ]
     rows = rows_of(buttons, 2)
     rows.append(
         [_btn(t(lang, "btn_back"), fallback_emoji="🔄", callback="menu:home", icon_key="btn_back_alt")]

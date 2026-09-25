@@ -8,24 +8,25 @@ CURRENCY_NAMES = {
     "ton": "TON",
     "card": "RUB",
     "usdt": "USDT",
-    "usd": "USD",
-    "eur": "EUR",
-    "byn": "BYN",
-    "kzt": "KZT",
-    "uah": "UAH",
 }
-
 CURRENCY_EMOJI_KEYS = {
     "stars": ("balance_stars", "⭐"),
     "ton": ("balance_ton", "💎"),
     "card": ("balance_card", "💳"),
     "usdt": ("balance_usdt", "🪙"),
-    "usd": ("balance_usd", "💸"),
-    "eur": ("balance_eur", "💰"),
-    "byn": ("balance_byn", "🇧🇾"),
-    "kzt": ("balance_kzt", "🇰🇿"),
-    "uah": ("balance_uah", "🇺🇦"),
 }
+
+# Дополняем всеми мировыми валютами
+try:
+    from utils.currencies import BALANCE_META
+
+    for _code, _meta in BALANCE_META.items():
+        CURRENCY_NAMES.setdefault(_code, _meta["label"])
+        CURRENCY_EMOJI_KEYS.setdefault(
+            _code, (_meta["emoji_key"], _meta["fallback"])
+        )
+except Exception:
+    pass
 
 
 def currency_icon(pay_method: str) -> str:

@@ -92,17 +92,26 @@ def admin_menu(user_id: int | None = None) -> InlineKeyboardMarkup:
 
 
 def admin_currency_menu(*, prefix: str = "admin:add") -> InlineKeyboardMarkup:
-    from utils.currencies import BALANCE_META, rows_of
+    """Популярные валюты + полный список в Mini App."""
+    from utils.currencies import BALANCE_META, PAY_METHODS, rows_of
 
-    buttons = [
-        _btn(
-            meta["label"],
-            fallback_emoji=meta["fallback"],
-            callback=f"{prefix}:{key}",
-            icon_key=meta["btn_icon"],
+    buttons = []
+    seen: set[str] = set()
+    for key, _tk, fallback, icon in PAY_METHODS:
+        if key == "card":
+            key = "rub"
+        if key in seen or key not in BALANCE_META:
+            continue
+        seen.add(key)
+        meta = BALANCE_META[key]
+        buttons.append(
+            _btn(
+                meta["label"],
+                fallback_emoji=meta.get("fallback") or fallback,
+                callback=f"{prefix}:{key}",
+                icon_key=meta.get("btn_icon") or icon,
+            )
         )
-        for key, meta in BALANCE_META.items()
-    ]
     rows = rows_of(buttons, 2)
     rows.append(
         [
@@ -135,9 +144,11 @@ def admin_cancel() -> InlineKeyboardMarkup:
 def _balance_text(user) -> str:
     from utils.currencies import BALANCE_GROUPS, BALANCE_META
 
+    core = {"ton", "usdt", "stars", "rub", "byn", "kzt", "uah", "usd", "eur"}
     lines = []
+    shown = 0
     for group_name, keys in BALANCE_GROUPS:
-        lines.append(f"<b>{group_name}</b>")
+        block = []
         for key in keys:
             meta = BALANCE_META[key]
             col = f"balance_{key}"
@@ -145,12 +156,21 @@ def _balance_text(user) -> str:
                 raw = user[col] if user else 0
             except (KeyError, IndexError, TypeError):
                 raw = 0
+            val = int(raw or 0) if meta["integer"] else float(raw or 0)
+            if key not in core and not val:
+                continue
             icon = ce(meta["emoji_key"], meta["fallback"])
             if meta["integer"]:
-                lines.append(f"{icon} {meta['label']}: {int(raw or 0)}")
+                block.append(f"{icon} {meta['label']}: {int(val)}")
             else:
-                lines.append(f"{icon} {meta['label']}: {float(raw or 0):.2f}")
-        lines.append("")
+                block.append(f"{icon} {meta['label']}: {float(val):.2f}")
+            shown += 1
+        if block:
+            lines.append(f"<b>{group_name}</b>")
+            lines.extend(block)
+            lines.append("")
+    if not shown:
+        return "Балансы пусты"
     return "\n".join(lines).rstrip()
 
 

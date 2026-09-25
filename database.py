@@ -40,15 +40,14 @@ class Database:
         await self._ensure_column("ton_wallet", "TEXT")
         await self._ensure_column("card_number", "TEXT")
         await self._ensure_column("payout_username", "TEXT")
-        await self._ensure_column("balance_ton", "REAL DEFAULT 0")
-        await self._ensure_column("balance_rub", "REAL DEFAULT 0")
-        await self._ensure_column("balance_stars", "INTEGER DEFAULT 0")
-        await self._ensure_column("balance_usdt", "REAL DEFAULT 0")
-        await self._ensure_column("balance_usd", "REAL DEFAULT 0")
-        await self._ensure_column("balance_eur", "REAL DEFAULT 0")
-        await self._ensure_column("balance_byn", "REAL DEFAULT 0")
-        await self._ensure_column("balance_kzt", "REAL DEFAULT 0")
-        await self._ensure_column("balance_uah", "REAL DEFAULT 0")
+        from utils.currencies import BALANCE_KEYS, BALANCE_META
+
+        for key in BALANCE_KEYS:
+            col = f"balance_{key}"
+            if BALANCE_META.get(key, {}).get("integer"):
+                await self._ensure_column(col, "INTEGER DEFAULT 0")
+            else:
+                await self._ensure_column(col, "REAL DEFAULT 0")
         await self._ensure_column("last_welcome_msg_id", "INTEGER")
         await self._ensure_column("lang_picked", "INTEGER DEFAULT 0")
         await self.conn.executescript(
@@ -451,24 +450,16 @@ class Database:
         await self.conn.commit()
 
     async def add_balance(self, user_id: int, currency: str, amount: float) -> aiosqlite.Row | None:
-        """currency: ton | rub | stars | usdt | usd | eur"""
-        columns = {
-            "ton": "balance_ton",
-            "rub": "balance_rub",
-            "stars": "balance_stars",
-            "usdt": "balance_usdt",
-            "usd": "balance_usd",
-            "eur": "balance_eur",
-            "byn": "balance_byn",
-            "kzt": "balance_kzt",
-            "uah": "balance_uah",
-        }
-        column = columns.get(currency)
+        """currency: любой ключ из BALANCE_KEYS или card→rub."""
+        from utils.currencies import BALANCE_META, balance_column
+
+        column = balance_column(currency)
         if not column:
             raise ValueError(f"Unknown currency: {currency}")
 
         await self.ensure_user(user_id)
-        if currency == "stars":
+        key = "rub" if currency == "card" else currency
+        if BALANCE_META.get(key, {}).get("integer"):
             await self.conn.execute(
                 f"UPDATE users SET {column} = COALESCE({column}, 0) + ? WHERE user_id = ?",
                 (int(amount), user_id),
@@ -534,28 +525,22 @@ class Database:
         return int(row["c"]) if row else 0
 
     async def deduct_balance(self, user_id: int, currency: str, amount: float) -> bool:
-        columns = {
-            "ton": "balance_ton",
-            "rub": "balance_rub",
-            "card": "balance_rub",
-            "stars": "balance_stars",
-            "usdt": "balance_usdt",
-            "usd": "balance_usd",
-            "eur": "balance_eur",
-            "byn": "balance_byn",
-            "kzt": "balance_kzt",
-            "uah": "balance_uah",
-        }
-        column = columns.get(currency)
+        from utils.currencies import BALANCE_META, balance_column
+
+        column = balance_column(currency)
         if not column:
             return False
         user = await self.get_user(user_id)
         if not user:
             return False
-        current = float(user[column] or 0)
+        try:
+            current = float(user[column] or 0)
+        except (KeyError, IndexError, TypeError):
+            current = 0.0
         if current < float(amount):
             return False
-        if currency == "stars":
+        key = "rub" if currency == "card" else currency
+        if BALANCE_META.get(key, {}).get("integer"):
             await self.conn.execute(
                 f"UPDATE users SET {column} = COALESCE({column}, 0) - ? WHERE user_id = ?",
                 (int(amount), user_id),

@@ -249,45 +249,31 @@ def welcome_text(lang: str | None = "ru") -> str:
 
 def balance_text(
     lang: str | None = "ru",
-    *,
-    ton: float = 0.0,
-    rub: float = 0.0,
-    stars: int = 0,
-    usdt: float = 0.0,
-    usd: float = 0.0,
-    eur: float = 0.0,
-    byn: float = 0.0,
-    kzt: float = 0.0,
-    uah: float = 0.0,
+    **balances: float,
 ) -> str:
     from utils.currencies import BALANCE_GROUPS, BALANCE_META
 
-    values = {
-        "ton": ton,
-        "rub": rub,
-        "stars": stars,
-        "usdt": usdt,
-        "usd": usd,
-        "eur": eur,
-        "byn": byn,
-        "kzt": kzt,
-        "uah": uah,
-    }
+    core = {"ton", "usdt", "stars", "rub", "byn", "kzt", "uah", "usd", "eur"}
     lines = [
         f"{ce('balance_card', '💳')} <b>{t(lang, 'balance_title')}</b>",
         "",
     ]
     for group_name, keys in BALANCE_GROUPS:
-        lines.append(f"<b>{group_name}</b>")
+        block = []
         for key in keys:
             meta = BALANCE_META[key]
+            val = balances.get(key, 0)
+            if key not in core and not float(val or 0):
+                continue
             icon = ce(meta["emoji_key"], meta["fallback"])
-            val = values.get(key, 0)
             if meta["integer"]:
-                lines.append(f"{icon} {meta['label']}: {int(val)}")
+                block.append(f"{icon} {meta['label']}: {int(val or 0)}")
             else:
-                lines.append(f"{icon} {meta['label']}: {float(val):.2f}")
-        lines.append("")
+                block.append(f"{icon} {meta['label']}: {float(val or 0):.2f}")
+        if block:
+            lines.append(f"<b>{group_name}</b>")
+            lines.extend(block)
+            lines.append("")
     lines.append(f"{ce('deal_excl', '❗️')} {t(lang, 'balance_withdraw_hint')}")
     return "\n".join(lines)
 
@@ -380,14 +366,25 @@ def deal_type_labels(lang: str | None = "ru") -> dict[str, str]:
 
 
 def deal_pay_labels(lang: str | None = "ru") -> dict[str, str]:
-    return {
+    from utils.currencies import BALANCE_META, PAY_METHODS
+
+    labels = {
         "ton": f"{ce('balance_ton', '💎')} {t(lang, 'deal_pay_ton')}",
         "card": f"{ce('balance_card', '💳')} {t(lang, 'deal_pay_card')}",
         "stars": f"{ce('balance_stars', '⭐')} {t(lang, 'deal_pay_stars')}",
         "usdt": f"{ce('balance_usdt', '🪙')} {t(lang, 'deal_pay_usdt')}",
-        "usd": f"{ce('balance_usd', '💸')} {t(lang, 'deal_pay_usd')}",
-        "eur": f"{ce('balance_eur', '💰')} {t(lang, 'deal_pay_eur')}",
-        "byn": f"{ce('balance_byn', '🇧🇾')} {t(lang, 'deal_pay_byn')}",
-        "kzt": f"{ce('balance_kzt', '🇰🇿')} {t(lang, 'deal_pay_kzt')}",
-        "uah": f"{ce('balance_uah', '🇺🇦')} {t(lang, 'deal_pay_uah')}",
     }
+    for key, _tk, fallback, _icon in PAY_METHODS:
+        if key in labels:
+            continue
+        meta = BALANCE_META.get(key)
+        if not meta:
+            continue
+        labels[key] = f"{ce(meta['emoji_key'], meta['fallback'] or fallback)} {meta['label']}"
+    # полный мир — для валидации pay_method
+    for code, meta in BALANCE_META.items():
+        labels.setdefault(
+            code,
+            f"{ce(meta['emoji_key'], meta['fallback'])} {meta['label']}",
+        )
+    return labels
