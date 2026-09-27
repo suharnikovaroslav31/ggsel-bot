@@ -1,0 +1,24 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+get-pip.py
+pip.pyz
+pydeps/
+data/
+*.db
+.DS_Store
+assets/dl_2.png
+preview/
+preview-home.png
+emoji/
+*.lottie.json
+
+# Bothost / junk leftovers
+python main.py/
+python main.py.js
+python.js
+boot.js
+app.js
+

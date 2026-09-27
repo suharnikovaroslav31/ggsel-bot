@@ -1,0 +1,8 @@
+{
+  "name": "ggsel-bot",
+  "private": true,
+  "main": "boot.js",
+  "scripts": {
+    "start": "node boot.js"
+  }
+}
