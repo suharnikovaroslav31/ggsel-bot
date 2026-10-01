@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="nft-crop-noreview-20260927b" />
+  <meta name="ggsel-build" content="ui-polish-20261001" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -20,8 +20,9 @@
   </script>
   <script src="/assets/telegram-web-app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/400.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/geist-sans@5.2.5/600.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
 :root {
   --bg: #f2f2f7;
@@ -29,26 +30,29 @@
   --btn: rgba(120,120,128,.12);
   --btn-press: rgba(120,120,128,.22);
   --line: rgba(60,60,67,.12);
-  --text: #000000;
-  --muted: rgba(60,60,67,.6);
-  --accent: #34c759;
-  --accent-hover: #2db350;
+  --text: #0b0d12;
+  --muted: rgba(60,60,67,.62);
+  --accent: #1db954;
+  --accent-hover: #17a349;
   --blue: #007aff;
   --danger: #ff3b30;
-  --ok: #34c759;
+  --ok: #1db954;
   --ink: #1c1c1e;
-  --logo-mark-color: #34c759;
-  --logo-wordmark-color: #000000;
+  --logo-mark-color: #1db954;
+  --logo-wordmark-color: #0b0d12;
   --dock: rgba(255,255,255,.78);
   --hero: #1c1c1e;
   --shade: rgba(0,0,0,.4);
   --ease: cubic-bezier(.22,1,.36,1);
+  --ease-soft: cubic-bezier(.33,1,.68,1);
   --press: 0.97;
   --radius: 16px;
   --radius-lg: 22px;
-  --hair: rgba(60,60,67,.18);
+  --hair: rgba(60,60,67,.14);
   --fill: #ffffff;
   --grouped: #ffffff;
+  --font: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --display: "Sora", "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 html[data-theme="dark"] {
   --bg: #000000;
@@ -75,11 +79,12 @@ html, body {
   min-height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", Geist, "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  letter-spacing: -.01em;
+  letter-spacing: -.015em;
   transition: background .35s var(--ease), color .35s var(--ease);
+  text-rendering: optimizeLegibility;
 }
 body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow-x: hidden; }
 #app {
@@ -310,32 +315,59 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
 .cta:active { background: var(--accent-hover); }
 .points { margin: 8px 0 14px; padding-left: 18px; color: var(--text); }
 .points li { margin: 4px 0; }
-.panel { animation: enter .38s cubic-bezier(.32,.72,0,1) both; }
-.panel.back { animation: enter-back .38s cubic-bezier(.32,.72,0,1) both; }
+.panel { animation: enter .46s var(--ease) both; }
+.panel.back { animation: enter-back .46s var(--ease) both; }
 @keyframes enter {
-  from { opacity: 0; transform: translate3d(28px, 0, 0); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translate3d(18px, 8px, 0) scale(.985); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 @keyframes enter-back {
-  from { opacity: 0; transform: translate3d(-28px, 0, 0); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; transform: translate3d(-18px, 8px, 0) scale(.985); filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 .bubble, .hero, .item {
   background: var(--grouped);
   border: 0.5px solid var(--hair);
   border-radius: var(--radius-lg);
-  padding: 16px;
-  line-height: 1.45;
+  padding: 18px 16px;
+  line-height: 1.5;
   font-size: 15px;
-  box-shadow: 0 1px 0 rgba(0,0,0,.02);
+  box-shadow: 0 10px 28px rgba(18,21,28,.05);
 }
-.hero {
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  padding: 8px 0 16px;
+.screen-hero {
+  margin: 0 0 14px;
 }
-.sec { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 8px 0 12px; }
+.screen-hero .eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font: 700 11px/1 var(--font);
+  letter-spacing: .06em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 10px;
+}
+.screen-hero h2, .screen-hero .title {
+  margin: 0 0 8px;
+  font-family: var(--display);
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.15;
+}
+.screen-hero p, .screen-hero .lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px; line-height: 1.45; font-weight: 500;
+}
+.bubble .screen-hero { margin-bottom: 4px; }
+.bubble b, .bubble > b {
+  display: block;
+  font-family: var(--display);
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -.03em; line-height: 1.2;
+  margin: 0 0 8px;
+}
+.bubble > .fig + b, .bubble > span.fig + b {
+  display: inline;
+  font-size: inherit;
+  letter-spacing: inherit;
+}
+.sec { font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -.025em; margin: 8px 0 12px; }
 .who { font-size: 22px; font-weight: 600; margin: 4px 0 10px; }
 .bal-mini { display: flex; gap: 8px; flex-wrap: wrap; }
 .pill {
@@ -458,13 +490,13 @@ input, textarea, select {
   display: block;
   transform-style: preserve-3d;
   transform-origin: 18px 50%;
-  animation: logo-bob 4.4s ease-in-out infinite;
+  animation: logo-bob 5.6s var(--ease-soft) infinite;
   will-change: transform;
-  filter: drop-shadow(0 8px 12px rgba(68,207,94,.16));
+  filter: drop-shadow(0 6px 10px rgba(29,185,84,.12));
 }
 .logo-mark {
   transform-origin: 18px 20px;
-  animation: logo-hue 9s linear infinite;
+  animation: none;
 }
 .chip-lang {
   display: inline-flex;
@@ -474,19 +506,20 @@ input, textarea, select {
 .chip-lang .gear {
   width: 14px;
   height: 14px;
-  animation: ico-spin 7s linear infinite;
+  animation: none;
 }
-.tab svg { transform-origin: 50% 50%; }
-.tab[data-tab="home"] svg { animation: ico-bob 2.6s ease-in-out infinite; }
-.tab[data-tab="market"] svg { animation: ico-coin 2.5s ease-in-out infinite; }
-.tab[data-tab="create"] svg { animation: ico-pulse 1.8s ease-in-out infinite; }
-.tab[data-tab="deals"] svg { animation: ico-flip 3.2s ease-in-out infinite; }
-.tab[data-tab="bal"] svg { animation: ico-coin 2.5s ease-in-out infinite; }
-.tab[data-tab="req"] svg { animation: ico-tilt 2.8s ease-in-out infinite; }
-.tab[data-tab="refs"] svg { animation: ico-nudge 2.4s ease-in-out infinite; }
-.tab[data-tab="profile"] svg { animation: ico-bob 2.6s ease-in-out infinite; }
-.tab[data-tab="support"] svg { animation: ico-pulse 2.2s ease-in-out infinite; }
-.tab[data-tab="admin"] svg { animation: ico-spin 8s linear infinite; }
+.tab svg { transform-origin: 50% 50%; transition: transform .25s var(--ease); }
+.tab[data-tab="home"] svg,
+.tab[data-tab="market"] svg,
+.tab[data-tab="create"] svg,
+.tab[data-tab="deals"] svg,
+.tab[data-tab="bal"] svg,
+.tab[data-tab="req"] svg,
+.tab[data-tab="refs"] svg,
+.tab[data-tab="profile"] svg,
+.tab[data-tab="support"] svg,
+.tab[data-tab="admin"] svg { animation: none; }
+.tab.on svg { transform: translateY(-1px) scale(1.06); }
 .tab.on { transform: translateY(-1px); }
 .kbtn, .tile, .feat, .cta, .chip, .chip-cat, .lang-row {
   transition: transform .18s ease, background .18s ease, box-shadow .18s ease;
@@ -1276,12 +1309,14 @@ img.av-sm {
   inset: auto !important;
 }
 .kbtn, .chip, .cta, .cta-light, .fab, .tab, .qcard {
-  transition: transform .22s var(--ease), background .22s var(--ease), box-shadow .22s var(--ease);
+  transition: transform .28s var(--ease), background .28s var(--ease), box-shadow .28s var(--ease), color .2s ease;
 }
-.kbtn:active, .chip:active, .cta:active, .qcard:active { transform: scale(var(--press)); }
+.kbtn:active, .chip:active, .cta:active, .cta-light:active, .qcard:active, .feed-card:active, .deal-row:active {
+  transform: scale(var(--press));
+}
 @media (max-width: 520px) {
-  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .fab, .live-dot {
-    animation: none !important;
+  .logo-float, .logo-mark, .feat, .cta, .chip-lang .gear, .fab, .live-dot {
+    animation-duration: 6s;
   }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1478,26 +1513,36 @@ html[data-theme="dark"] .wallet-card {
 }
 .splash h1 {
   color: #fff !important;
-  font-size: 26px !important;
-  font-weight: 800 !important;
-  letter-spacing: -.03em;
-  margin: 0 0 8px 0 !important;
+  font-family: var(--display) !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  letter-spacing: -.04em !important;
+  line-height: 1.12 !important;
+  margin: 0 0 10px 0 !important;
   position: relative; z-index: 1;
 }
 .splash p {
   color: rgba(255,255,255,.72) !important;
-  margin: 0 0 16px 0 !important;
+  margin: 0 0 18px 0 !important;
   position: relative; z-index: 1;
+  font-size: 14.5px !important;
+  line-height: 1.45 !important;
+  font-weight: 500 !important;
+  max-width: 28ch;
 }
 .splash .cta-light {
   background: #fff !important;
   color: #12151c !important;
   border-radius: 999px !important;
+  font-family: var(--font) !important;
   font-weight: 700 !important;
-  min-height: 46px !important;
-  padding: 0 18px !important;
+  min-height: 48px !important;
+  padding: 0 20px !important;
   position: relative; z-index: 1;
+  box-shadow: 0 10px 24px rgba(0,0,0,.18);
+  transition: transform .28s var(--ease), box-shadow .28s var(--ease);
 }
+.splash .cta-light:active { transform: scale(.97); }
 .qcard {
   background: #fff !important;
   border: 0 !important;
@@ -1600,6 +1645,128 @@ html[data-theme="dark"] .wallet-card {
 }
 .deal-row .dr-t{font-weight:700;font-size:14px}
 .deal-row .dr-m{color:var(--muted);font-size:12px;margin-top:4px}
+
+/* —— UI polish —— */
+.rise {
+  animation: rise-in .55s var(--ease) both;
+}
+.rise-d1 { animation-delay: .04s; }
+.rise-d2 { animation-delay: .1s; }
+.rise-d3 { animation-delay: .16s; }
+.rise-d4 { animation-delay: .22s; }
+.rise-d5 { animation-delay: .28s; }
+.rise-d6 { animation-delay: .34s; }
+@keyframes rise-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.sec-row .sec {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -.025em;
+}
+.qcard {
+  transition: transform .28s var(--ease), box-shadow .28s var(--ease);
+}
+.qcard .ql {
+  font-family: var(--font);
+  font-weight: 700 !important;
+  letter-spacing: -.01em;
+}
+.qcard .qi {
+  transition: transform .35s var(--ease), background .25s ease;
+}
+.qcard:active .qi { transform: scale(.92); }
+.feed-card {
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease);
+  box-shadow: 0 12px 28px rgba(18,21,28,.12);
+}
+.feed-card:active { transform: scale(.97); }
+.wallet-card .sum {
+  font-family: var(--display) !important;
+  letter-spacing: -.04em !important;
+}
+.hint, .empty-txt {
+  font-weight: 600;
+  letter-spacing: -.01em;
+}
+.hint.block {
+  background: var(--grouped);
+  border: 0.5px solid var(--hair);
+  border-radius: 18px;
+  padding: 16px;
+  text-align: center;
+  color: var(--muted);
+  margin: 4px 0 12px;
+}
+.kbtn {
+  font-family: var(--font) !important;
+  min-height: 54px !important;
+  border-radius: 16px !important;
+  gap: 10px;
+  box-shadow: 0 1px 0 rgba(0,0,0,.03);
+}
+.kbtn.primary {
+  box-shadow: 0 10px 22px rgba(29,185,84,.28);
+}
+.kb { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.kb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.kb-row.one { grid-template-columns: 1fr; }
+.bubble .hint {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+.bubble input, .bubble textarea {
+  margin-top: 4px;
+  border-radius: 16px;
+  min-height: 50px;
+  font-family: var(--font);
+  font-weight: 600;
+}
+.loading-skel {
+  display: grid; gap: 10px; padding: 8px 0;
+}
+.loading-skel i {
+  display: block; height: 56px; border-radius: 16px;
+  background: linear-gradient(90deg, rgba(120,120,128,.1), rgba(120,120,128,.18), rgba(120,120,128,.1));
+  background-size: 200% 100%;
+  animation: shimmer 1.2s ease-in-out infinite;
+}
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+.rev .txt {
+  font-size: 14.5px;
+  line-height: 1.45;
+  font-weight: 550;
+  letter-spacing: -.01em;
+}
+.rev .who {
+  font-family: var(--display);
+  font-size: 15px !important;
+  font-weight: 700 !important;
+}
+.req-page .title {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  margin: 4px 0 8px;
+}
+.req-page .lead {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 14px;
+  line-height: 1.45;
+}
+.cta { animation: none !important; box-shadow: 0 10px 22px rgba(29,185,84,.22); }
+html[data-theme="dark"] .qcard { background: var(--grouped) !important; }
+html[data-theme="dark"] .empty-deals { background: var(--grouped) !important; }
+html[data-theme="dark"] .tabbar { background: rgba(28,28,30,.92) !important; }
 
 </style>
 </head>
@@ -2291,6 +2458,11 @@ function backBtn(){
 }
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
+function screenHead(title, lead, eyebrow){
+  const eye=eyebrow?`<div class="eyebrow">${eyebrow}</div>`:"";
+  const leadHtml=lead?`<p class="lead">${lead}</p>`:"";
+  return `<div class="screen-hero">${eye}<h2 class="title">${title}</h2>${leadHtml}</div>`;
+}
 const TAB_SCREENS={home:"home",deals:"deals",req:"req",profile:"profile",admin:"admin"};
 const TABS=Object.values(TAB_SCREENS);
 function currentTab(){
@@ -2403,29 +2575,29 @@ async function screenHome(){
       </div>
     </div>`;
   }).join(""):`<div class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</div>`;
-  return `<div class="splash">
+  return `<div class="splash rise">
       <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
       <h1>${uiLang()==="en"?"P2P guarantor in Telegram":"P2P-гарант в Telegram"}</h1>
       <p>${uiLang()==="en"?"Funds stay reserved until the deal is done.":"Деньги резервируются до успешного завершения сделки."}</p>
       <button type="button" class="cta-light" data-go="create-role">${uiLang()==="en"?"Create deal":"Создать сделку"} →</button>
     </div>
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Quick actions":"Быстрые действия"}</div></div>
-    <div class="quick">
+    <div class="sec-row rise rise-d1"><div class="sec">${uiLang()==="en"?"Quick actions":"Быстрые действия"}</div></div>
+    <div class="quick rise rise-d1">
       <button type="button" class="qcard" data-go="create-role"><div class="qi">+</div><div class="ql">${uiLang()==="en"?"New deal":"Новая сделка"}</div></button>
       <button type="button" class="qcard" data-act="join-deal"><div class="qi">⧉</div><div class="ql">${uiLang()==="en"?"Join a deal":"Вступить в сделку"}</div></button>
       <button type="button" class="qcard" data-go="deals"><div class="qi">◇</div><div class="ql">${uiLang()==="en"?"My deals":"Мои сделки"}</div></button>
     </div>
-    <div class="wallet-card">
+    <div class="wallet-card rise rise-d2">
       <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"}</div>
       <div class="sum">${esc(val??0)}<small>${esc(sym)}</small></div>
       <div class="cur-row">${curs}</div>
     </div>
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Recent deals":"Последние сделки"}</div><button type="button" class="linkish" data-go="deals">${uiLang()==="en"?"All":"Все"}</button></div>
-    ${recentCards}
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><span class="live">● LIVE</span></div>
-    <div class="feed-h">${feedCards||`<div class="hint">${uiLang()==="en"?"Feed fills when deals complete with NFT":"Лента появится после успешных сделок"}</div>`}</div>
-    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Latest reviews":"Последние отзывы"}</div><button type="button" class="linkish" data-act="write-review">${uiLang()==="en"?"+ Write":"+ Написать"}</button></div>
-    <div class="rev-list">${revCards}</div>`;
+    <div class="sec-row rise rise-d3"><div class="sec">${uiLang()==="en"?"Recent deals":"Последние сделки"}</div><button type="button" class="linkish" data-go="deals">${uiLang()==="en"?"All":"Все"}</button></div>
+    <div class="rise rise-d3">${recentCards}</div>
+    <div class="sec-row rise rise-d4"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><span class="live">● LIVE</span></div>
+    <div class="feed-h rise rise-d4">${feedCards||`<div class="hint block">${uiLang()==="en"?"Feed fills when deals complete with NFT":"Лента появится после успешных сделок"}</div>`}</div>
+    <div class="sec-row rise rise-d5"><div class="sec">${uiLang()==="en"?"Latest reviews":"Последние отзывы"}</div><button type="button" class="linkish" data-act="write-review">${uiLang()==="en"?"+ Write":"+ Написать"}</button></div>
+    <div class="rev-list rise rise-d5">${revCards}</div>`;
 }
 function renderMarketCards(market){
   const me=Number(state.user&&state.user.id)||0;
@@ -2574,22 +2746,25 @@ function screenReq(){
   </div>`;
 }
 function fieldScreen(title, icon, fb, hint, id, value, save){
-  return bubble(`${pe(icon,fb)} <b>${title}</b><p class="hint">${hint}</p><input id="${id}" value="${esc(value)}" />`)+
+  return bubble(`${screenHead(title, hint)}${pe(icon,fb)}<input id="${id}" value="${esc(value)}" />`)+
     kb([[act(t("save"),save,icon,fb)],[backBtn()]]);
 }
 function screenJoin(){
-  return bubble(`<b>${uiLang()==="en"?"Join deal":"Вступить в сделку"}</b><p class="hint">${uiLang()==="en"?"Paste deal code":"Вставьте код сделки"}</p><input id="join-code" placeholder="abc123..." />`)+
-    kb([[act(uiLang()==="en"?"Join":"Войти","do-join","btn_create","➕")],[backBtn()]]);
+  const en=uiLang()==="en";
+  return bubble(`${screenHead(en?"Join deal":"Вступить в сделку", en?"Paste the deal code from the second party":"Вставь код сделки от второго участника", en?"Deal":"Сделка")}<input id="join-code" placeholder="abc123..." />`)+
+    kb([[act(en?"Join":"Войти","do-join","btn_create","➕")],[backBtn()]]);
 }
 function screenCreateRole(){
-  return bubble(t("role"))+kb([
+  const en=uiLang()==="en";
+  return bubble(screenHead(en?"Who are you in this deal?":"Кто ты в этой сделке?", en?"Choose a role to continue":"Выбери роль, чтобы продолжить", en?"New deal":"Новая сделка"))+kb([
     [btn(t("seller"),"create-type-seller","btn_role_seller","🏷")],
     [btn(t("buyer"),"create-type-buyer","btn_role_buyer","🛒")],
     [backBtn()]
   ]);
 }
 function screenCreateType(){
-  return bubble(t("deal_type"))+kb([
+  const en=uiLang()==="en";
+  return bubble(screenHead(en?"What are you trading?":"Что продаёте / покупаете?", en?"Gift, channel, stars or NFT":"Подарок, канал, Stars или NFT", en?"Deal type":"Тип сделки"))+kb([
     ...TYPES.map(([id,key,icon,fb])=>[btn(t(key),"create-pay-"+id,icon,fb)]),
     [backBtn()]
   ]);
@@ -2605,17 +2780,21 @@ function screenCreatePay(){
   }
   rows.push([act(t("all_curs")||"🌍","open-pay-curs","deal_money","🌍")]);
   rows.push([backBtn()]);
-  return bubble(`${pe("deal_money","💰")} <b>${t("deal_pay")}</b>`)+kb(rows);
+  const en=uiLang()==="en";
+  return bubble(screenHead(en?"How will you pay?":"Чем оплатите?", en?"Pick a currency or payment method":"Выбери валюту или способ оплаты", en?"Payment":"Оплата"))+kb(rows);
 }
 function screenCreateAmt(){
-  return bubble(`<b>${t("create")}</b><p class="hint">${t("amount")}</p><input id="f-amount" inputmode="decimal" value="${esc(state.draft.amount)}" placeholder="100" />`)+
+  const en=uiLang()==="en";
+  return bubble(`${screenHead(en?"Deal amount":"Сумма сделки", en?"Enter the amount for escrow":"Укажи сумму для резерва у гаранта")}<input id="f-amount" inputmode="decimal" value="${esc(state.draft.amount)}" placeholder="100" />`)+
     kb([[act(t("save"),"deal-amount","deal_money","💰")],[cancelBtn()]]);
 }
 function screenCreateDesc(){
   const nft=state.draft.deal_type==="gift"||state.draft.deal_type==="nft";
   const preview=nft&&nftInfo(state.draft.description);
-  return bubble(`${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")} <b>${nft?t("desc_nft"):t("desc")}</b>
-    <p class="hint">${nft?(uiLang()==="en"?"Paste https://t.me/nft/Name-123 — preview appears below":"Вставь https://t.me/nft/Name-123 — превью появится ниже"):""}</p>
+  const en=uiLang()==="en";
+  const title=nft?(en?"NFT link":"Ссылка на NFT"):(en?"Deal details":"Описание сделки");
+  const lead=nft?(en?"Paste https://t.me/nft/Name-123 — preview appears below":"Вставь https://t.me/nft/Name-123 — превью появится ниже"):(en?"Short description for both sides":"Короткое описание для обеих сторон");
+  return bubble(`${screenHead(title, lead)}${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")}
     <textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>
     <div id="nft-prev">${preview?`<div class="nft-prev"><div class="shot">${nftAnimHtml(preview)}</div><div class="nft-prev-meta"><b>${esc(preview.name)}${preview.num?" #"+esc(preview.num):""}</b><div class="hint">${esc(preview.url)}</div></div></div>`:""}</div>`)+
     kb([[act(t("make"),"deal-make","btn_create","➕")],[cancelBtn()]]);
@@ -3042,7 +3221,7 @@ async function draw(opts={}){
   const root=document.getElementById("screen");
   if(!state.user){
     destroyNftAnims();
-    root.innerHTML=bubble("Загрузка…");
+    root.innerHTML=`<div class="loading-skel" aria-hidden="true"><i></i><i style="height:120px"></i><i></i><i style="height:72px"></i></div>`;
     syncTabs();
     return;
   }
