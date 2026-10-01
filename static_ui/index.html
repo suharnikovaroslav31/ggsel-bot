@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="ui-polish-20261001" />
+  <meta name="ggsel-build" content="official-cursheet-20261001" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -1410,7 +1410,7 @@ html[data-theme="dark"] {
   --ios-fill-secondary: rgba(120,120,128,.32);
 }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", sans-serif !important;
+  font-family: var(--font) !important;
 }
 .stage { padding: 4px 16px 110px; }
 .large-title {
@@ -1646,6 +1646,139 @@ html[data-theme="dark"] .wallet-card {
 .deal-row .dr-t{font-weight:700;font-size:14px}
 .deal-row .dr-m{color:var(--muted);font-size:12px;margin-top:4px}
 
+/* —— Currency sheet —— */
+.sheet {
+  position: fixed; inset: 0; z-index: 70;
+  pointer-events: none; opacity: 0;
+  transition: opacity .28s var(--ease);
+}
+.sheet.on { pointer-events: auto; opacity: 1; }
+.sheet-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(8,10,14,.46);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+}
+.sheet-card {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  max-width: 480px; margin: 0 auto;
+  background: var(--bg); color: var(--text);
+  border-radius: 28px 28px 0 0;
+  padding: 10px 16px calc(18px + env(safe-area-inset-bottom));
+  box-shadow: 0 -24px 60px rgba(0,0,0,.28);
+  transform: translateY(110%);
+  transition: transform .38s var(--ease);
+  max-height: min(78dvh, 720px);
+  display: flex; flex-direction: column;
+}
+.sheet.on .sheet-card { transform: translateY(0); }
+.sheet-handle {
+  width: 42px; height: 5px; border-radius: 99px;
+  background: rgba(120,120,128,.35); margin: 2px auto 12px;
+}
+.sheet-head {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.sheet-eyebrow {
+  font: 800 11px/1 var(--font); letter-spacing: .08em; text-transform: uppercase;
+  color: var(--accent); margin-bottom: 6px;
+}
+.sheet-head h3 {
+  margin: 0; font-family: var(--display); font-size: 22px; font-weight: 700;
+  letter-spacing: -.03em;
+}
+.sheet-x {
+  appearance: none; border: 0; width: 36px; height: 36px; border-radius: 50%;
+  background: var(--btn); color: var(--text); font-size: 14px; cursor: pointer;
+}
+.sheet-search {
+  width: 100%; border: 0; background: #fff; color: var(--text);
+  border-radius: 16px; padding: 14px 14px; margin: 0 0 12px;
+  font: 600 15px/1.2 var(--font); box-shadow: 0 0 0 .5px var(--hair);
+}
+html[data-theme="dark"] .sheet-search { background: var(--grouped); }
+.sheet-groups {
+  display: flex; gap: 8px; overflow-x: auto; padding: 0 0 12px;
+  scrollbar-width: none; flex: 0 0 auto;
+}
+.sheet-groups::-webkit-scrollbar { display: none; }
+.sheet-group {
+  appearance: none; border: 0; cursor: pointer; white-space: nowrap;
+  background: #fff; color: var(--text); border-radius: 999px;
+  padding: 9px 14px; font: 700 12px/1 var(--font);
+  box-shadow: 0 0 0 .5px var(--hair);
+}
+html[data-theme="dark"] .sheet-group { background: var(--grouped); }
+.sheet-group.on { background: var(--accent); color: #fff; box-shadow: none; }
+.sheet-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px; flex: 1; min-height: 0;
+}
+.cur-tile {
+  appearance: none; border: 0; cursor: pointer; text-align: left;
+  background: #fff; color: var(--text);
+  border-radius: 18px; padding: 12px 12px 11px;
+  box-shadow: 0 0 0 .5px var(--hair);
+  display: grid; grid-template-columns: 36px 1fr; gap: 10px; align-items: center;
+  transition: transform .2s var(--ease), box-shadow .2s var(--ease);
+}
+html[data-theme="dark"] .cur-tile { background: var(--grouped); }
+.cur-tile:active { transform: scale(.98); }
+.cur-tile.on {
+  box-shadow: 0 0 0 2px var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, #fff);
+}
+.cur-tile .cf {
+  width: 36px; height: 36px; border-radius: 12px;
+  display: grid; place-items: center; font-size: 18px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.cur-tile .cn { font: 800 14px/1.1 var(--display); letter-spacing: -.02em; }
+.cur-tile .cs { color: var(--muted); font: 600 11px/1.2 var(--font); margin-top: 3px; }
+.cur-tile .ca { color: var(--muted); font: 600 11px/1 var(--font); margin-top: 4px; grid-column: 2; }
+
+/* —— Official GGSel flavor —— */
+.trust-strip {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin: -4px 0 14px;
+}
+.trust-item {
+  background: #fff; border-radius: 16px; padding: 12px 10px;
+  text-align: center; box-shadow: 0 8px 20px rgba(18,21,28,.05);
+  border: .5px solid var(--hair);
+}
+html[data-theme="dark"] .trust-item { background: var(--grouped); }
+.trust-item .ti {
+  width: 28px; height: 28px; margin: 0 auto 8px; border-radius: 10px;
+  display: grid; place-items: center;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent); font-weight: 800; font-size: 13px;
+}
+.trust-item .tl { font: 800 12px/1.15 var(--display); letter-spacing: -.02em; }
+.trust-item .ts { margin-top: 4px; color: var(--muted); font: 600 10px/1.25 var(--font); }
+.official-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.12); color: #dff7e8;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px; padding: 5px 10px;
+  font: 700 11px/1 var(--font); letter-spacing: .02em;
+  margin: 0 0 10px;
+}
+.official-pill .dot {
+  width: 7px; height: 7px; border-radius: 50%; background: #2ecc71;
+  box-shadow: 0 0 0 3px rgba(46,204,113,.25);
+}
+.wallet-card .cur-pick {
+  appearance: none; border: 0; cursor: pointer;
+  background: rgba(255,255,255,.14); color: #fff;
+  border-radius: 14px; min-height: 40px; padding: 0 12px;
+  font: 700 12px/1 var(--font);
+  display: inline-flex; align-items: center; gap: 8px;
+  white-space: nowrap;
+}
+.wallet-card .cur-pick span.chev { opacity: .7; font-size: 14px; }
+
 /* —— UI polish —— */
 .rise {
   animation: rise-in .55s var(--ease) both;
@@ -1812,6 +1945,22 @@ html[data-theme="dark"] .tabbar { background: rgba(28,28,30,.92) !important; }
   </div>
   <div id="toast"></div>
   <div id="coach" aria-hidden="true"></div>
+  <div id="cur-sheet" class="sheet" aria-hidden="true">
+    <div class="sheet-backdrop" data-act="close-curs"></div>
+    <div class="sheet-card" role="dialog" aria-modal="true" aria-label="Currency">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div>
+          <div class="sheet-eyebrow">GGSel</div>
+          <h3 id="cur-sheet-title">Валюта</h3>
+        </div>
+        <button type="button" class="sheet-x" data-act="close-curs" aria-label="Close">✕</button>
+      </div>
+      <input id="cur-q" class="sheet-search" type="search" autocomplete="off" placeholder="Поиск: TON, USD, рубль…" />
+      <div class="sheet-groups" id="cur-groups"></div>
+      <div class="sheet-grid" id="cur-list"></div>
+    </div>
+  </div>
   <div id="intro" hidden>
     <div class="intro-stage">
       <div class="intro-logo"></div>
@@ -1991,7 +2140,7 @@ function curMeta(code){return CUR_MAP[code]||{code:code,sym:String(code).toUpper
 function curAmount(code){const b=(state.user&&state.user.balances)||{};return b[code]??0;}
 
 const GROUPS=CUR_GROUPS.map(([name,keys])=>[name,keys.map(k=>{const c=WORLD_CURS.find(x=>x[0]===k)||[k,k.toUpperCase(),k,"💱",""];return [c[0],c[3],"balance_"+c[0]];})]);
-const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:60,marketSig:"",marketFilter:{q:"",collection:"",sort:"new"},marketCollections:[],feed:[],reviews:[],coachStep:0};
+const state={user:null,screen:"home",dir:"fwd",stack:["home"],draft:{role:"",deal_type:"",pay_method:"",amount:"",description:""},admin:{currency:"",uid:"",amount:""},wmethod:"",deals:[],link:"",dealCode:"",pendingDeal:"",deal:null,dealSig:"",dealsSig:"",balCur:"rub",reviewSort:"new",feedId:null,marketCode:"",profileKey:"",homeSig:"",market:[],marketSeed:0,marketRotateIn:60,marketSig:"",marketFilter:{q:"",collection:"",sort:"new"},marketCollections:[],feed:[],reviews:[],coachStep:0,curMode:"bal",curGroup:"Popular"};
 function uiLang(){
   const l=String((state.user&&state.user.language)||"ru").toLowerCase();
   return l==="ru"||l.startsWith("ru-")?"ru":"en";
@@ -2214,11 +2363,98 @@ function filterLangs(){
     el.hidden=!!q && !(el.dataset.q||"").includes(q);
   });
 }
+function curGroupLabel(name){
+  const en=uiLang()==="en";
+  const map={
+    Popular: en?"Popular":"Популярные",
+    Crypto: en?"Crypto":"Крипто",
+    Europe: en?"Europe":"Европа",
+    CIS: en?"CIS":"СНГ",
+    Americas: en?"Americas":"Америка",
+    Asia: en?"Asia":"Азия",
+    "Middle East": en?"Middle East":"Ближний Восток",
+    Africa: en?"Africa":"Африка",
+    Oceania: en?"Oceania":"Океания"
+  };
+  return map[name]||name;
+}
+function openCurSheet(mode){
+  state.curMode=mode||state.curMode||"bal";
+  if(!state.curGroup) state.curGroup="Popular";
+  renderCurSheet();
+  const el=document.getElementById("cur-sheet");
+  if(!el) return;
+  el.classList.add("on");
+  el.setAttribute("aria-hidden","false");
+  const q=document.getElementById("cur-q");
+  if(q){ q.value=""; setTimeout(()=>q.focus(), 280); }
+}
+function closeCurSheet(){
+  const el=document.getElementById("cur-sheet");
+  if(!el) return;
+  el.classList.remove("on");
+  el.setAttribute("aria-hidden","true");
+}
+function renderCurSheet(){
+  const en=uiLang()==="en";
+  const mode=state.curMode||"bal";
+  const titleEl=document.getElementById("cur-sheet-title");
+  if(titleEl){
+    titleEl.textContent=mode==="pay"
+      ?(en?"Payment currency":"Валюта оплаты")
+      :(en?"Choose currency":"Выбор валюты");
+  }
+  const qEl=document.getElementById("cur-q");
+  if(qEl) qEl.placeholder=en?"Search: TON, USD, ruble…":"Поиск: TON, USD, рубль…";
+  const groups=[["Popular", CUR_PIN], ...CUR_GROUPS];
+  const gWrap=document.getElementById("cur-groups");
+  if(gWrap){
+    gWrap.innerHTML=groups.map(([name])=>{
+      const on=state.curGroup===name?" on":"";
+      return `<button type="button" class="sheet-group${on}" data-act="cur-group" data-group="${esc(name)}">${esc(curGroupLabel(name))}</button>`;
+    }).join("");
+  }
+  filterCurs();
+}
 function filterCurs(){
   const q=String((document.getElementById("cur-q")||{}).value||"").toLowerCase().trim();
-  document.querySelectorAll("#cur-list .ios-row").forEach(el=>{
-    el.hidden=!!q && !(el.dataset.q||"").includes(q);
+  const mode=state.curMode||"bal";
+  const cur=state.balCur||"rub";
+  const group=state.curGroup||"Popular";
+  let list;
+  if(group==="Popular") list=CUR_PIN.map(code=>{
+    const m=curMeta(code);
+    return [code,m.sym,m.name,m.flag,m.group];
   });
+  else {
+    const keys=(CUR_GROUPS.find(g=>g[0]===group)||[group,[]])[1]||[];
+    list=keys.map(code=>{
+      const m=curMeta(code);
+      return [code,m.sym,m.name,m.flag,m.group];
+    });
+  }
+  if(q){
+    list=WORLD_CURS.filter(([code,sym,name,flag,g])=>{
+      const hay=`${code} ${sym} ${name} ${flag} ${g}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  const box=document.getElementById("cur-list");
+  if(!box) return;
+  box.innerHTML=list.map(([code,sym,name,flag])=>{
+    const amt=curAmount(code);
+    const on=(mode==="pay"?state.draft.pay_method:cur)===code?" on":"";
+    return `<button type="button" class="cur-tile${on}" data-act="pick-cur" data-cur="${esc(code)}" data-mode="${esc(mode)}">
+      <span class="cf">${esc(flag)}</span>
+      <span><div class="cn">${esc(String(code).toUpperCase())} · ${esc(sym)}</div><div class="cs">${esc(name)}</div>${mode==="bal"||mode==="view"?`<div class="ca">${esc(amt)}</div>`:""}</span>
+    </button>`;
+  }).join("")||`<div class="hint block">${uiLang()==="en"?"Nothing found":"Ничего не найдено"}</div>`;
+}
+function screenCur(mode){
+  // legacy full-page path → sheet
+  setTimeout(()=>openCurSheet(mode||state.curMode||"bal"), 0);
+  const en=uiLang()==="en";
+  return bubble(screenHead(en?"Currencies":"Валюты", en?"Pick from the window":"Выбери валюту в окне"))+kb([[backBtn()]]);
 }
 function pe(key, fb){
   const alt=esc(fb||"");
@@ -2535,10 +2771,10 @@ async function screenHome(){
   try{ const r=await api("/api/reviews"); reviews=r.reviews||reviews; }catch(e){}
   state.feed=feed; state.reviews=reviews;
   state.homeSig=homeFingerprint([],feed,reviews,cur,val,0);
-  const pin=CUR_PIN.slice();
+  const pin=["rub","usd","eur","ton","usdt"].filter((k,i,a)=>a.indexOf(k)===i);
   if(cur&&!pin.includes(cur)) pin.unshift(cur);
-  const curs=pin.map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("")
-    +`<button type="button" class="cur cur-all" data-act="open-curs">${t("cur_more")||"Все"} · ${WORLD_CURS.length}</button>`;
+  const curs=pin.slice(0,5).map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("")
+    +`<button type="button" class="cur-pick" data-act="open-curs"><span>${uiLang()==="en"?"All currencies":"Все валюты"}</span><span class="chev">›</span></button>`;
   const myDeals=Array.isArray(state.deals)?state.deals:(u.deals||[]);
   const recent=myDeals.slice(0,5);
   const recentCards=recent.length?recent.map(d=>`<button type="button" class="deal-row" data-act="open-deal" data-id="${d.id||d.code}">
@@ -2576,10 +2812,16 @@ async function screenHome(){
     </div>`;
   }).join(""):`<div class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</div>`;
   return `<div class="splash rise">
+      <div class="official-pill"><span class="dot"></span>${uiLang()==="en"?"Official GGSel escrow":"Официальный гарант GGSel"}</div>
       <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
       <h1>${uiLang()==="en"?"P2P guarantor in Telegram":"P2P-гарант в Telegram"}</h1>
       <p>${uiLang()==="en"?"Funds stay reserved until the deal is done.":"Деньги резервируются до успешного завершения сделки."}</p>
       <button type="button" class="cta-light" data-go="create-role">${uiLang()==="en"?"Create deal":"Создать сделку"} →</button>
+    </div>
+    <div class="trust-strip rise rise-d1">
+      <div class="trust-item"><div class="ti">◈</div><div class="tl">${uiLang()==="en"?"Escrow":"Эскроу"}</div><div class="ts">${uiLang()==="en"?"Funds held":"Деньги в резерве"}</div></div>
+      <div class="trust-item"><div class="ti">NFT</div><div class="tl">Fragment</div><div class="ts">${uiLang()==="en"?"Gifts & NFT":"Гифты и NFT"}</div></div>
+      <div class="trust-item"><div class="ti">24/7</div><div class="tl">${uiLang()==="en"?"Support":"Поддержка"}</div><div class="ts">${uiLang()==="en"?"Live manager":"Живой менеджер"}</div></div>
     </div>
     <div class="sec-row rise rise-d1"><div class="sec">${uiLang()==="en"?"Quick actions":"Быстрые действия"}</div></div>
     <div class="quick rise rise-d1">
@@ -3126,20 +3368,6 @@ async function screenUserProfile(){
     ${revs}`+kb([[backBtn()]]);
 }
 
-function screenCur(mode){
-  const en=uiLang()==="en";
-  const cur=state.balCur||"rub";
-  const modeKey=mode||state.curMode||"bal";
-  const rows=WORLD_CURS.map(([code,sym,name,flag,group])=>{
-    const q=`${code} ${sym} ${name} ${flag} ${group}`.toLowerCase();
-    const amt=curAmount(code);
-    return `<button type="button" class="ios-row${cur===code?" on":""}" data-act="pick-cur" data-cur="${esc(code)}" data-mode="${esc(modeKey)}" data-q="${esc(q)}"><span class="flag">${esc(flag)}</span><span class="meta"><b>${esc(code.toUpperCase())} · ${esc(sym)}</b><small>${esc(name)} · ${esc(group)}</small></span><span class="amt">${esc(amt)}</span></button>`;
-  }).join("");
-  return `<div class="large-title">${esc(t("pick_cur_world")||(en?"Currencies":"Валюты"))}</div>
-    <p class="hint" style="margin-top:-6px">${esc(t("all_curs")||"")} · ${WORLD_CURS.length}</p>
-    <input id="cur-q" class="ios-search" type="search" autocomplete="off" placeholder="${esc(t("search_cur")||"Search")}" />
-    <div class="ios-group cur-list" id="cur-list">${rows}</div>`+kb([[backBtn()]]);
-}
 function screenBal(){
   const b=state.user.balances||{};
   const en=uiLang()==="en";
@@ -3152,7 +3380,7 @@ function screenBal(){
   }).join("");
   const wd=WDRAW.map(([id,key,icon,fb])=>`<button type="button" class="ios-row" data-go="wd-${esc(id)}"><span class="flag">${esc(fb)}</span><span class="meta"><b>${esc(t(key))}</b></span><span class="chev">›</span></button>`).join("");
   return `<div class="large-title">${esc(t("bal"))}</div>
-    <button type="button" class="ios-row" style="background:var(--grouped);border-radius:12px;margin-bottom:8px;box-shadow:0 0 0 .5px var(--hair)" data-act="open-curs"><span class="flag">🌍</span><span class="meta"><b>${esc(t("all_curs")||(en?"All currencies":"Все валюты"))}</b><small>${WORLD_CURS.length}</small></span><span class="chev">›</span></button>
+    <button type="button" class="ios-row" style="background:var(--grouped);border-radius:12px;margin-bottom:8px;box-shadow:0 0 0 .5px var(--hair)" data-act="open-curs"><span class="flag">💱</span><span class="meta"><b>${esc(t("all_curs")||(en?"All currencies":"Все валюты"))}</b><small>${en?"Compact picker":"Компактный выбор"}</small></span><span class="chev">›</span></button>
     <div class="ios-section">${en?"Balances":"Балансы"}</div>
     <div class="ios-group">${rows}</div>
     <div class="ios-section">${esc(t("withdraw"))}</div>
@@ -3434,17 +3662,23 @@ document.body.addEventListener("click",async(ev)=>{
       state.marketFilter=Object.assign({},state.marketFilter||{},{sort:a.dataset.sort||"new"});
       await draw({quiet:true});return;
     }
-    if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";if(state.screen==="bal"||state.screen==="cur"){await go("home","back");}else await draw({quiet:true});return;}
-    if(actName==="open-curs"){state.curMode="bal";go("cur");return;}
-    if(actName==="open-pay-curs"){state.curMode="pay";go("cur");return;}
+    if(actName==="bal-cur"){state.balCur=a.dataset.cur||"rub";closeCurSheet();if(state.screen==="bal"||state.screen==="cur"){await go("home","back");}else await draw({quiet:true});return;}
+    if(actName==="open-curs"){openCurSheet("bal");return;}
+    if(actName==="open-pay-curs"){openCurSheet("pay");return;}
+    if(actName==="close-curs"){closeCurSheet();if(state.screen==="cur") go("home","back");return;}
+    if(actName==="cur-group"){state.curGroup=a.dataset.group||"Popular";renderCurSheet();return;}
     if(actName==="pick-cur"){
       const code=a.dataset.cur||"rub";
       const mode=a.dataset.mode||state.curMode||"bal";
+      closeCurSheet();
       if(mode==="pay"){state.draft.pay_method=code;go("create-amt");return;}
       if(mode==="acred"||String(mode).startsWith("acred")){state.admin={kind:"credit",currency:code};go("admin-amt");return;}
       if(mode==="axfer"||String(mode).startsWith("axfer")){state.admin={kind:"xfer",currency:code};go("admin-id");return;}
       if(mode==="view"){state.balCur=code;await draw({quiet:true});return;}
-      state.balCur=code;go("home","back");return;
+      state.balCur=code;
+      if(state.screen==="cur") go("home","back");
+      else await draw({quiet:true});
+      return;
     }
     if(actName==="open-feed"){
       state.feedId=Number(a.dataset.id)||null;
