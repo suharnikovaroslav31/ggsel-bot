@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="deal-bugs-20261002b" />
+  <meta name="ggsel-build" content="deal-kv-20261002c" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -355,17 +355,13 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
   font-size: 14px; line-height: 1.45; font-weight: 500;
 }
 .bubble .screen-hero { margin-bottom: 4px; }
-.bubble b, .bubble > b {
+.bubble-title,
+.bubble > b.bubble-title {
   display: block;
   font-family: var(--display);
   font-size: 22px; font-weight: 700;
   letter-spacing: -.03em; line-height: 1.2;
   margin: 0 0 8px;
-}
-.bubble > .fig + b, .bubble > span.fig + b {
-  display: inline;
-  font-size: inherit;
-  letter-spacing: inherit;
 }
 .sec { font-family: var(--display); font-size: 20px; font-weight: 700; letter-spacing: -.025em; margin: 8px 0 12px; }
 .who { font-size: 22px; font-weight: 600; margin: 4px 0 10px; }
@@ -380,7 +376,6 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
   align-items: center;
   gap: 6px;
 }
-.bubble b { font-weight: 600; }
 .muted, .hint { color: var(--muted); }
 .hint { font-size: 13.5px; margin-top: 8px; }
 .tiles {
@@ -722,9 +717,21 @@ input, textarea, select {
   font-weight: 600;
   word-break: break-all;
 }
-.kv { display: flex; justify-content: space-between; gap: 10px; margin: 8px 0; font-size: 14.5px; }
-.kv span { color: var(--muted); }
-.kv b { text-align: right; }
+.kv { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin: 8px 0; font-size: 14.5px; }
+.kv span { color: var(--muted); flex: 0 0 auto; padding-top: 1px; }
+.kv b, .kv .val {
+  display: inline-block;
+  text-align: right;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: normal;
+  line-height: 1.35;
+  margin: 0;
+  max-width: 68%;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 .status-pill {
   display: inline-flex;
   background: #eff2f6;
@@ -2343,7 +2350,7 @@ function pickTheme(theme){
 }
 function screenTheme(){
   const cur=rememberedTheme()||"light";
-  return bubble(`<b>${t("theme_title")}</b><p class="hint">${t("theme_sub")}</p>`)+
+  return bubble(`<b class="bubble-title">${t("theme_title")}</b><p class="hint">${t("theme_sub")}</p>`)+
     `<div class="theme-grid">
       <button type="button" class="theme-card light${cur==="light"?" on":""}" data-act="pick-theme" data-theme="light">
         <div class="t-title">${t("theme_light")}</div>
@@ -2616,6 +2623,15 @@ function nftCard(desc){
   const n=nftInfo(desc);
   if(!n) return "";
   return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftAnimHtml(n)}</div></button>`;
+}
+function dealDescLabel(desc){
+  const n=nftInfo(desc);
+  if(n){
+    const label=`${n.name}${n.num?" #"+n.num:""}`;
+    return `<button type="button" class="ulink" data-act="open-nft" data-url="${esc(n.url)}">${esc(label)}</button>`;
+  }
+  const raw=String(desc||"").trim();
+  return esc(raw||"—");
 }
 function statusLabel(st){
   return ({open:t("st_open"),active:t("st_active"),paid:t("st_paid"),goods_sent:t("st_sent"),completed:t("st_done"),cancelled:t("st_cancel")}[st])||st;
@@ -2964,7 +2980,7 @@ async function screenMarketView(){
   }catch(e){}
   if(!it){
     const isDemo=String(code).startsWith("v");
-    return bubble(`<b>${uiLang()==="en"?"Listing closed":"Лот уже снят с продажи"}</b><p class="hint">${uiLang()==="en"?"Someone bought it — new lots appear every 2 minutes.":"Его купили — новые лоты появляются каждые 2 минуты."}</p>`)+kb([
+    return bubble(`<b class="bubble-title">${uiLang()==="en"?"Listing closed":"Лот уже снят с продажи"}</b><p class="hint">${uiLang()==="en"?"Someone bought it — new lots appear every 2 minutes.":"Его купили — новые лоты появляются каждые 2 минуты."}</p>`)+kb([
       isDemo?null:[`<button class="kbtn primary" data-act="open-deal" data-code="${esc(code)}">${pe("btn_deals","📑")}<span>${uiLang()==="en"?"Open deal":"Открыть сделку"}</span></button>`],
       [backBtn()]
     ].filter(Boolean));
@@ -2997,7 +3013,7 @@ async function screenFeedView(){
   const n=item.nft||nftInfo(item.nft_url||"");
   const d=item.deal;
   const stars="★".repeat(Math.max(1,Math.min(5,Number(item.rating)||5)));
-  return bubble(`${pe("btn_deals","📑")} <b>${uiLang()==="en"?"Successful deal":"Успешная сделка"}</b>
+  return bubble(`${pe("btn_deals","📑")} <b class="bubble-title">${uiLang()==="en"?"Successful deal":"Успешная сделка"}</b>
     <div style="margin-top:8px"><span class="status-pill ok">${esc(statusLabel((d&&d.status)||"completed"))}</span></div>
     ${n?nftCard(n.url):""}
     <div class="kv"><span>${uiLang()==="en"?"Author":"Автор"}</span><b>${unameLink(item.username)}</b></div>
@@ -3094,7 +3110,7 @@ function screenCreateDone(){
 function screenDealViewFallback(){
   const code=state.dealCode;
   const link=dealLink(code);
-  return bubble(`${pe("deal_check","✅")} <b>${t("created")}</b>`)+
+  return bubble(`${pe("deal_check","✅")} <b class="bubble-title">${t("created")}</b>`)+
     `<div class="deal-link-box"><div class="lab">${t("deal_link_for")}</div><input readonly value="${esc(link)}" /></div>`+
     kb([[act(t("copy"),"copy-link","deal_link","🔗")],[backBtn()]]);
 }
@@ -3119,14 +3135,14 @@ async function screenDealView(){
   if(d.status==="paid"&&d.role==="seller") actions.push([act(t("sent_goods"),"deal-sent-"+d.code,"btn_deal_sent","📦")]);
   if(d.status==="goods_sent"&&d.role==="buyer") actions.push([act(t("recv_goods"),"deal-recv-"+d.code,"btn_deal_recv","✅")]);
   actions.push([backBtn()]);
-  return bubble(`${pe("btn_deals","📑")} <b>${t("deal_card")} #${esc(d.code)}</b>
+  return bubble(`${pe("btn_deals","📑")} <b class="bubble-title">${t("deal_card")} #${esc(d.code)}</b>
     <div style="margin-top:8px"><span class="status-pill ${statusTone(d.status)}">${esc(statusLabel(d.status))}</span></div>
     ${nftCard(d.description)}
     <div class="kv"><span>${uiLang()==="en"?"Role":"Роль"}</span><b>${esc(roleLabel(d.role))}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Type":"Тип"}</span><b>${esc(typeLabel(d.deal_type))}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Pay":"Оплата"}</span><b>${esc(payLabel(d.pay_method))}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Amount":"Сумма"}</span><b>${esc(d.amount)}</b></div>
-    <div class="kv"><span>${uiLang()==="en"?"Details":"Описание"}</span><b>${esc(d.description||"—")}</b></div>
+    <div class="kv"><span>${uiLang()==="en"?"Details":"Описание"}</span><b>${dealDescLabel(d.description)}</b></div>
     <div class="kv"><span>${uiLang()==="en"?"Guarantor":"Гарант"}</span><b>@${esc(manager)}</b></div>
     ${d.status==="active"||d.status==="paid"?`<p class="hint">${t("pay_only_bal")}</p>`:""}
     ${d.status==="open"?`<div class="deal-link-box"><div class="lab">${t("deal_link_for")}</div><input readonly value="${esc(link)}" /></div>`:""}`)+kb(actions);
@@ -3436,7 +3452,7 @@ function screenBal(){
 }
 
 function screenWd(){
-  return bubble(`${pe("deal_money","💰")} <b>${t("withdraw")}</b><p class="hint">${t("amount")}</p><input id="w-amount" inputmode="decimal" placeholder="100" />`)+
+  return bubble(`${pe("deal_money","💰")} <b class="bubble-title">${t("withdraw")}</b><p class="hint">${t("amount")}</p><input id="w-amount" inputmode="decimal" placeholder="100" />`)+
     kb([[act(t("withdraw"),"do-withdraw","deal_money","💰")],[backBtn()]]);
 }
 async function screenDeals(){
@@ -3449,7 +3465,7 @@ async function screenDeals(){
   }catch(e){
     if(!deals.length) throw e;
   }
-  if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
+  if(!deals.length) return bubble(`${pe("btn_deals","📑")} <b class="bubble-title">${t("deals")}</b><p class="hint">${t("emptyDeals")}</p>`)+kb([[backBtn()]]);
   const cards=deals.map(d=>{
     const n=nftInfo(d.description);
     const thumb=n?`<div class="deal-thumb">${nftImgHtml(n)}</div>`:"";
@@ -3461,12 +3477,12 @@ async function screenDeals(){
       </div></div>
     </button>`;
   }).join("");
-  return bubble(`${pe("btn_deals","📑")} <b>${t("deals")}</b>`)+`<div class="list">${cards}</div>`+kb([[backBtn()]]);
+  return bubble(`${pe("btn_deals","📑")} <b class="bubble-title">${t("deals")}</b>`)+`<div class="list">${cards}</div>`+kb([[backBtn()]]);
 }
 function screenRefs(){
   const u=state.user;
   const link=u.bot_username?`https://t.me/${u.bot_username}?start=${u.id}`:"";
-  return bubble(`${pe("btn_refs","🌐")} <b>${t("refs")}</b><p>${t("refsText")}</p><p>${t("invited")}: <b>${u.referral_count}</b></p><p class="hint">${t("refs_link")}</p><input readonly value="${esc(link)}" />`)+
+  return bubble(`${pe("btn_refs","🌐")} <b class="bubble-title">${t("refs")}</b><p>${t("refsText")}</p><p>${t("invited")}: <b>${u.referral_count}</b></p><p class="hint">${t("refs_link")}</p><input readonly value="${esc(link)}" />`)+
     kb([[act(t("copy"),"copy:"+link,"deal_link","🔗")],[backBtn()]]);
 }
 function screenLang(){
@@ -3476,7 +3492,7 @@ function screenLang(){
     return `<button type="button" class="lang-row${cur===code?" on":""}" data-act="pick-lang" data-lang="${esc(code)}" data-q="${esc(q)}"><span>${esc(native)}</span><small>${esc(en)} · ${esc(code.toUpperCase())}</small></button>`;
   }).join("");
   const showBack=!!rememberedLang()||!!(state.user&&Number(state.user.lang_picked));
-  return bubble(`<b>${t("pick_lang")}</b><p class="hint">${t("all_langs")}</p><input id="lang-q" type="search" autocomplete="off" placeholder="${esc(t("search_lang"))}" />`)+
+  return bubble(`<b class="bubble-title">${t("pick_lang")}</b><p class="hint">${t("all_langs")}</p><input id="lang-q" type="search" autocomplete="off" placeholder="${esc(t("search_lang"))}" />`)+
     `<div class="lang-list" id="lang-list">${rows}</div>`+
     (showBack?kb([[backBtn()]]):"");
 }
@@ -3485,11 +3501,11 @@ function currencyScreen(prefix){
   return screenCur(prefix);
 }
 function screenAdminAmt(kind){
-  return bubble(`${pe("deal_money","💰")} <b>${kind==="credit"?t("credit"):t("transfer")}</b><p class="hint">${t("amount")}</p><input id="a-amt" inputmode="decimal" placeholder="50" />`)+
+  return bubble(`${pe("deal_money","💰")} <b class="bubble-title">${kind==="credit"?t("credit"):t("transfer")}</b><p class="hint">${t("amount")}</p><input id="a-amt" inputmode="decimal" placeholder="50" />`)+
     kb([[act(t("save"),kind==="credit"?"do-credit":"do-xfer","deal_check","✅")],[backBtn()]]);
 }
 function screenAdminId(kind){
-  return bubble(`${pe("deal_person","👤")} <b>${t("uid")}</b><input id="a-uid" inputmode="numeric" placeholder="123456789" />`)+
+  return bubble(`${pe("deal_person","👤")} <b class="bubble-title">${t("uid")}</b><input id="a-uid" inputmode="numeric" placeholder="123456789" />`)+
     kb([[act(t("save"),"id-"+kind,"deal_check","✅")],[backBtn()]]);
 }
 async function draw(opts={}){

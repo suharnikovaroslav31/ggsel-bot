@@ -4,7 +4,7 @@ from aiogram.types import (
     WebAppInfo,
 )
 
-from config import SUPPORT_URL, WEBAPP_URL
+from config import SUPPORT_URL, WEBAPP_BUILD, WEBAPP_URL
 from texts.deal_messages import CURRENCY_NAMES
 from texts.i18n import t
 from utils.emoji import icon_id
@@ -33,18 +33,22 @@ def _btn(
 def app_button() -> InlineKeyboardButton | None:
     if not WEBAPP_URL:
         return None
-    return InlineKeyboardButton(text="📱 GGSel", web_app=WebAppInfo(url=WEBAPP_URL))
+    return InlineKeyboardButton(text="📱 GGSel", web_app=WebAppInfo(url=app_url()))
 
 
 def app_url(query: str = "", *, path: str = "") -> str:
     base = (WEBAPP_URL or "").rstrip("/")
     extra = path if path.startswith("/") else (f"/{path}" if path else "")
     url = base + extra
-    if not query:
+    params = []
+    if WEBAPP_BUILD:
+        params.append(f"v={WEBAPP_BUILD}")
+    q = (query or "").lstrip("?")
+    if q:
+        params.append(q)
+    if not params:
         return url or base
-    if not query.startswith("?"):
-        query = "?" + query
-    return url + query
+    return f"{url}?{'&'.join(params)}"
 
 
 def language_start_kb(deal: str | None = None) -> InlineKeyboardMarkup:

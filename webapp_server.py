@@ -33,6 +33,7 @@ from config import (
     WEBAPP_URL,
 )
 from database import db
+from keyboards.main import app_url
 from utils.admin_access import is_admin, is_super_admin
 from utils.currencies import BALANCE_KEYS, BALANCE_META, PAY_REQUISITE, WITHDRAW_METHODS
 from utils.panel import report_deal
@@ -1856,7 +1857,7 @@ async def bind_bot_menu(bot: Bot) -> None:
     me = await bot.get_me()
     _bot_username = me.username or ""
     asyncio.create_task(_warmup_emoji(bot))
-    url = WEBAPP_URL
+    url = app_url() if WEBAPP_URL else ""
     if not url:
         return
     try:
