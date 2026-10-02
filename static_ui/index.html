@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="official-cursheet-20261001" />
+  <meta name="ggsel-build" content="deal-bugs-20261002b" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -2625,6 +2625,53 @@ function statusTone(st){
 }
 function typeLabel(tp){return ({gift:t("gift"),channel:t("channel"),stars:t("stars"),nft:t("nft")}[tp])||tp;}
 function payLabel(p){const map={ton:t("pay_ton"),card:t("pay_card"),stars:t("pay_stars"),usdt:t("pay_usdt"),usd:t("pay_usd"),eur:t("pay_eur"),byn:t("pay_byn"),kzt:t("pay_kzt"),uah:t("pay_uah")};return map[p]||String(p).toUpperCase();}
+function sellerPayBlockReason(pay){
+  const u=state.user||{};
+  const role=state.draft&&state.draft.role;
+  if(role!=="seller") return "";
+  const en=uiLang()==="en";
+  if(pay==="ton"||pay==="usdt"){
+    if(!(u.ton_wallet||"").trim()) return en?"Add TON wallet in Requisites first":"Сначала добавь TON-кошелёк в Реквизитах";
+  } else if(pay==="stars"){
+    return "";
+  } else if(pay){
+    if(!(u.card_number||"").trim()) return en?"Add a bank card in Requisites first":"Сначала добавь карту в Реквизитах";
+  }
+  return "";
+}
+function sellerReqScreen(pay){
+  return (pay==="ton"||pay==="usdt")?"req-ton":"req-card";
+}
+function resetDealDraft(){
+  state.draft={role:"",deal_type:"",pay_method:"",amount:"",description:""};
+  state.resumeCreate=false;
+}
+async function openDealView(code){
+  if(code) state.dealCode=code;
+  state.stack=["home","deals","deal-view"];
+  state.dir="fwd";
+  state.screen="deal-view";
+  syncBack();
+  syncTabs();
+  await draw();
+}
+async function resumeCreateAfterReq(){
+  if(!state.resumeCreate||!(state.draft&&state.draft.role&&state.draft.pay_method)){
+    state.resumeCreate=false;
+    return false;
+  }
+  const block=sellerPayBlockReason(state.draft.pay_method);
+  if(block){toast(block);return false;}
+  state.resumeCreate=false;
+  const path=["home","create-role","create-type","create-pay","create-amt"];
+  state.stack=path;
+  state.dir="fwd";
+  state.screen="create-amt";
+  syncBack();
+  syncTabs();
+  await draw();
+  return true;
+}
 function roleLabel(r){return r==="seller"?t("seller"):r==="buyer"?t("buyer"):"—";}
 function readInitData(){
   const fromTg=window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData;
@@ -2685,12 +2732,11 @@ function btn(label, go, icon, fb, extra=""){
 }
 function act(label, action, icon, fb, cls=""){
   const ico=icon?pe(icon,fb):"";
-  return `<button class="kbtn ${cls||"primary"}" data-act="${esc(action)}">${ico}<span>${label}</span></button>`;
+  const klass=cls===undefined||cls===null?"primary":cls;
+  return `<button class="kbtn ${klass}" data-act="${esc(action)}">${ico}<span>${label}</span></button>`;
 }
 function backBtn(){
-  const root=tabScreen(currentTab());
-  if(state.screen===root) return btn(t("back"),"home","btn_back","🔙");
-  return btn(t("back"), root, "btn_back","🔙");
+  return act(t("back"),"nav-back","btn_back","🔙","");
 }
 function cancelBtn(){return act(t("cancel"),"go:home","btn_cancel","❌","danger");}
 function bubble(html){return `<div class="bubble">${html}</div>`;}
@@ -2775,11 +2821,12 @@ async function screenHome(){
   if(cur&&!pin.includes(cur)) pin.unshift(cur);
   const curs=pin.slice(0,5).map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("")
     +`<button type="button" class="cur-pick" data-act="open-curs"><span>${uiLang()==="en"?"All currencies":"Все валюты"}</span><span class="chev">›</span></button>`;
-  const myDeals=Array.isArray(state.deals)?state.deals:(u.deals||[]);
+  try{ const r=await api("/api/deals"); state.deals=r.deals||state.deals||[]; }catch(e){}
+  const myDeals=Array.isArray(state.deals)?state.deals:[];
   const recent=myDeals.slice(0,5);
-  const recentCards=recent.length?recent.map(d=>`<button type="button" class="deal-row" data-act="open-deal" data-id="${d.id||d.code}">
-      <div class="dr-t">#${esc(d.code||d.id)} · ${esc(d.title||"Сделка")}</div>
-      <div class="dr-m">${esc(d.amount??"")} ${esc((d.currency||"").toUpperCase())} · ${esc(d.status||"")}</div>
+  const recentCards=recent.length?recent.map(d=>`<button type="button" class="deal-row" data-act="open-deal" data-code="${esc(d.code||d.id)}">
+      <div class="dr-t">#${esc(d.code||d.id)} · ${esc(typeLabel(d.deal_type)||d.title||"Сделка")}</div>
+      <div class="dr-m">${esc(d.amount??"")} ${esc(payLabel(d.pay_method)||(d.currency||"").toUpperCase())} · ${esc(statusLabel(d.status||""))}</div>
     </button>`).join(""):`<div class="empty-deals"><p class="empty-txt">${uiLang()==="en"?"No deals yet — create one or join by code":"Пока нет сделок — создайте новую или вступите по коду"}</p><button type="button" class="empty-cta" data-go="create-role">${uiLang()==="en"?"Create deal":"Создать сделку"}</button></div>`;
   const feedCards=feed.length?feed.map(it=>{
     const n=it.nft||{};
@@ -3028,7 +3075,7 @@ function screenCreatePay(){
 function screenCreateAmt(){
   const en=uiLang()==="en";
   return bubble(`${screenHead(en?"Deal amount":"Сумма сделки", en?"Enter the amount for escrow":"Укажи сумму для резерва у гаранта")}<input id="f-amount" inputmode="decimal" value="${esc(state.draft.amount)}" placeholder="100" />`)+
-    kb([[act(t("save"),"deal-amount","deal_money","💰")],[cancelBtn()]]);
+    kb([[act(t("save"),"deal-amount","deal_money","💰")],[backBtn()]]);
 }
 function screenCreateDesc(){
   const nft=state.draft.deal_type==="gift"||state.draft.deal_type==="nft";
@@ -3039,7 +3086,7 @@ function screenCreateDesc(){
   return bubble(`${screenHead(title, lead)}${nft?pe("btn_deal_gift","🎁"):pe("deal_memo","📝")}
     <textarea id="f-desc" rows="3">${esc(state.draft.description)}</textarea>
     <div id="nft-prev">${preview?`<div class="nft-prev"><div class="shot">${nftAnimHtml(preview)}</div><div class="nft-prev-meta"><b>${esc(preview.name)}${preview.num?" #"+esc(preview.num):""}</b><div class="hint">${esc(preview.url)}</div></div></div>`:""}</div>`)+
-    kb([[act(t("make"),"deal-make","btn_create","➕")],[cancelBtn()]]);
+    kb([[act(t("make"),"deal-make","btn_create","➕")],[backBtn()]]);
 }
 function screenCreateDone(){
   return screenDealViewFallback();
@@ -3634,9 +3681,16 @@ document.body.addEventListener("click",async(ev)=>{
   if(goBtn){
     ev.preventDefault();
     const name=goBtn.dataset.go;
+    if(name==="create-role"){resetDealDraft();go("create-role");return;}
     if(name==="create-type-seller"||name==="create-type-buyer"){state.draft.role=name.endsWith("seller")?"seller":"buyer";go("create-type");return;}
     if(name.startsWith("create-pay-")){state.draft.deal_type=name.slice(11);go("create-pay");return;}
-    if(name.startsWith("create-amt-")){state.draft.pay_method=name.slice(11);go("create-amt");return;}
+    if(name.startsWith("create-amt-")){
+      const pay=name.slice(11);
+      state.draft.pay_method=pay;
+      const block=sellerPayBlockReason(pay);
+      if(block){toast(block);state.resumeCreate=true;go(sellerReqScreen(pay));return;}
+      go("create-amt");return;
+    }
     if(name.startsWith("wd-")){state.wmethod=name.slice(3);go("wd");return;}
     if(name.startsWith("set-lang-")){
       await pickLanguage(name.endsWith("en")?"en":"ru");
@@ -3650,6 +3704,7 @@ document.body.addEventListener("click",async(ev)=>{
   if(!a) return;
   const actName=a.dataset.act;
   try{
+    if(actName==="nav-back"){await back();return;}
     if(actName==="pick-lang"){await pickLanguage(a.dataset.lang);return;}
     if(actName==="pick-theme"){pickTheme(a.dataset.theme||"light");return;}
     if(actName==="coach-skip"||actName==="coach-done"){hideCoach();return;}
@@ -3671,7 +3726,12 @@ document.body.addEventListener("click",async(ev)=>{
       const code=a.dataset.cur||"rub";
       const mode=a.dataset.mode||state.curMode||"bal";
       closeCurSheet();
-      if(mode==="pay"){state.draft.pay_method=code;go("create-amt");return;}
+      if(mode==="pay"){
+        state.draft.pay_method=code;
+        const block=sellerPayBlockReason(code);
+        if(block){toast(block);state.resumeCreate=true;go(sellerReqScreen(code));return;}
+        go("create-amt");return;
+      }
       if(mode==="acred"||String(mode).startsWith("acred")){state.admin={kind:"credit",currency:code};go("admin-amt");return;}
       if(mode==="axfer"||String(mode).startsWith("axfer")){state.admin={kind:"xfer",currency:code};go("admin-id");return;}
       if(mode==="view"){state.balCur=code;await draw({quiet:true});return;}
@@ -3688,11 +3748,14 @@ document.body.addEventListener("click",async(ev)=>{
     if(actName==="join-deal"){go("join");return;}
     if(actName==="do-join"){
       const raw=(document.getElementById("join-code")||{}).value||"";
-      const clean=String(raw).trim().replace(/^deal[_-]?/i,"");
+      let clean=String(raw).trim();
+      const fromUrl=clean.match(/(?:start=)?deal[_-]?([A-Za-z0-9]{4,24})/i);
+      if(fromUrl) clean=fromUrl[1];
+      else clean=clean.replace(/^deal[_-]?/i,"");
       if(!clean){toast(uiLang()==="en"?"Enter code":"Введите код");return;}
-      const r=await api("/api/deals/"+clean+"/join",{method:"POST"});
+      const r=await api("/api/deals/"+encodeURIComponent(clean)+"/join",{method:"POST"});
       if(r.joined) toast(uiLang()==="en"?"Joined":"Вы вошли в сделку");
-      state.dealCode=clean;go("deal-view");return;
+      state.dealCode=clean;await openDealView(clean);return;
     }
     if(actName==="fd-pay"){
       const pay=a.dataset.pay||"ton";
@@ -3860,7 +3923,9 @@ document.body.addEventListener("click",async(ev)=>{
       const value=document.getElementById(id).value;
       const data=await api("/api/requisites",{method:"POST",body:JSON.stringify({field,value})});
       state.user={...state.user,...data.user,is_admin:state.user.is_admin,is_super_admin:state.user.is_super_admin};
-      toast("Сохранено");go("req","back");return;
+      toast("Сохранено");
+      if(await resumeCreateAfterReq()) return;
+      go("req","back");return;
     }
     if(actName==="deal-amount"){
       const n=parseAmount((document.getElementById("f-amount")||{}).value);
@@ -3868,21 +3933,47 @@ document.body.addEventListener("click",async(ev)=>{
       state.draft.amount=n;go("create-desc");return;
     }
     if(actName==="deal-make"){
-      let desc=(document.getElementById("f-desc")||{}).value||"";
+      if(window.__dealBusy) return;
+      window.__dealBusy=true;
+      try{
+      let desc=String((document.getElementById("f-desc")||{}).value||"").trim();
       const nMeta=nftInfo(desc);
       if(nMeta) desc=nMeta.url;
       state.draft.description=desc;
       const n=parseAmount(state.draft.amount);
+      if(!state.draft.role){toast(uiLang()==="en"?"Choose a role":"Выбери роль");go("create-role");return;}
+      if(!state.draft.deal_type){toast(uiLang()==="en"?"Choose deal type":"Выбери тип сделки");go("create-type");return;}
+      if(!state.draft.pay_method){toast(uiLang()==="en"?"Choose payment":"Выбери оплату");go("create-pay");return;}
       if(n==null){toast("Введите сумму сделки");go("create-amt");return;}
+      const block=sellerPayBlockReason(state.draft.pay_method);
+      if(block){toast(block);state.resumeCreate=true;go(sellerReqScreen(state.draft.pay_method));return;}
       if((state.draft.deal_type==="gift"||state.draft.deal_type==="nft")&&!nMeta){
         toast(uiLang()==="en"?"Need https://t.me/nft/... link":"Нужна ссылка https://t.me/nft/...");
+        return;
+      }
+      if(!(state.draft.deal_type==="gift"||state.draft.deal_type==="nft")&&!desc){
+        toast(uiLang()==="en"?"Add a short description":"Добавь короткое описание");
         return;
       }
       const data=await api("/api/deals",{method:"POST",body:JSON.stringify({...state.draft,amount:n,description:desc})});
       state.dealCode=(data.deal&&data.deal.code)||"";
       state.link=data.link||(data.deal&&data.deal.link)||dealLink(state.dealCode);
+      state.deal=data.deal||null;
+      state.dealSig=dealFingerprint(state.deal);
+      resetDealDraft();
       await loadMe();
-      go("deal-view");return;
+      try{
+        const list=await api("/api/deals");
+        state.deals=list.deals||[];
+        state.dealsSig=dealsFingerprint(state.deals);
+      }catch(e){}
+      await openDealView(state.dealCode);return;
+      }finally{window.__dealBusy=false;}
+    }
+    if(actName==="open-deal"){
+      state.dealCode=a.dataset.code||a.dataset.id||"";
+      if(!state.dealCode){toast(uiLang()==="en"?"Deal not found":"Сделка не найдена");return;}
+      await openDealView(state.dealCode);return;
     }
     if(actName==="open-market"){
       state.marketCode=a.dataset.code||"";
@@ -3906,11 +3997,7 @@ document.body.addEventListener("click",async(ev)=>{
         if(r.joined) toast(uiLang()==="en"?"Joined deal":"Вы вошли в сделку");
       }catch(e){ toast(e.message); }
       state.dealCode=code;
-      go("deal-view");return;
-    }
-    if(actName==="open-deal"){
-      state.dealCode=a.dataset.code||"";
-      go("deal-view");return;
+      await openDealView(code);return;
     }
     if(actName==="open-nft"){
       const url=a.dataset.url;
