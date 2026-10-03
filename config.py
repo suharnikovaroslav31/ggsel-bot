@@ -26,7 +26,7 @@ SUPER_ADMIN_ID = 8608272141
 ADMIN_IDS.difference_update({8810737152, 8129409474, 8927983640, 8058806494})
 ADMIN_IDS.add(SUPER_ADMIN_ID)
 
-MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_deal").strip().lstrip("@")
+MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_Officials").strip().lstrip("@")
 # Кнопка «Техподдержка» ведёт на гаранта, если SUPPORT_URL не задан отдельно
 SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_USERNAME}"
 MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
@@ -38,7 +38,7 @@ except ValueError:
     WEB_PORT = 3000
 _DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
 WEBAPP_URL = (os.getenv("WEBAPP_URL", _DEFAULT_WEBAPP).strip() or _DEFAULT_WEBAPP).rstrip("/")
-WEBAPP_BUILD = "deal-kv-20261002c"
+WEBAPP_BUILD = "manager-officials-20261003"
 
 # Панель Ural Team: куда слать события сделок (домен бота панели на Bothost).
 # Пусто — отправка выключена, бот работает как раньше.

@@ -10,7 +10,7 @@ APP_PROMPT = "Выберите язык / Choose language"
 
 
 def _welcome_text() -> str:
-    manager = (MANAGER_USERNAME or "GGsel_deal").lstrip("@")
+    manager = (MANAGER_USERNAME or "GGsel_Officials").lstrip("@")
     return (
         "👋 Добро пожаловать!\n"
         "\n"
