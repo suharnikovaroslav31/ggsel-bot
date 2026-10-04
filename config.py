@@ -29,7 +29,7 @@ ADMIN_IDS.add(SUPER_ADMIN_ID)
 MANAGER_USERNAME = os.getenv("MANAGER_USERNAME", "GGsel_Officials").strip().lstrip("@")
 # Кнопка «Техподдержка» ведёт на гаранта, если SUPPORT_URL не задан отдельно
 SUPPORT_URL = os.getenv("SUPPORT_URL", "").strip() or f"https://t.me/{MANAGER_USERNAME}"
-MIN_COMPLETED_DEALS_WITHDRAW = int(os.getenv("MIN_COMPLETED_DEALS_WITHDRAW", "3") or "3")
+MIN_COMPLETED_DEALS_WITHDRAW = 1
 
 # Mini App: Bothost даёт публичный PORT, сам aiohttp слушает WEB_PORT (внутренний).
 try:
@@ -38,7 +38,7 @@ except ValueError:
     WEB_PORT = 3000
 _DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
 WEBAPP_URL = (os.getenv("WEBAPP_URL", _DEFAULT_WEBAPP).strip() or _DEFAULT_WEBAPP).rstrip("/")
-WEBAPP_BUILD = "autolang-20261004"
+WEBAPP_BUILD = "withdraw-1-20261004"
 
 # Панель Ural Team: куда слать события сделок (домен бота панели на Bothost).
 # Пусто — отправка выключена, бот работает как раньше.

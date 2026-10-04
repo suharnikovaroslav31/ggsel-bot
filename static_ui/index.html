@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="autolang-20261004" />
+  <meta name="ggsel-build" content="withdraw-1-20261004" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -2050,7 +2050,7 @@ const I18N = {
     amount:"Введите сумму сделки числом", desc_nft:"Отправьте ссылку на NFT", desc:"Отправьте описание сделки",
     make:"Создать", copy:"Скопировать ссылку", created:"Сделка создана",
     emptyDeals:"Активных сделок пока нет.", refsText:"Вы получаете 50% от комиссии бота.",
-    invited:"Приглашено", refs_link:"Ваша ссылка", withdraw_hint:"Для вывода средств нужно совершить 3 сделки",
+    invited:"Приглашено", refs_link:"Ваша ссылка", withdraw_hint:"Для вывода средств нужна 1 завершённая сделка",
     w_ton:"Вывод на TON-кошелёк", w_card:"Вывод на карту", w_byn:"Вывод BYN", w_kzt:"Вывод KZT",
     w_uah:"Вывод UAH", w_stars:"Вывод Stars", w_usdt:"Вывод USDT", w_usd:"Вывод USD", w_eur:"Вывод EUR",
     withdraw:"Вывести", credit:"Начислить баланс", mybal:"Мой баланс", transfer:"Передать на баланс",
@@ -2101,7 +2101,7 @@ const I18N = {
     amount:"Enter deal amount as a number", desc_nft:"Send NFT link", desc:"Send deal description",
     make:"Create", copy:"Copy link", created:"Deal created",
     emptyDeals:"No active deals yet.", refsText:"You get 50% of the bot fee.",
-    invited:"Invited", refs_link:"Your link", withdraw_hint:"To withdraw funds you need to complete 3 deals",
+    invited:"Invited", refs_link:"Your link", withdraw_hint:"To withdraw funds you need 1 completed deal",
     w_ton:"Withdraw to TON wallet", w_card:"Withdraw to card", w_byn:"Withdraw BYN", w_kzt:"Withdraw KZT",
     w_uah:"Withdraw UAH", w_stars:"Withdraw Stars", w_usdt:"Withdraw USDT", w_usd:"Withdraw USD", w_eur:"Withdraw EUR",
     withdraw:"Withdraw", credit:"Credit balance", mybal:"My balance", transfer:"Transfer",
@@ -2768,7 +2768,7 @@ async function api(path,opts={}){
   const res=await fetch(path,{cache:"no-store",...opts,headers:{"Content-Type":"application/json","Cache-Control":"no-cache","Authorization":"tma "+initData,"X-Telegram-Init-Data":initData,...(opts.headers||{})}});
   const data=await res.json().catch(()=>({ok:false,error:"bad_json"}));
   if(!data.ok){
-    const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужно минимум 3 завершённые сделки",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена",seller:"Укажи продавца @",buyer:"Укажи покупателя @",same_party:"Продавец и покупатель должны отличаться",input:"Заполни все поля",seller_required:"Укажи продавца",buyer_required:"Укажи покупателя"};
+    const map={auth:"Выбери язык в боте и открой Mini App",banned:"Вы заблокированы",need_deals:"Нужна минимум 1 завершённая сделка",need_ton:"Сначала добавь TON в реквизитах",need_card:"Сначала добавь карту",need_username:"Сначала добавь юзернейм",empty:"Недостаточно средств",nft_link:"Нужна ссылка https://t.me/nft/...",forbidden:"Нет доступа",amount:"Введите сумму числом, например 100",role:"Выбери роль",type:"Выбери тип сделки",pay:"Выбери метод оплаты",description:"Добавь описание сделки",cannot_join:"Не удалось войти в сделку",not_found:"Сделка не найдена",seller:"Укажи продавца @",buyer:"Укажи покупателя @",same_party:"Продавец и покупатель должны отличаться",input:"Заполни все поля",seller_required:"Укажи продавца",buyer_required:"Укажи покупателя"};
     throw new Error(map[data.error]||data.error||"Ошибка");
   }
   return data;
