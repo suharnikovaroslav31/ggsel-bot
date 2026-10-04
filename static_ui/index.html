@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="manager-officials-20261003" />
+  <meta name="ggsel-build" content="perf-lite-20261004" />
   <title>GGSel</title>
   <script>
   (function(){
+    document.documentElement.classList.add("perf-lite");
     function save(d){ if(d) try{ sessionStorage.setItem("tg_init", d); }catch(e){} }
     try {
       var h = String(location.hash || "").replace(/^#/, "");
@@ -19,10 +20,10 @@
   })();
   </script>
   <script src="/assets/telegram-web-app.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" /></noscript>
   <style>
 :root {
   --bg: #f2f2f7;
@@ -318,12 +319,12 @@ body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow
 .panel { animation: enter .46s var(--ease) both; }
 .panel.back { animation: enter-back .46s var(--ease) both; }
 @keyframes enter {
-  from { opacity: 0; transform: translate3d(18px, 8px, 0) scale(.985); filter: blur(2px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translate3d(12px, 0, 0); }
+  to { opacity: 1; transform: none; }
 }
 @keyframes enter-back {
-  from { opacity: 0; transform: translate3d(-18px, 8px, 0) scale(.985); filter: blur(2px); }
-  to { opacity: 1; transform: none; filter: none; }
+  from { opacity: 0; transform: translate3d(-12px, 0, 0); }
+  to { opacity: 1; transform: none; }
 }
 .bubble, .hero, .item {
   background: var(--grouped);
@@ -485,9 +486,8 @@ input, textarea, select {
   display: block;
   transform-style: preserve-3d;
   transform-origin: 18px 50%;
-  animation: logo-bob 5.6s var(--ease-soft) infinite;
-  will-change: transform;
-  filter: drop-shadow(0 6px 10px rgba(29,185,84,.12));
+  animation: none;
+  filter: none;
 }
 .logo-mark {
   transform-origin: 18px 20px;
@@ -843,9 +843,33 @@ input, textarea, select {
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .intro-logo, .fog, .scene-svg g, .scene-svg circle, .scene-svg rect, .scene-svg ellipse, .fab, .live-dot {
+  .logo-float, .logo-mark, .tab svg, .fig, .fig .pe, .feat, .cta, .chip-lang .gear, .intro-logo, .fog, .scene-svg g, .scene-svg circle, .scene-svg rect, .scene-svg ellipse, .fab, .live-dot, .rise, .panel {
     animation: none !important;
   }
+}
+html.perf-lite .logo-float,
+html.perf-lite .live-dot,
+html.perf-lite .cta,
+html.perf-lite .feat,
+html.perf-lite .scene-svg g,
+html.perf-lite .scene-svg circle,
+html.perf-lite .scene-svg rect,
+html.perf-lite .scene-svg ellipse,
+html.perf-lite .rise {
+  animation: none !important;
+}
+html.perf-lite .panel,
+html.perf-lite .panel.back {
+  animation-duration: .18s;
+}
+html.perf-lite .topbar,
+html.perf-lite .tabbar,
+html.perf-lite .sheet {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+html.perf-lite .splash {
+  box-shadow: 0 8px 18px rgba(18,21,28,.12);
 }
 .stage { padding: 6px 14px 112px; }
 .chip-help {
@@ -2528,12 +2552,13 @@ function nftImgHtml(n, cls=""){
   const dataChain=uniq.length?` data-chain="${esc(uniq.join("|"))}" data-ci="0"`:"";
   return `${ph}<img class="${cls}" src="${esc(uniq[0]||"")}" alt="" decoding="async"${dataChain} onload="this.classList.remove('is-fail')" onerror="window.__nftImgFail&&window.__nftImgFail(this)">`;
 }
-function nftAnimHtml(n, cls=""){
+function nftAnimHtml(n, cls="", opts={}){
   if(!n) return `<div class="ph" style="background:#1a2430"></div>`;
+  const live=!!opts.live && !document.documentElement.classList.contains("perf-lite");
   const lottie=n.lottie||(n.slug?("/n/"+String(n.slug).toLowerCase()+".lottie.json"):"");
   const lottieAlt=n.lottie_alt||"";
   const still=nftImgHtml(n, cls);
-  if(!lottie) return still;
+  if(!live || !lottie) return still;
   return `${still}<div class="nft-lottie" data-lottie="${esc(lottie)}" data-lottie-alt="${esc(lottieAlt)}" aria-hidden="true"></div>`;
 }
 window.__nftImgFail=function(img){
@@ -2548,16 +2573,20 @@ window.__nftImgFail=function(img){
   img.classList.add("is-fail");
 };
 window.__nftAnims=window.__nftAnims||[];
+window.__nftIOs=window.__nftIOs||[];
 function destroyNftAnims(){
   (window.__nftAnims||[]).forEach(a=>{ try{ a.destroy(); }catch(e){} });
+  (window.__nftIOs||[]).forEach(io=>{ try{ io.disconnect(); }catch(e){} });
   window.__nftAnims=[];
+  window.__nftIOs=[];
   window.__nftAnimCount=0;
 }
 function mountNftAnims(root){
   const scope=root||document;
   if(!window.lottie||!window.lottie.loadAnimation) return;
+  if(document.documentElement.classList.contains("perf-lite")) return;
   const lowPower=/Android|iPhone|iPad|Mobile/i.test(navigator.userAgent||"");
-  const maxLive=lowPower?3:6;
+  const maxLive=lowPower?1:2;
   const nodes=[...scope.querySelectorAll(".nft-lottie:not([data-mounted])")];
   nodes.forEach(el=>{
     const path=el.getAttribute("data-lottie")||"";
@@ -2573,7 +2602,7 @@ function mountNftAnims(root){
       try{
         const anim=window.lottie.loadAnimation({
           container:el,
-          renderer: lowPower ? "canvas" : "svg",
+          renderer: "canvas",
           loop:true,
           autoplay:true,
           path:src,
@@ -2612,8 +2641,9 @@ function mountNftAnims(root){
             try{ animRef.pause(); }catch(e){}
           }
         });
-      },{rootMargin:"40px", threshold:0.12});
+      },{rootMargin:"20px", threshold:0.2});
       io.observe(el);
+      window.__nftIOs.push(io);
     }else{
       start(path);
     }
@@ -2622,7 +2652,7 @@ function mountNftAnims(root){
 function nftCard(desc){
   const n=nftInfo(desc);
   if(!n) return "";
-  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftAnimHtml(n)}</div></button>`;
+  return `<button type="button" class="nft-card" data-act="open-nft" data-url="${esc(n.url)}"><div class="shot">${nftAnimHtml(n,"",{live:true})}</div></button>`;
 }
 function dealDescLabel(desc){
   const n=nftInfo(desc);
@@ -2821,6 +2851,19 @@ function featScene(kind){
   };
   return `<span class="scene" aria-hidden="true">${scenes[kind]||""}</span>`;
 }
+const apiCache=Object.create(null);
+function invalidateApiCache(prefix){
+  if(!prefix){ Object.keys(apiCache).forEach(k=>delete apiCache[k]); return; }
+  Object.keys(apiCache).forEach(k=>{ if(k.startsWith(prefix)) delete apiCache[k]; });
+}
+async function cachedApi(path, ttlMs=20000){
+  const now=Date.now();
+  const hit=apiCache[path];
+  if(hit && (now-hit.at)<ttlMs) return hit.data;
+  const data=await api(path);
+  apiCache[path]={at:now, data};
+  return data;
+}
 async function screenHome(){
   const u=state.user;
   const b=u.balances||{};
@@ -2829,25 +2872,30 @@ async function screenHome(){
   const sym=meta.sym;
   const val=b[cur]??0;
   let feed=state.feed||[], reviews=state.reviews||[];
-  try{ const r=await api("/api/feed"); feed=r.items||feed; }catch(e){}
-  try{ const r=await api("/api/reviews"); reviews=r.reviews||reviews; }catch(e){}
+  const [feedRes, reviewsRes, dealsRes]=await Promise.all([
+    cachedApi("/api/feed", 25000).catch(()=>null),
+    cachedApi("/api/reviews", 25000).catch(()=>null),
+    cachedApi("/api/deals", 12000).catch(()=>null),
+  ]);
+  if(feedRes) feed=feedRes.items||feed;
+  if(reviewsRes) reviews=reviewsRes.reviews||reviews;
+  if(dealsRes) state.deals=dealsRes.deals||state.deals||[];
   state.feed=feed; state.reviews=reviews;
   state.homeSig=homeFingerprint([],feed,reviews,cur,val,0);
   const pin=["rub","usd","eur","ton","usdt"].filter((k,i,a)=>a.indexOf(k)===i);
   if(cur&&!pin.includes(cur)) pin.unshift(cur);
   const curs=pin.slice(0,5).map(k=>`<button type="button" class="cur${cur===k?" on":""}" data-act="bal-cur" data-cur="${k}">${k.toUpperCase()}</button>`).join("")
     +`<button type="button" class="cur-pick" data-act="open-curs"><span>${uiLang()==="en"?"All currencies":"Все валюты"}</span><span class="chev">›</span></button>`;
-  try{ const r=await api("/api/deals"); state.deals=r.deals||state.deals||[]; }catch(e){}
   const myDeals=Array.isArray(state.deals)?state.deals:[];
-  const recent=myDeals.slice(0,5);
+  const recent=myDeals.slice(0,4);
   const recentCards=recent.length?recent.map(d=>`<button type="button" class="deal-row" data-act="open-deal" data-code="${esc(d.code||d.id)}">
       <div class="dr-t">#${esc(d.code||d.id)} · ${esc(typeLabel(d.deal_type)||d.title||"Сделка")}</div>
       <div class="dr-m">${esc(d.amount??"")} ${esc(payLabel(d.pay_method)||(d.currency||"").toUpperCase())} · ${esc(statusLabel(d.status||""))}</div>
     </button>`).join(""):`<div class="empty-deals"><p class="empty-txt">${uiLang()==="en"?"No deals yet — create one or join by code":"Пока нет сделок — создайте новую или вступите по коду"}</p><button type="button" class="empty-cta" data-go="create-role">${uiLang()==="en"?"Create deal":"Создать сделку"}</button></div>`;
-  const feedCards=feed.length?feed.map(it=>{
+  const feedCards=feed.length?feed.slice(0,8).map(it=>{
     const n=it.nft||{};
     return `<button type="button" class="feed-card" data-act="open-feed" data-id="${it.id}">
-      ${nftAnimHtml(n)}
+      ${nftImgHtml(n)}
     </button>`;
   }).join(""):"";
   const realReviews=reviews.filter(r=>{
@@ -2858,14 +2906,14 @@ async function screenHome(){
     if(/^buyer_\d+$/i.test(buyer)) return false;
     return true;
   });
-  const revCards=realReviews.length?realReviews.slice(0,12).map(r=>{
+  const revCards=realReviews.length?realReviews.slice(0,6).map(r=>{
     const n=nftInfo(r.nft_url||"");
     const whoKey=String(r.username||"").replace(/^@/,"");
     const initial=whoKey.slice(0,1).toUpperCase()||"G";
     const stars="★".repeat(Math.max(1,Math.min(5,Number(r.rating)||5)));
     const av=r.avatar||avatarUrl(whoKey);
-    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftAnimHtml(n)}</div>`:
-      `<div class="av av-wrap">${av?`<img class="av-img" src="${esc(av)}" alt="" loading="lazy" onerror="this.remove()">`:""}<span>${esc(initial)}</span></div>`;
+    const left=n?`<div class="shot" style="width:52px;height:52px;border-radius:14px;position:relative;overflow:hidden">${nftImgHtml(n)}</div>`:
+      `<div class="av av-wrap">${av?`<img class="av-img" src="${esc(av)}" alt="" loading="lazy" decoding="async" onerror="this.remove()">`:""}<span>${esc(initial)}</span></div>`;
     return `<div class="rev">
       ${left}
       <div><div class="meta"><button type="button" class="ulink who" data-act="open-profile" data-key="${esc(whoKey)}">@${esc(r.username)}</button><span class="when">${esc(r.date||"")}</span></div><div class="stars">${stars}</div><div class="txt">${esc(r.body)}</div>
@@ -2874,42 +2922,42 @@ async function screenHome(){
       </div>
     </div>`;
   }).join(""):`<div class="hint">${uiLang()==="en"?"No reviews yet":"Отзывов пока нет"}</div>`;
-  return `<div class="splash rise">
+  return `<div class="splash">
       <div class="official-pill"><span class="dot"></span>${uiLang()==="en"?"Official GGSel escrow":"Официальный гарант GGSel"}</div>
       <div class="badge">● ${uiLang()==="en"?"Safe deals":"Безопасные сделки"}</div>
       <h1>${uiLang()==="en"?"P2P guarantor in Telegram":"P2P-гарант в Telegram"}</h1>
       <p>${uiLang()==="en"?"Funds stay reserved until the deal is done.":"Деньги резервируются до успешного завершения сделки."}</p>
       <button type="button" class="cta-light" data-go="create-role">${uiLang()==="en"?"Create deal":"Создать сделку"} →</button>
     </div>
-    <div class="trust-strip rise rise-d1">
+    <div class="trust-strip">
       <div class="trust-item"><div class="ti">◈</div><div class="tl">${uiLang()==="en"?"Escrow":"Эскроу"}</div><div class="ts">${uiLang()==="en"?"Funds held":"Деньги в резерве"}</div></div>
       <div class="trust-item"><div class="ti">NFT</div><div class="tl">Fragment</div><div class="ts">${uiLang()==="en"?"Gifts & NFT":"Гифты и NFT"}</div></div>
       <div class="trust-item"><div class="ti">24/7</div><div class="tl">${uiLang()==="en"?"Support":"Поддержка"}</div><div class="ts">${uiLang()==="en"?"Live manager":"Живой менеджер"}</div></div>
     </div>
-    <div class="sec-row rise rise-d1"><div class="sec">${uiLang()==="en"?"Quick actions":"Быстрые действия"}</div></div>
-    <div class="quick rise rise-d1">
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Quick actions":"Быстрые действия"}</div></div>
+    <div class="quick">
       <button type="button" class="qcard" data-go="create-role"><div class="qi">+</div><div class="ql">${uiLang()==="en"?"New deal":"Новая сделка"}</div></button>
       <button type="button" class="qcard" data-act="join-deal"><div class="qi">⧉</div><div class="ql">${uiLang()==="en"?"Join a deal":"Вступить в сделку"}</div></button>
       <button type="button" class="qcard" data-go="deals"><div class="qi">◇</div><div class="ql">${uiLang()==="en"?"My deals":"Мои сделки"}</div></button>
     </div>
-    <div class="wallet-card rise rise-d2">
+    <div class="wallet-card">
       <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"}</div>
       <div class="sum">${esc(val??0)}<small>${esc(sym)}</small></div>
       <div class="cur-row">${curs}</div>
     </div>
-    <div class="sec-row rise rise-d3"><div class="sec">${uiLang()==="en"?"Recent deals":"Последние сделки"}</div><button type="button" class="linkish" data-go="deals">${uiLang()==="en"?"All":"Все"}</button></div>
-    <div class="rise rise-d3">${recentCards}</div>
-    <div class="sec-row rise rise-d4"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><span class="live">● LIVE</span></div>
-    <div class="feed-h rise rise-d4">${feedCards||`<div class="hint block">${uiLang()==="en"?"Feed fills when deals complete with NFT":"Лента появится после успешных сделок"}</div>`}</div>
-    <div class="sec-row rise rise-d5"><div class="sec">${uiLang()==="en"?"Latest reviews":"Последние отзывы"}</div><button type="button" class="linkish" data-act="write-review">${uiLang()==="en"?"+ Write":"+ Написать"}</button></div>
-    <div class="rev-list rise rise-d5">${revCards}</div>`;
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Recent deals":"Последние сделки"}</div><button type="button" class="linkish" data-go="deals">${uiLang()==="en"?"All":"Все"}</button></div>
+    <div>${recentCards}</div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Successful deals":"Лента успешных сделок"}</div><span class="live">● LIVE</span></div>
+    <div class="feed-h">${feedCards||`<div class="hint block">${uiLang()==="en"?"Feed fills when deals complete with NFT":"Лента появится после успешных сделок"}</div>`}</div>
+    <div class="sec-row"><div class="sec">${uiLang()==="en"?"Latest reviews":"Последние отзывы"}</div><button type="button" class="linkish" data-act="write-review">${uiLang()==="en"?"+ Write":"+ Написать"}</button></div>
+    <div class="rev-list">${revCards}</div>`;
 }
 function renderMarketCards(market){
   const me=Number(state.user&&state.user.id)||0;
   if(!(market||[]).length){
     return `<div class="hint">${uiLang()==="en"?"Loading market…":"Загружаем маркет…"}</div>`;
   }
-  return market.map(it=>{
+  return market.slice(0,24).map(it=>{
     const n=it.nft||{};
     const title=`${n.name||"NFT"}${n.num?" #"+n.num:""}`;
     const mine=me && Number(it.owner_id||it.seller_id||0)===me;
@@ -2917,7 +2965,7 @@ function renderMarketCards(market){
     const seller=it.seller||"";
     const av=it.avatar||(seller?`/a/${seller}.jpg`:"");
     return `<div class="mcard" role="button" tabindex="0" data-act="open-market" data-code="${esc(it.code)}" data-demo="${demo?"1":"0"}">
-      <div class="shot">${nftAnimHtml(n)}</div>
+      <div class="shot">${nftImgHtml(n)}</div>
       <div class="meta">
         <div class="nm">${esc(title)}</div>
         <div class="pr">${esc(it.amount)} ${esc(String(it.pay_method||"").toUpperCase())}</div>
@@ -3516,7 +3564,7 @@ async function draw(opts={}){
     syncTabs();
     return;
   }
-  destroyNftAnims();
+  if((window.__nftAnims||[]).length || (window.__nftIOs||[]).length) destroyNftAnims();
   try{
     const s=state.screen;
     if(s==="home") root.innerHTML=await screenHome();
@@ -3556,11 +3604,11 @@ async function draw(opts={}){
     else if(s==="admin-grant"||s==="admin-ban"||s==="admin-unban") root.innerHTML=screenAdminId(s.replace("admin-",""));
     else root.innerHTML=await screenHome();
   }catch(e){root.innerHTML=bubble(`<span class="err">${esc(e.message)}</span>`)+kb([[backBtn()]]);}
-  mountNftAnims(root);
-  if(!window.lottie) setTimeout(()=>mountNftAnims(root), 500);
+  if(root.querySelector(".nft-lottie")){
+    mountNftAnims(root);
+    if(!window.lottie) setTimeout(()=>mountNftAnims(root), 600);
+  }
   if(!opts.quiet){
-    root.className="";
-    void root.offsetWidth;
     root.className="panel"+(state.dir==="back"?" back":"");
   }
   syncTabs();
@@ -3583,22 +3631,25 @@ function homeFingerprint(market,feed,reviews,cur,val,seed){
 function watchDeal(){
   clearInterval(dealWatch);
   dealWatch=null;
+  if(document.hidden) return;
   const s=state.screen;
-  if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,2000);
-  else if(s==="deals") dealWatch=setInterval(refreshDealsList,4000);
-  else if(s==="home") dealWatch=setInterval(refreshHomeLive,12000);
-  else if(s==="market") dealWatch=setInterval(refreshMarketLive,10000);
-  else if(s==="market-view") dealWatch=setInterval(refreshMarketView,8000);
+  if(s==="deal-view"&&state.dealCode) dealWatch=setInterval(refreshOpenDeal,8000);
+  else if(s==="deals") dealWatch=setInterval(refreshDealsList,12000);
+  else if(s==="home") dealWatch=setInterval(refreshHomeLive,30000);
+  else if(s==="market") dealWatch=setInterval(refreshMarketLive,20000);
+  else if(s==="market-view") dealWatch=setInterval(refreshMarketView,20000);
 }
 async function refreshHomeLive(){
-  if(state.screen!=="home") return;
+  if(state.screen!=="home"||document.hidden) return;
   try{
     const cur=state.balCur||"rub";
     const b=(state.user&&state.user.balances)||{};
     const val=b[cur];
+    invalidateApiCache("/api/feed");
+    invalidateApiCache("/api/reviews");
     const [feedRes,reviewsRes]=await Promise.all([
-      api("/api/feed").catch(()=>null),
-      api("/api/reviews").catch(()=>null),
+      cachedApi("/api/feed", 25000).catch(()=>null),
+      cachedApi("/api/reviews", 25000).catch(()=>null),
     ]);
     let feed=state.feed||[];
     let reviews=state.reviews||[];
@@ -3611,7 +3662,7 @@ async function refreshHomeLive(){
   }catch(e){}
 }
 async function refreshMarketLive(){
-  if(state.screen!=="market") return;
+  if(state.screen!=="market"||document.hidden) return;
   try{
     const f=state.marketFilter||{};
     const qs=new URLSearchParams();
@@ -3632,7 +3683,7 @@ async function refreshMarketLive(){
   }catch(e){}
 }
 async function refreshMarketView(){
-  if(state.screen!=="market-view"||!state.marketCode) return;
+  if(state.screen!=="market-view"||!state.marketCode||document.hidden) return;
   try{
     const r=await api("/api/market");
     const list=r.items||[];
@@ -3646,7 +3697,7 @@ async function refreshMarketView(){
   }catch(e){}
 }
 async function refreshOpenDeal(){
-  if(state.screen!=="deal-view"||!state.dealCode) return;
+  if(state.screen!=="deal-view"||!state.dealCode||document.hidden) return;
   try{
     const d=(await api("/api/deals/"+state.dealCode)).deal;
     const fp=dealFingerprint(d);
@@ -3657,7 +3708,7 @@ async function refreshOpenDeal(){
   }catch(e){}
 }
 async function refreshDealsList(){
-  if(state.screen!=="deals") return;
+  if(state.screen!=="deals"||document.hidden) return;
   try{
     const {deals}=await api("/api/deals");
     const fp=dealsFingerprint(deals);
@@ -3977,11 +4028,13 @@ document.body.addEventListener("click",async(ev)=>{
       state.deal=data.deal||null;
       state.dealSig=dealFingerprint(state.deal);
       resetDealDraft();
+      invalidateApiCache();
       await loadMe();
       try{
         const list=await api("/api/deals");
         state.deals=list.deals||[];
         state.dealsSig=dealsFingerprint(state.deals);
+        apiCache["/api/deals"]={at:Date.now(),data:list};
       }catch(e){}
       await openDealView(state.dealCode);return;
       }finally{window.__dealBusy=false;}
@@ -4096,7 +4149,12 @@ document.body.addEventListener("input",(ev)=>{
   }
 });
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState!=="visible") return;
+  if(document.visibilityState!=="visible"){
+    clearInterval(dealWatch);
+    dealWatch=null;
+    return;
+  }
+  watchDeal();
   if(state.screen==="deal-view") refreshOpenDeal();
   else if(state.screen==="deals") refreshDealsList();
   else if(state.screen==="home") refreshHomeLive();
