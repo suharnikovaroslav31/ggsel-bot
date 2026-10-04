@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="withdraw-1-20261004" />
+  <meta name="ggsel-build" content="withdraw-home-20261004" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -1510,6 +1510,14 @@ html[data-theme="dark"] .wallet-card {
   cursor: pointer; white-space: nowrap;
 }
 .wallet-card .cur.on { background: #fff; color: #000; }
+.wallet-card .wd-btn {
+  position: relative; z-index: 1;
+  appearance: none; border: 0; cursor: pointer;
+  width: 100%; margin-top: 14px; min-height: 44px;
+  border-radius: 14px; background: #fff; color: #111;
+  font: 700 15px/1 inherit;
+}
+.wallet-card .wd-btn:active { transform: scale(.98); }
 .wallet-card .cur-all {
   background: rgba(52,199,89,.9) !important; color: #fff !important;
 }
@@ -2948,6 +2956,7 @@ async function screenHome(){
       <div class="lab">${uiLang()==="en"?"Your balance":"Ваш баланс"}</div>
       <div class="sum">${esc(val??0)}<small>${esc(sym)}</small></div>
       <div class="cur-row">${curs}</div>
+      <button type="button" class="wd-btn" data-go="bal">${t("withdraw")}</button>
     </div>
     <div class="sec-row"><div class="sec">${uiLang()==="en"?"Recent deals":"Последние сделки"}</div><button type="button" class="linkish" data-go="deals">${uiLang()==="en"?"All":"Все"}</button></div>
     <div>${recentCards}</div>

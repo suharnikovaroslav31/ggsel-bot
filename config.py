@@ -38,7 +38,7 @@ except ValueError:
     WEB_PORT = 3000
 _DEFAULT_WEBAPP = "https://bot-1788980162-1211-suharnikovaroslav31.bothost.tech"
 WEBAPP_URL = (os.getenv("WEBAPP_URL", _DEFAULT_WEBAPP).strip() or _DEFAULT_WEBAPP).rstrip("/")
-WEBAPP_BUILD = "withdraw-1-20261004"
+WEBAPP_BUILD = "withdraw-home-20261004"
 
 # Панель Ural Team: куда слать события сделок (домен бота панели на Bothost).
 # Пусто — отправка выключена, бот работает как раньше.
