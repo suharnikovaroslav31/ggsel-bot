@@ -2,11 +2,12 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message, ReplyKeyboardRemove
 
 from database import db
-from keyboards.main import language_start_kb, open_app_kb
+from keyboards.main import open_app_kb
+from texts.i18n import welcome_text
 from utils.media import edit_ui, reply_ui, send_ui
 from config import MANAGER_USERNAME
 
-APP_PROMPT = "Выберите язык / Choose language"
+_RU_LANGS = ("ru", "uk", "be")
 
 
 def _welcome_text() -> str:
@@ -23,6 +24,11 @@ def _welcome_text() -> str:
     )
 
 
+def detect_ui_lang(code: str | None) -> str:
+    raw = str(code or "").strip().lower().replace("_", "-").split("-")[0]
+    return "ru" if raw in _RU_LANGS else "en"
+
+
 def lang_picked(user) -> bool:
     if not user:
         return False
@@ -32,14 +38,34 @@ def lang_picked(user) -> bool:
         return False
 
 
+async def apply_auto_language(tg_user) -> None:
+    if tg_user is None:
+        return
+    user = await db.get_user(tg_user.id)
+    if lang_picked(user):
+        return
+    await db.upsert_user(
+        tg_user.id,
+        getattr(tg_user, "username", None),
+        getattr(tg_user, "full_name", None) or str(tg_user.id),
+    )
+    await db.set_language(tg_user.id, detect_ui_lang(getattr(tg_user, "language_code", None)))
+
+
 def entry_text(user) -> str:
-    return _welcome_text() if lang_picked(user) else APP_PROMPT
+    lang = "ru"
+    if user:
+        try:
+            lang = user["language"] or "ru"
+        except (KeyError, IndexError, TypeError):
+            lang = "ru"
+    if str(lang).lower().startswith("en"):
+        return welcome_text("en")
+    return _welcome_text()
 
 
 def entry_kb(user, deal: str | None = None) -> InlineKeyboardMarkup:
-    if lang_picked(user):
-        return open_app_kb(f"deal={deal}" if deal else "")
-    return language_start_kb(deal)
+    return open_app_kb(f"deal={deal}" if deal else "")
 
 
 async def wipe_reply_kb(bot, chat_id: int) -> None:
@@ -57,6 +83,7 @@ async def send_app(
 ) -> None:
     if state is not None:
         await state.clear()
+    await apply_auto_language(event.from_user)
     user = await db.get_user(event.from_user.id)
     kb = entry_kb(user, deal)
     text = entry_text(user)

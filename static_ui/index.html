@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
-  <meta name="ggsel-build" content="perf-lite-20261004" />
+  <meta name="ggsel-build" content="autolang-20261004" />
   <title>GGSel</title>
   <script>
   (function(){
@@ -2277,10 +2277,14 @@ function hideCoach(){
   el.innerHTML="";
   markCoachDone();
 }
+function detectLang(){
+  const tgCode=(tg&&tg.initDataUnsafe&&tg.initDataUnsafe.user&&tg.initDataUnsafe.user.language_code)||"";
+  const nav=navigator.language||"";
+  const raw=String(tgCode||nav||"ru").toLowerCase().split("-")[0];
+  return raw==="ru"||raw==="uk"||raw==="be"?"ru":"en";
+}
 function needLangPicker(){
-  if(rememberedLang()) return false;
-  if(state.user && Number(state.user.lang_picked)) return false;
-  return true;
+  return false;
 }
 function logoHtml(cls){
   const src=document.querySelector(".logo svg");
@@ -3725,6 +3729,19 @@ async function loadMe(opts={}){
   const saved=rememberedLang();
   let data=await api("/api/me");
   state.user=data.user;
+  if(!Number(state.user.lang_picked)){
+    const auto=detectLang();
+    try{
+      await api("/api/language",{method:"POST",body:JSON.stringify({language:auto,deal:boot.deal||""})});
+      rememberLang(auto);
+      data=await api("/api/me");
+      state.user=data.user;
+    }catch(e){
+      state.user.language=auto;
+      state.user.lang_picked=1;
+      rememberLang(auto);
+    }
+  }
   if(Number(state.user.lang_picked)&&state.user.language){
     rememberLang(state.user.language);
   }else if(saved){
@@ -4190,7 +4207,7 @@ if(tg&&tg.BackButton){tg.BackButton.onClick(()=>back());}
     }
   }
   try{await intro;}catch(e){}
-  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и нажми «Выбрать язык» в боте.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
+  document.getElementById("screen").innerHTML=bubble(`<b>Не удалось открыть сессию</b><p class="hint">Закрой окно и открой Mini App ещё раз.</p>`)+kb([[act("Повторить","go:home","btn_back","🔄")]]);
 })();
   </script>
 </body>

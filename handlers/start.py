@@ -15,7 +15,7 @@ from texts.deal_messages import (
     deal_completed_text,
     seller_deal_connected_text,
 )
-from utils.app_gate import entry_kb, entry_text, send_app, wipe_reply_kb
+from utils.app_gate import apply_auto_language, entry_kb, entry_text, send_app, wipe_reply_kb
 from utils.media import reply_ui, send_ui
 from utils.panel import report_deal
 
@@ -45,6 +45,7 @@ async def cmd_start(message: Message, command: CommandObject, state: FSMContext)
         full_name=message.from_user.full_name,
         referrer_id=referrer_id,
     )
+    await apply_auto_language(message.from_user)
     user = await db.get_user(message.from_user.id)
 
     prev_id = await db.get_last_welcome_msg_id(message.from_user.id)

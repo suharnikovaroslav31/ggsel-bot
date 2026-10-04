@@ -479,6 +479,17 @@ async def api_me(request: web.Request) -> web.Response:
         return err
     uid = int(tg_user["id"])
     row = await db.get_user(uid)
+    picked = 0
+    if row is not None:
+        try:
+            picked = int(row["lang_picked"] or 0)
+        except (KeyError, IndexError, TypeError):
+            picked = 0
+    if not picked:
+        from utils.app_gate import detect_ui_lang
+
+        await db.set_language(uid, detect_ui_lang(tg_user.get("language_code")))
+        row = await db.get_user(uid)
     payload = _user_json(row, uid, tg_user.get("_start_param") or "")
     payload["is_admin"] = await is_admin(uid)
     payload["completed_deals"] = await db.count_completed_deals(uid)
